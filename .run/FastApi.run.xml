@@ -1,0 +1,25 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="FastApi" type="Python.FastAPI">
+    <option name="additionalOptions" value="" />
+    <option name="file" value="C:\projects\haystack-practice\app\main.py" />
+    <module name="haystack-practice" />
+    <option name="ENV_FILES" value="" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <envs>
+      <env name="QDRANT_HOST" value="localhost" />
+      <env name="QDRANT_PORT" value="6333" />
+      <env name="LLAMA_LLM_URL" value="http://localhost:8080/v1" />
+      <env name="LLAMA_EMBEDDING_URL" value="http://localhost:8081/v1" />
+    </envs>
+    <option name="SDK_HOME" value="" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="IS_MODULE_SDK" value="true" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+    <option name="RUN_TOOL" value="" />
+    <option name="launchJavascriptDebuger" value="false" />
+    <method v="2" />
+  </configuration>
+</component>

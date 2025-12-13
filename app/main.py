@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):
     settings = get_settings()
     logger.info("Starting %s", settings.app_name)
     # TODO: initialize Haystack pipelines once available.
@@ -19,8 +19,15 @@ def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Tech Support RAG API", lifespan=lifespan)
-    app.include_router(router, prefix="/api")
+    settings = get_settings()
+    app = FastAPI(
+        title=settings.app_name,
+        lifespan=lifespan,
+        docs_url="/api/docs",
+        redoc_url="/api/redoc",
+        openapi_url="/api/openapi.json",
+    )
+    app.include_router(router, prefix=settings.api_prefix)
     return app
 
 

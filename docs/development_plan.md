@@ -30,13 +30,13 @@
 ## Detailed Workstreams & Tasks
 
 ### 1. Repository Bootstrapping
-- [ ] Initialize Python project with uv/poetry/pip-tools (decide) targeting Python 3.11.
-- [ ] Define core folders: `app/`, `ingestion/`, `infrastructure/`, `deploy/`.
+- [x] Initialize Python project with uv/poetry/pip-tools (decide) targeting Python 3.11.
+- [x] Define core folders: `app/`, `ingestion/`, `infrastructure/`, `deploy/`.
 - [ ] Configure linting/formatting (ruff, black, isort, mypy) + pre-commit hooks.
-- [ ] Add Makefile (or `justfile`) with commands: `install`, `lint`, `test`, `compose:infra`, `compose:full`, `ingest:run`.
+- [x] Add Makefile (or `justfile`) with commands: `install`, `lint`, `test`, `compose:infra`, `compose:full`, `ingest:run`.
 
 ### 2. FastAPI + Haystack Application
-- [ ] Scaffold FastAPI project (`app/main.py`, routers for `/query`, `/chat`, `/health`, `/ingest/status`).
+- [x] Scaffold FastAPI project (`app/main.py`, routers for `/query`, `/chat`, `/health`, `/ingest/status`).
 - [ ] Implement dependency injection for Haystack pipelines (`Pipeline`/`Graph`) configured via YAML or Python factory.
 - [ ] Add retrieval pipeline: Qdrant retriever + optional BM25 + cross-encoder reranker.
 - [ ] Add generation pipeline: PromptBuilder -> Qwen invocation -> Response postprocessor.
@@ -51,10 +51,10 @@
 - [ ] Document GPU/CPU requirements and fallback instructions (e.g., `LLAMA_ARG` tuning, NUMA pinning).
 
 - [ ] Configure Haystack Ingestion YAML defining sources (filesystem globs for PDFs, exported Confluence HTML/PDF bundles, Markdown repos, optional S3 buckets) with change-detection policies.
-- [ ] Provide CLI wrappers (`haystack ingestion run ...`) plus helper scripts to schedule CronJobs and capture run manifests in Postgres.
+- [x] Provide CLI wrappers (`haystack ingestion run ...`) plus helper scripts to schedule CronJobs and capture run manifests in Postgres.
 - [ ] Embed preprocessing/normalization/chunking transformers inside the ingestion graph with tunable chunk params (e.g., 512 tokens / 64 overlap) and OCR fallbacks.
-- [ ] Implement custom Haystack Ingestion embedding component that proxies to the llama.cpp embedding server hosting `bge-large-en-v1.5-gguf`, ensuring batching + retries.
-- [ ] Leverage Haystack Ingestion writers for Qdrant upserts so vectors + metadata are persisted without leaving the ingestion pipeline.
+- [x] Implement custom Haystack Ingestion embedding component that proxies to the llama.cpp embedding server hosting `bge-large-en-v1.5-gguf`, ensuring batching + retries.
+- [x] Leverage Haystack Ingestion writers for Qdrant upserts so vectors + metadata are persisted without leaving the ingestion pipeline.
 - [ ] Store intermediate artifacts (clean text, metadata) in a debug-friendly blob store or local disk according to ingestion config, keeping track of exported Confluence versions.
 
 ### 5. Retrieval & Qdrant Enhancements
@@ -68,8 +68,8 @@
   - `Dockerfile.app` for FastAPI + workers.
   - `Dockerfile.llama` parameterized for embeddings vs. LLM servers.
   - `Dockerfile.ingestion` (optional) if workers run separately.
-- [ ] Compose Mode 1 (`docker-compose.infra.yml`): bring up Qdrant, llama embedding server, llama LLM server, Redis, Postgres, Prometheus/Grafana.
-- [ ] Compose Mode 2 (`docker-compose.full.yml` or profile): extend Mode 1 by adding FastAPI app, ingestion worker, evaluator service.
+- [x] Compose Mode 1 (`docker-compose.infra.yml`): bring up Qdrant, llama embedding server, llama LLM server, Redis, Postgres, Prometheus/Grafana.
+- [x] Compose Mode 2 (`docker-compose.full.yml` or profile): extend Mode 1 by adding FastAPI app, ingestion worker, evaluator service.
 - [ ] Provide `.env` templates with ports, data paths, and mount points for models (bind host directories for gguf files).
 - [ ] Document workflows for PyCharm remote interpreter vs. dockerized execution.
 
