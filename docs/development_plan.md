@@ -52,7 +52,7 @@
 
  - [x] Configure Haystack Ingestion YAML defining sources (filesystem globs for PDFs, exported Confluence HTML/PDF bundles, Markdown repos, optional S3 buckets) with change-detection policies.
  - [x] Provide CLI wrappers (`haystack ingestion run ...`) plus helper scripts to schedule CronJobs and capture run manifests in Postgres.
- - [x] Embed preprocessing/normalization/chunking transformers inside the ingestion graph with tunable chunk params (e.g., 512 tokens / 64 overlap) and OCR fallbacks.
+ - [x] Embed preprocessing/normalization/chunking transformers inside the ingestion graph with tunable chunk params (e.g., 512 tokens / 64 overlap) using Haystack defaults (no OCR).
  - [x] Implement custom Haystack Ingestion embedding component that proxies to the llama.cpp embedding server hosting `bge-large-en-v1.5-gguf`, ensuring batching + retries.
  - [x] Leverage Haystack Ingestion writers for Qdrant upserts so vectors + metadata are persisted without leaving the ingestion pipeline.
  - [x] Store intermediate artifacts (clean text, metadata) in a debug-friendly blob store or local disk according to ingestion config, keeping track of exported Confluence versions.
