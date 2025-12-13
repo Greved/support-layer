@@ -35,8 +35,8 @@ Configuration is read from environment variables defined in `app/core/config.py`
 See `agents.md` and `docs/development_plan.md` for detailed architecture and delivery plan.
 
 ## Code quality
-- Install dev tooling: `make install`
-- Install git hooks: `make hooks`
-- Lint: `make lint` (ruff + black check)
-- Auto-format + fix lint: `make format`
-- Run all pre-commit hooks: `make pre-commit`
+- Install dev tooling: `py -3.12 -m pip install .[dev]`
+- Install git hooks: `py -3.12 -m pre-commit install`
+- Lint: `py -3.12 -m ruff check . && py -3.12 -m black --check .`
+- Auto-format + fix lint: `py -3.12 -m black . && py -3.12 -m ruff check --fix .`
+- Run all pre-commit hooks: `py -3.12 -m pre-commit run --all-files`
