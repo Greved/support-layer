@@ -17,9 +17,14 @@ py -3.12 -m ingestion.cli ingest --config ingestion/config/filesystem.example.ya
 
 If the CLI reports no documents found, ensure your glob patterns resolve locally (Windows example: `dir data -Recurse | findstr .pdf`) and rerun with `--path "data/**/*.pdf"`. Paths are resolved relative to the config file by default; use `--base-dir` to override.
 
-If the embedding server crashes on large batches, reduce chunk size in config (e.g., `split_length: 128`, `split_overlap: 32` as in the example).*** End Patch```##
+If the embedding server crashes on large batches, reduce chunk size in config (e.g., `split_length: 128`, `split_overlap: 32` as in the example).
 
 Configuration is read from environment variables defined in `app/core/config.py` (Qdrant host/port/API key and llama embedding endpoint).
+
+## Dockerfiles
+- `Dockerfile.app`: builds the FastAPI/Haystack app image (defaults to uvicorn on port 8000).
+- `Dockerfile.llama`: thin wrapper over `ghcr.io/ggml-org/llama.cpp:server`; pass model/args at runtime.
+- `.env.example`: template for local/env vars (`QDRANT_HOST`, `LLAMA_*`, etc.).
 
 See `agents.md` and `docs/development_plan.md` for detailed architecture and delivery plan.
 
