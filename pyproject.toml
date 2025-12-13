@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tech-support-rag-api"
+version = "0.1.0"
+description = "FastAPI-based Haystack RAG service for local llama.cpp deployments"
+readme = "README.md"
+authors = [{ name = "Greved" }]
+license = { text = "Proprietary" }
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.5",
+  "uvicorn[standard]>=0.24.0",
+  "pydantic-settings>=2.2.1",
+  "haystack-ai[dev]>=2.1.0",
+  "qdrant-client>=1.9.0",
+  "typer>=0.12.5",
+  "python-dotenv>=1.0.1",
+  "loguru>=0.7.2",
+  "requests>=2.32.3"
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff>=0.6.8",
+  "black>=24.10.0",
+  "mypy>=1.12.0",
+  "pytest>=8.3.3"
+]
+
+[tool.black]
+target-version = ["py311"]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+lint.select = ["E", "F", "I", "UP", "B", "SIM"]
+exclude = [
+  "docs/*",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "ingestion"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

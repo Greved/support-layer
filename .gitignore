@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+.envrc
+.mypy_cache/
+ruff_cache/
+.pytest_cache/
+.cache/
+.idea/
+.vscode/
+.vscode_settings_placeholder
+.DS_Store
+!.keep
