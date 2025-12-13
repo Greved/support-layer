@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import glob
-import os
 from pathlib import Path
-from typing import List
+from typing import Annotated
 
 import typer
 from haystack import Pipeline
-from haystack.components.converters import HTMLToDocument, MarkdownToDocument, PyPDFToDocument, TextFileToDocument
+from haystack.components.converters import (
+    HTMLToDocument,
+    MarkdownToDocument,
+    PyPDFToDocument,
+    TextFileToDocument,
+)
 from haystack.components.preprocessors import DocumentSplitter
 from haystack.dataclasses import Document
 
@@ -17,8 +21,8 @@ from ingestion.pipelines.components import LlamaCppEmbedding, QdrantWriter
 app = typer.Typer(help="Ingestion CLI for filesystem-based documents")
 
 
-def load_documents_from_paths(paths: List[str]) -> List[Document]:
-    documents: List[Document] = []
+def load_documents_from_paths(paths: list[str]) -> list[Document]:
+    documents: list[Document] = []
     pdf_converter = PyPDFToDocument()
     md_converter = MarkdownToDocument()
     html_converter = HTMLToDocument()
@@ -84,8 +88,11 @@ def build_filesystem_ingestion_pipeline(
 
 @app.command()
 def ingest(
-    paths: List[str] = typer.Argument(..., help="Glob patterns for PDFs/HTML/Markdown to ingest"),
-    collection: str = typer.Option("documents", help="Qdrant collection name"),
+    paths: Annotated[
+        list[str],
+        typer.Argument(..., help="Glob patterns for PDFs/HTML/Markdown to ingest"),
+    ],
+    collection: Annotated[str, typer.Option("documents", help="Qdrant collection name")],
 ):
     settings = get_settings()
     docs = load_documents_from_paths(paths)

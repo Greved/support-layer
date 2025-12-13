@@ -1,5 +1,4 @@
 from functools import lru_cache
-from typing import Any
 
 from pydantic import AnyHttpUrl, Field
 from pydantic_settings import BaseSettings
@@ -27,7 +26,10 @@ class Settings(BaseSettings):
         default=None,
         description="Optional bucket/root directory where exported Confluence/PDF docs are stored",
     )
-    telemetry_sink: str | None = Field(default=None, description="Optional Prometheus pushgateway URI")
+    telemetry_sink: str | None = Field(
+        default=None,
+        description="Optional Prometheus pushgateway URI",
+    )
 
     class Config:
         env_file = ".env"

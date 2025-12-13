@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
@@ -22,7 +24,7 @@ class QueryResponse(BaseModel):
 
 
 @router.get("/healthz", response_model=HealthResponse, tags=["meta"])
-def health(settings: Settings = Depends(get_settings)) -> HealthResponse:
+def health(settings: Annotated[Settings, Depends(get_settings)]) -> HealthResponse:
     return HealthResponse(name=settings.app_name, status="ok")
 
 
