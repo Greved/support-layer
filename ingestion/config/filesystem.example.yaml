@@ -5,10 +5,13 @@ sources:
   - "data/**/*.md"
   - "data/**/*.txt"
 
+# Optional base directory for resolving relative glob patterns (defaults to this file's directory)
+# base_dir: "../"
+
 chunking:
   split_by: word
-  split_length: 200
-  split_overlap: 40
+  split_length: 128
+  split_overlap: 32
 
 # Optional directory to store cleaned, pre-split documents for debugging/reproducibility.
 artifacts_dir: "artifacts/ingestion"
