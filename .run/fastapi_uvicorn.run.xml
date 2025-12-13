@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="FastAPI (uvicorn)" type="PythonConfigurationType" factoryName="Python" singleton="true">
+    <module name="tech-support-rag-api" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <option name="SCRIPT_NAME" value="uvicorn" />
+    <option name="PARAMETERS" value="app.main:app --reload --host 0.0.0.0 --port 8000" />
+    <option name="SHOW_COMMAND_LINE" value="false" />
+    <option name="EMULATE_TERMINAL" value="false" />
+    <option name="MODULE_MODE" value="true" />
+    <envs>
+      <env name="QDRANT_HOST" value="localhost" />
+      <env name="QDRANT_PORT" value="6333" />
+      <env name="LLAMA_LLM_URL" value="http://localhost:8080/v1" />
+      <env name="LLAMA_EMBEDDING_URL" value="http://localhost:8081/v1" />
+    </envs>
+  </configuration>
+</component>
