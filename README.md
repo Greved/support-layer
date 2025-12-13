@@ -26,6 +26,12 @@ Configuration is read from environment variables defined in `app/core/config.py`
 - `Dockerfile.llama`: thin wrapper over `ghcr.io/ggml-org/llama.cpp:server`; pass model/args at runtime.
 - `.env.example`: template for local/env vars (`QDRANT_HOST`, `LLAMA_*`, etc.).
 
+## Useful URLs (default ports)
+- FastAPI: http://localhost:8000/api/healthz, docs at http://localhost:8000/api/docs
+- Qdrant: http://localhost:6333/dashboard (if dashboard enabled) / health at http://localhost:6333/health
+- llama.cpp LLM: http://localhost:8080/health
+- llama.cpp embeddings: http://localhost:8081/health
+
 See `agents.md` and `docs/development_plan.md` for detailed architecture and delivery plan.
 
 ## Code quality
