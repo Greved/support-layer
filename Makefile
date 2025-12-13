@@ -1,6 +1,6 @@
 SHELL := bash
 
-.PHONY: install run dev lint format test compose-infra compose-full ingest
+.PHONY: install run dev lint format test compose-infra compose-full ingest pre-commit hooks
 
 install:
 	python -m venv .venv && . .venv/bin/activate && pip install -U pip && pip install .[dev]
@@ -27,3 +27,9 @@ compose-infra:
 
 compose-full:
 	docker compose -f docker-compose.full.yml up -d
+
+hooks:
+	. .venv/bin/activate && pre-commit install
+
+pre-commit:
+	. .venv/bin/activate && pre-commit run --all-files

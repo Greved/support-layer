@@ -12,3 +12,10 @@ python -m ingestion.cli ingest \"data/**/*.pdf\" \"data/**/*.html\" \"data/**/*.
 Configuration is read from environment variables defined in `app/core/config.py` (Qdrant host/port/API key and llama embedding endpoint).
 
 See `agents.md` and `docs/development_plan.md` for detailed architecture and delivery plan.
+
+## Code quality
+- Install dev tooling: `make install`
+- Install git hooks: `make hooks`
+- Lint: `make lint` (ruff + black check)
+- Auto-format + fix lint: `make format`
+- Run all pre-commit hooks: `make pre-commit`
