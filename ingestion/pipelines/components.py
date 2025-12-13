@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
 import uuid
 
 import requests
@@ -17,13 +16,13 @@ class LlamaCppEmbedding:
     Expects the server to expose `/v1/embeddings` and return the OpenAI response schema.
     """
 
-    def __init__(self, endpoint: str, model: Optional[str] = None, timeout: float = 30.0):
+    def __init__(self, endpoint: str, model: str | None = None, timeout: float = 30.0):
         self.endpoint = endpoint.rstrip("/")
         self.model = model
         self.timeout = timeout
 
-    @component.output_types(documents=List[Document])
-    def run(self, documents: List[Document]):
+    @component.output_types(documents=list[Document])
+    def run(self, documents: list[Document]):
         if not documents:
             return {"documents": []}
 
@@ -31,13 +30,11 @@ class LlamaCppEmbedding:
             "model": self.model,
             "input": [doc.content for doc in documents],
         }
-        response = requests.post(
-            f"{self.endpoint}/embeddings", json=payload, timeout=self.timeout
-        )
+        response = requests.post(f"{self.endpoint}/embeddings", json=payload, timeout=self.timeout)
         response.raise_for_status()
         data = response.json()["data"]
 
-        for doc, embedding in zip(documents, data):
+        for doc, embedding in zip(documents, data, strict=False):
             doc.embedding = embedding["embedding"]
 
         return {"documents": documents}
@@ -51,7 +48,7 @@ class QdrantWriter:
         self,
         host: str,
         port: int,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         collection: str = "documents",
         vector_size: int = 1024,
     ):
@@ -70,13 +67,13 @@ class QdrantWriter:
         )
 
     @component.output_types(count=int)
-    def run(self, documents: List[Document]):
-        points: List[PointStruct] = []
+    def run(self, documents: list[Document]):
+        points: list[PointStruct] = []
         for doc in documents:
             if doc.embedding is None:
                 continue
 
-            payload: Dict[str, object] = {"source": doc.meta.get("source", "")}
+            payload: dict[str, object] = {"source": doc.meta.get("source", "")}
             payload.update(doc.meta)
             payload["content"] = doc.content
 

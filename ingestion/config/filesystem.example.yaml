@@ -1,0 +1,14 @@
+collection: documents
+sources:
+  - "data/**/*.pdf"
+  - "data/**/*.html"
+  - "data/**/*.md"
+  - "data/**/*.txt"
+
+chunking:
+  split_by: word
+  split_length: 200
+  split_overlap: 40
+
+# Optional directory to store cleaned, pre-split documents for debugging/reproducibility.
+artifacts_dir: "artifacts/ingestion"

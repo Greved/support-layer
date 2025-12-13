@@ -6,7 +6,13 @@ Local-first Retrieval-Augmented Generation stack powered by FastAPI, Haystack, l
 Use the Haystack-driven ingestion CLI to index exported files into Qdrant while calling the local llama.cpp embedding server:
 
 ```bash
-python -m ingestion.cli ingest \"data/**/*.pdf\" \"data/**/*.html\" \"data/**/*.md\"
+python -m ingestion.cli ingest "data/**/*.pdf" "data/**/*.html" "data/**/*.md"
+```
+
+You can also drive ingestion from YAML config (sources, chunking, artifacts) using the example at `ingestion/config/filesystem.example.yaml`:
+
+```bash
+python -m ingestion.cli ingest --config ingestion/config/filesystem.example.yaml
 ```
 
 Configuration is read from environment variables defined in `app/core/config.py` (Qdrant host/port/API key and llama embedding endpoint).
