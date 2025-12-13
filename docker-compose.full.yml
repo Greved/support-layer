@@ -18,10 +18,9 @@ services:
       retries: 5
 
   llama-embed:
-    image: ghcr.io/ggerganov/llama.cpp:full
+    image: ghcr.io/ggerganov/llama.cpp:server
     container_name: llama-embed
-    command: >
-      /bin/bash -lc "server -m /models/embedding/bge-large-en-v1.5-q8_0.gguf -c 2048 --threads 8 --port 8081 --host 0.0.0.0 --embedding --api"
+    command: ["server", "-m", "/models/embedding/bge-large-en-v1.5-q8_0.gguf", "-c", "2048", "--threads", "8", "--port", "8081", "--host", "0.0.0.0", "--embedding", "--api"]
     ports:
       - "8081:8081"
     volumes:
@@ -33,10 +32,9 @@ services:
       retries: 5
 
   llama-llm:
-    image: ghcr.io/ggerganov/llama.cpp:full
+    image: ghcr.io/ggerganov/llama.cpp:server
     container_name: llama-llm
-    command: >
-      /bin/bash -lc "server -m /models/llm/Qwen3-4B-Q4_K_M.gguf -c 4096 --threads 8 --port 8080 --host 0.0.0.0 --api"
+    command: ["server", "-m", "/models/llm/Qwen3-4B-Q4_K_M.gguf", "-c", "4096", "--threads", "8", "--port", "8080", "--host", "0.0.0.0", "--api"]
     ports:
       - "8080:8080"
     volumes:
