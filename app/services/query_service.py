@@ -157,6 +157,8 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
     content = "".join(content_chunks).strip()
     reasoning = "".join(reasoning_chunks).strip()
 
+    logger.debug("Llama reasoning captured chars=%s", len(reasoning))
+
     if content:
         logger.info(
             "Llama generation completed duration_ms=%s",
@@ -164,8 +166,8 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
         )
         return content
 
-    if reasoning:
-        return reasoning
+    # No usable content; keep reasoning only for debugging and return a safe fallback.
+    logger.warning("LLM returned no content; reasoning chars=%s", len(reasoning))
     raise QueryError("LLM returned an empty message")
 
 
