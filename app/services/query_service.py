@@ -40,6 +40,24 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
     messages = build_prompt(query, contexts)
     start = time.time()
 
+    def _to_openai_messages(msgs: list[ChatMessage]) -> list[dict[str, str]]:
+        openai_msgs: list[dict[str, str]] = []
+        for msg in msgs:
+            role = getattr(msg, "role", None)
+            role_val = getattr(role, "value", None) or str(role) if role else "user"
+            content_parts: list[str] = []
+            try:
+                for block in msg.content:  # type: ignore[attr-defined]
+                    text_val = getattr(block, "text", None)
+                    if text_val:
+                        content_parts.append(text_val)
+            except Exception:
+                pass
+            if not content_parts:
+                content_parts.append(str(msg))
+            openai_msgs.append({"role": role_val, "content": "".join(content_parts)})
+        return openai_msgs
+
     if settings.llm_provider.lower() == "gemini":
         if not settings.gemini_api_key:
             raise QueryError("Gemini API key is not configured")
@@ -96,7 +114,7 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
     logger.info("Generating answer via llama.cpp model=%s", settings.llama_llm_model)
     payload = {
         "model": settings.llama_llm_model,
-        "messages": messages,
+        "messages": _to_openai_messages(messages),
         "temperature": 0.2,
         "max_tokens": 1024,
         "stream": True,
