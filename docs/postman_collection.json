@@ -1,0 +1,65 @@
+{
+  "info": {
+    "name": "Tech Support RAG API",
+    "_postman_id": "f3d3d9f6-8d63-4b6c-8a71-67b2b5f0b6e1",
+    "description": "Postman collection for FastAPI RAG endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/healthz",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "healthz"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Query",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"What is this project about?\",\n  \"filters\": null\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/query",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "query"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "llmProvider",
+      "value": "local"
+    }
+  ]
+}

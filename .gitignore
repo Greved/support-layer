@@ -12,4 +12,5 @@ ruff_cache/
 .vscode_settings_placeholder
 .DS_Store
 !.keep
+logs/
 models/

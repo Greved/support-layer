@@ -21,6 +21,10 @@ If the embedding server crashes on large batches, reduce chunk size in config (e
 
 Configuration is read from environment variables defined in `app/core/config.py` (Qdrant host/port/API key and llama embedding endpoint).
 
+LLM selection:
+- Local llama.cpp (default): set `LLM_PROVIDER=local`, `LLAMA_LLM_URL`, `LLAMA_LLM_MODEL`.
+- Google Gemini: set `LLM_PROVIDER=gemini`, `GEMINI_API_KEY`, and optional `GEMINI_MODEL` (default `gemini-2.0-pro`).
+
 ## Dockerfiles
 - `Dockerfile.app`: builds the FastAPI/Haystack app image (defaults to uvicorn on port 8000).
 - `Dockerfile.llama`: thin wrapper over `ghcr.io/ggml-org/llama.cpp:server`; pass model/args at runtime.
