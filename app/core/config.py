@@ -28,6 +28,14 @@ class Settings(BaseSettings):
         "qwen2.5-4b-instruct",
         description="Model name to send to llama.cpp chat completion endpoint",
     )
+    lm_studio_url: AnyHttpUrl = Field(
+        "http://127.0.0.1:1234/v1",
+        description="Base URL for LM Studio OpenAI-compatible endpoint",
+    )
+    lm_studio_model: str = Field(
+        "qwen2.5-4b-instruct",
+        description="Model name to send to LM Studio chat completion endpoint",
+    )
     gemini_api_key: str | None = Field(default=None, description="Google Gemini API key")
     gemini_model: str = Field("gemini-2.5-flash", description="Gemini model name")
     llama_embedding_url: AnyHttpUrl = Field(

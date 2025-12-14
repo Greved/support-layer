@@ -80,7 +80,7 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
                 streaming_callback=_stream_cb,
                 generation_kwargs={
                     "temperature": 0.5,
-                    "max_output_tokens": 500,
+                    "max_output_tokens": 512,
                 },
             )
             result = generator.run(messages=messages)
@@ -110,19 +110,24 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
             return content
         raise QueryError("Gemini returned an empty message")
 
-    # Default: local llama.cpp
-    logger.info("Generating answer via llama.cpp model=%s", settings.llama_llm_model)
+    # Default: local llama.cpp or LM Studio (OpenAI-compatible)
+    use_lm_studio = settings.llm_provider.lower() == "lmstudio"
+    base_url = settings.lm_studio_url if use_lm_studio else settings.llama_llm_url
+    model_name = settings.lm_studio_model if use_lm_studio else settings.llama_llm_model
+    logger.info(
+        "Generating answer via %s model=%s",
+        "lmstudio" if use_lm_studio else "llama.cpp",
+        model_name,
+    )
     payload = {
-        "model": settings.llama_llm_model,
+        "model": model_name,
         "messages": _to_openai_messages(messages),
         "temperature": 0.2,
-        "max_tokens": 1024,
+        "max_tokens": 512,
         "stream": True,
     }
     try:
-        resp = requests.post(
-            f"{settings.llama_llm_url}/chat/completions", json=payload, timeout=180, stream=True
-        )
+        resp = requests.post(f"{base_url}/chat/completions", json=payload, timeout=180, stream=True)
         resp.raise_for_status()
     except requests.RequestException as exc:
         logger.error("LLM request failed", exc_info=exc)

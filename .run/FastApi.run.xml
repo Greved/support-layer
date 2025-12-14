@@ -12,7 +12,7 @@
       <env name="LLAMA_LLM_URL" value="http://localhost:8080/v1" />
       <env name="QDRANT_HOST" value="localhost" />
       <env name="QDRANT_PORT" value="6333" />
-      <env name="LLM_PROVIDER" value="gemini" />
+      <env name="LLM_PROVIDER" value="local" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
