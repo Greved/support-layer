@@ -125,6 +125,7 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
         "temperature": 0.2,
         "max_tokens": 512,
         "stream": True,
+        "stop": ["</think>"],
     }
     try:
         resp = requests.post(f"{base_url}/chat/completions", json=payload, timeout=180, stream=True)
@@ -135,6 +136,7 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
 
     content_chunks: list[str] = []
     reasoning_chunks: list[str] = []
+    in_reasoning = False
 
     for line in resp.iter_lines(decode_unicode=True):
         if not line:
@@ -150,7 +152,28 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
         for choice in data.get("choices", []):
             delta = choice.get("delta") or {}
             if "content" in delta and delta["content"]:
-                content_chunks.append(delta["content"])
+                text = delta["content"]
+                if "<think>" in text:
+                    in_reasoning = True
+                    if "</think>" in text:
+                        after = text.split("</think>", 1)[1]
+                        in_reasoning = False
+                        if after:
+                            content_chunks.append(after)
+                    continue
+                if in_reasoning:
+                    if "</think>" in text:
+                        after = text.split("</think>", 1)[1]
+                        in_reasoning = False
+                        if after:
+                            content_chunks.append(after)
+                    else:
+                        reasoning_chunks.append(text)
+                    continue
+                if "</think>" in text:
+                    text = text.split("</think>", 1)[1]
+                if text:
+                    content_chunks.append(text)
             if "reasoning_content" in delta and delta["reasoning_content"]:
                 reasoning_chunks.append(delta["reasoning_content"])
 
