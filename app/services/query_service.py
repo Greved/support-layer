@@ -24,9 +24,13 @@ def build_prompt(query: str, contexts: list[str]) -> list[ChatMessage]:
     context_block = "\n\n".join(f"[{idx+1}] {c}" for idx, c in enumerate(contexts) if c)
     user_content = (
         "Use ONLY the provided context to answer. "
+        "IMPORTANT RULES: "
+        "- Do NOT include reasoning, thoughts, analysis, or explanations."
+        '- Do NOT include phrases like "Let\'s think", "Reasoning:", or similar.'
+        "- Output ONLY the final answer."
+        '- If unsure, say "I don\'t know".'
+        "Violating these rules is incorrect."
         "Return a concise bullet list if the answer implies a list. "
-        "If the answer is not fully in the context, reply with "
-        '"I don\'t know based on the provided context." '
         "Do not invent details. Keep answers short and complete.\n\n"
         f"Context:\n{context_block}\n\nQuestion: {query}"
     )
@@ -123,9 +127,8 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
         "model": model_name,
         "messages": _to_openai_messages(messages),
         "temperature": 0.2,
-        "max_tokens": 512,
+        "max_tokens": 16000,
         "stream": True,
-        "stop": ["</think>"],
     }
     try:
         resp = requests.post(f"{base_url}/chat/completions", json=payload, timeout=180, stream=True)
@@ -151,6 +154,7 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
             continue
         for choice in data.get("choices", []):
             delta = choice.get("delta") or {}
+            message = choice.get("message") or {}
             if "content" in delta and delta["content"]:
                 text = delta["content"]
                 if "<think>" in text:
@@ -174,6 +178,8 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
                     text = text.split("</think>", 1)[1]
                 if text:
                     content_chunks.append(text)
+            if "content" in message and message["content"]:
+                content_chunks.append(message["content"])
             if "reasoning_content" in delta and delta["reasoning_content"]:
                 reasoning_chunks.append(delta["reasoning_content"])
 
