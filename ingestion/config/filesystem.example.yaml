@@ -10,8 +10,11 @@ sources:
 
 chunking:
   split_by: word
-  split_length: 128
-  split_overlap: 32
+  split_length: 256
+  split_overlap: 64
+
+# Optional pre-split to avoid very large inputs for the embedding model.
+max_document_chars: 1000
 
 # Optional directory to store cleaned, pre-split documents for debugging/reproducibility.
 artifacts_dir: "artifacts/ingestion"

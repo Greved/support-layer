@@ -9,15 +9,23 @@ Use the Haystack-driven ingestion CLI to index exported files into Qdrant while 
 py -3.12 -m ingestion.cli ingest --path "data/**/*.pdf" --path "data/**/*.html" --path "data/**/*.md"
 ```
 
+To index Markdown files you drop into `data/`:
+
+```bash
+py -3.12 -m ingestion.cli ingest --path "data/**/*.md"
+```
+
 You can also drive ingestion from YAML config (sources, chunking, artifacts) using the example at `ingestion/config/filesystem.example.yaml`:
 
 ```bash
 py -3.12 -m ingestion.cli ingest --config ingestion/config/filesystem.example.yaml
 ```
 
-If the CLI reports no documents found, ensure your glob patterns resolve locally (Windows example: `dir data -Recurse | findstr .pdf`) and rerun with `--path "data/**/*.pdf"`. Paths are resolved relative to the config file by default; use `--base-dir` to override.
+If the CLI reports no documents found, ensure your glob patterns resolve locally (Windows example: `dir data -Recurse | findstr .pdf`) and rerun with `--path "data/**/*.pdf"`. When `--path` is used, relative patterns resolve from your current working directory unless you set `--base-dir`.
 
 If the embedding server crashes on large batches, reduce chunk size in config (e.g., `split_length: 128`, `split_overlap: 32` as in the example).
+
+Re-ingesting a file path will purge existing chunks for that path from Qdrant and then write the updated content.
 
 Configuration is read from environment variables defined in `app/core/config.py` (Qdrant host/port/API key and llama embedding endpoint).
 

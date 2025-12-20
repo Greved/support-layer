@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 from typing import Any
 
@@ -126,8 +127,8 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
     payload = {
         "model": model_name,
         "messages": _to_openai_messages(messages),
-        "temperature": 0.2,
-        "max_tokens": 16000,
+        "temperature": 0,
+        "max_tokens": 64000,
         "stream": True,
     }
     try:
@@ -200,6 +201,205 @@ def generate_answer(settings: Settings, query: str, contexts: list[str]) -> str:
     raise QueryError("LLM returned an empty message")
 
 
+_STOPWORDS = {
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "that",
+    "this",
+    "what",
+    "are",
+    "was",
+    "were",
+    "you",
+    "your",
+    "about",
+    "into",
+    "have",
+    "has",
+    "had",
+    "does",
+    "did",
+    "not",
+    "but",
+    "can",
+    "should",
+    "would",
+    "could",
+    "how",
+    "why",
+    "when",
+    "where",
+}
+
+
+def _normalize_query_terms(query: str) -> list[str]:
+    query_lc = query.lower()
+    terms = [t for t in re.findall(r"[A-Za-z0-9]+", query_lc) if len(t) >= 3]
+    return [t for t in terms if t not in _STOPWORDS]
+
+
+def _query_match_score(content: str, query: str) -> int:
+    if not content:
+        return 0
+    content_lc = content.lower()
+    terms = _normalize_query_terms(query)
+    return sum(1 for term in terms if term in content_lc)
+
+
+def _is_relevant_match(content: str, query: str) -> bool:
+    if not content:
+        return False
+    terms = _normalize_query_terms(query)
+    if not terms:
+        return False
+    content_lc = content.lower()
+    required = max(2, len(terms) // 2)
+    match_count = sum(1 for term in terms if term in content_lc)
+    return match_count >= required
+
+
+def _build_section_snippet(content: str, query: str, max_lines: int = 10) -> str | None:
+    if not content:
+        return None
+    query_lc = query.lower().strip()
+    if not query_lc:
+        return None
+    terms = _normalize_query_terms(query)
+    if not terms:
+        return None
+
+    lines = [line.rstrip() for line in content.splitlines()]
+    min_hits = max(2, len(terms) - 1)
+    for idx, line in enumerate(lines):
+        line_lc = line.lower()
+        hits = sum(1 for term in terms if term in line_lc)
+        if hits >= min_hits:
+            section_lines: list[str] = []
+            blank_allowed = True
+            for next_line in lines[idx:]:
+                stripped = next_line.strip()
+                if not stripped:
+                    if section_lines and not blank_allowed:
+                        break
+                    if section_lines and blank_allowed:
+                        blank_allowed = False
+                    continue
+                section_lines.append(stripped)
+                blank_allowed = False
+                if len(section_lines) >= max_lines:
+                    break
+            snippet = "\n".join(section_lines).strip()
+            return snippet or None
+    return None
+
+
+def _build_snippet_from_terms(
+    content: str, terms: list[str], max_len: int = 600, max_lines: int = 10
+) -> str:
+    if not content:
+        return ""
+
+    if terms:
+        # Find a line that matches most terms, then return it with nearby lines.
+        lines = [line.rstrip() for line in content.splitlines()]
+        min_hits = max(2, len(terms) - 1)
+        for idx, line in enumerate(lines):
+            line_lc = line.lower()
+            hits = sum(1 for term in terms if term in line_lc)
+            if hits >= min_hits:
+                section_lines: list[str] = []
+                blank_allowed = True
+                for next_line in lines[idx:]:
+                    stripped = next_line.strip()
+                    if not stripped:
+                        if section_lines and not blank_allowed:
+                            break
+                        if section_lines and blank_allowed:
+                            blank_allowed = False
+                        continue
+                    section_lines.append(stripped)
+                    blank_allowed = False
+                    if len(section_lines) >= max_lines:
+                        break
+                snippet = "\n".join(section_lines).strip()
+                if snippet:
+                    return snippet[:max_len].strip()
+
+    text = re.sub(r"\s+", " ", content).strip()
+    if len(text) <= max_len:
+        return text
+
+    idx = -1
+    for term in terms:
+        if not term:
+            continue
+        pos = text.lower().find(term)
+        if pos != -1:
+            idx = pos
+            break
+
+    if idx == -1:
+        return text[:max_len].strip()
+
+    half = max_len // 2
+    start = max(0, idx - half)
+    end = min(len(text), start + max_len)
+    snippet = text[start:end].strip()
+    if start > 0:
+        snippet = f"...{snippet}"
+    if end < len(text):
+        snippet = f"{snippet}..."
+    return snippet
+
+
+def _build_snippet(content: str, query: str, answer: str, max_len: int = 600) -> str:
+    if not content:
+        return ""
+
+    answer_terms = _normalize_query_terms(answer)
+    if answer_terms:
+        return _build_snippet_from_terms(content, answer_terms, max_len=max_len)
+
+    query_terms = _normalize_query_terms(query)
+    if query_terms:
+        return _build_snippet_from_terms(content, query_terms, max_len=max_len)
+
+    return re.sub(r"\s+", " ", content).strip()[:max_len].strip()
+
+    text = re.sub(r"\s+", " ", content).strip()
+    if len(text) <= max_len:
+        return text
+
+    query_lc = query.lower()
+    terms = _normalize_query_terms(query)
+    candidates = [query_lc] + terms
+
+    idx = -1
+    for term in candidates:
+        if not term:
+            continue
+        pos = text.lower().find(term)
+        if pos != -1:
+            idx = pos
+            break
+
+    if idx == -1:
+        return text[:max_len].strip()
+
+    half = max_len // 2
+    start = max(0, idx - half)
+    end = min(len(text), start + max_len)
+    snippet = text[start:end].strip()
+    if start > 0:
+        snippet = f"...{snippet}"
+    if end < len(text):
+        snippet = f"{snippet}..."
+    return snippet
+
+
 def run_query(settings: Settings, query: str, filters: dict[str, Any] | None = None) -> dict:
     embedder = EmbeddingService(settings)
     searcher = QdrantService(settings)
@@ -211,7 +411,9 @@ def run_query(settings: Settings, query: str, filters: dict[str, Any] | None = N
             "Embedding stage finished duration_ms=%s", int((time.time() - embed_start) * 1000)
         )
         search_start = time.time()
-        results = searcher.search(vector, filters=filters)
+        results = searcher.search(
+            vector, top_k=settings.query_context_sources_max_count, filters=filters
+        )
         logger.info(
             "Search stage finished duration_ms=%s", int((time.time() - search_start) * 1000)
         )
@@ -239,6 +441,7 @@ def run_query(settings: Settings, query: str, filters: dict[str, Any] | None = N
         return {}
 
     points = results.points if hasattr(results, "points") else results
+    sources_raw: list[dict[str, Any]] = []
 
     sources: list[dict[str, Any]] = []
     context_chunks: list[str] = []
@@ -249,24 +452,67 @@ def run_query(settings: Settings, query: str, filters: dict[str, Any] | None = N
         page = meta.get("page_number")
         offset = meta.get("split_idx_start")
         content = payload.get("content") or meta.get("content") or ""
-        sources.append(
+        score = None
+        if hasattr(point, "score"):
+            score = point.score
+        elif isinstance(point, dict):
+            score = point.get("score")
+
+        match_score = _query_match_score(content, query)
+        sources_raw.append(
             {
                 "file": str(source_val).split("\\")[-1].split("/")[-1],
                 "page": page,
                 "offset": offset,
-                "brief_content": content[:200].strip(),
+                "relevance_score": score,
+                "content": content,
+                "match_score": match_score,
             }
         )
-        context_chunks.append(content)
 
-    if not context_chunks:
+    if not sources_raw:
         return {
             "answer": "No matching content found in the vector store. Try ingesting documents.",
             "sources": [],
         }
 
+    relevant_sources = [src for src in sources_raw if _is_relevant_match(src["content"], query)]
+    selected_sources = relevant_sources or sources_raw
+    selected_sources.sort(
+        key=lambda src: (
+            (
+                src["relevance_score"]
+                if isinstance(src.get("relevance_score"), int | float)
+                else -1.0
+            ),
+            src["match_score"],
+        ),
+        reverse=True,
+    )
+
+    limit = max(0, int(settings.query_result_sources_max_count))
+    for src in selected_sources[:limit] if limit else selected_sources:
+        sources.append(
+            {
+                "file": src["file"],
+                "page": src["page"],
+                "offset": src["offset"],
+                "relevance_score": src["relevance_score"],
+                "brief_content": "",
+            }
+        )
+        context_chunks.append(src["content"])
+
     answer = generate_answer(settings, query, context_chunks)
     if not answer or not answer.strip():
         answer = "I don't know based on the provided context."
+
+    for idx, src in enumerate(selected_sources[: len(sources)]):
+        sources[idx]["brief_content"] = _build_snippet(
+            src["content"],
+            query,
+            answer,
+            max_len=int(settings.query_result_brief_content_max_len),
+        )
     logger.info("Total query finished duration_ms=%s", int((time.time() - total_start) * 1000))
     return {"answer": answer.strip(), "sources": sources}

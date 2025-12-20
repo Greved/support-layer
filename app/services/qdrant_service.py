@@ -28,21 +28,25 @@ class QdrantService:
         )
 
     def search(
-        self, vector: list[float], top_k: int = 3, filters: dict[str, Any] | None = None
+        self,
+        vector: list[float],
+        top_k: int | None = None,
+        filters: dict[str, Any] | None = None,
     ) -> list[ScoredPoint]:
         start = time.time()
+        effective_top_k = top_k or self.settings.query_result_sources_max_count
         logger.info(
             "Searching Qdrant host=%s collection=%s top_k=%s",
             self.settings.qdrant_host,
             self.settings.qdrant_collection,
-            top_k,
+            effective_top_k,
         )
         try:
             if hasattr(self.client, "search"):
                 return self.client.search(
                     collection_name=self.settings.qdrant_collection,
                     query_vector=vector,
-                    limit=top_k,
+                    limit=effective_top_k,
                     query_filter=build_filter(filters),
                     with_payload=True,
                 )
@@ -50,7 +54,7 @@ class QdrantService:
                 return self.client.search_points(
                     collection_name=self.settings.qdrant_collection,
                     query=vector,
-                    limit=top_k,
+                    limit=effective_top_k,
                     query_filter=build_filter(filters),
                     with_payload=True,
                 )
@@ -58,7 +62,7 @@ class QdrantService:
                 return self.client.query_points(
                     collection_name=self.settings.qdrant_collection,
                     query=vector,
-                    limit=top_k,
+                    limit=effective_top_k,
                     query_filter=build_filter(filters),
                     with_payload=True,
                 )

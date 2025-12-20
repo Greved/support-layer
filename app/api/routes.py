@@ -26,6 +26,7 @@ class SourceInfo(BaseModel):
     file: str
     page: int | None = None
     offset: int | None = None
+    relevance_score: float | None = None
     brief_content: str
 
 

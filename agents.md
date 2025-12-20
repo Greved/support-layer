@@ -80,6 +80,12 @@
   - Emit Prometheus metrics (latency, retrieval hit rate, hallucination score) and plug into Grafana.
   - Feed feedback loop to adjust chunking, prompt templates, or thresholds.
 
+## Local Ingestion Runbook (data/ folder)
+- Ensure Qdrant + llama.cpp embedding server are up (`docker compose -f docker-compose.infra.yml up -d`).
+- Place Markdown files under `data/` (e.g., `data/notes/*.md`).
+- Run ingestion: `py -3.12 -m ingestion.cli ingest --path "data/**/*.md"`.
+- Confirm output shows "wrote N chunks" and collection name; re-run with updated files as needed.
+
 ## Deployment Modes Alignment
 - **Compose Mode 1 (Dependencies Only):** Bring up `qdrant`, llama.cpp embedding server, llama.cpp generation server, optional Redis/Postgres/Qdrant dashboard. Agents running inside FastAPI stay offline so developers can attach PyCharm debugger locally.
 - **Compose Mode 2 (Full Stack):** Adds FastAPI Orchestrator + workers so the entire agent suite is runnable with a single command. Evaluation Agent remains optional but can be toggled via profile.

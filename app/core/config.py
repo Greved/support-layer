@@ -46,6 +46,16 @@ class Settings(BaseSettings):
         "bge-large-en-v1.5", description="Model name to send to llama.cpp embedding endpoint"
     )
 
+    query_result_sources_max_count: int = Field(
+        5, description="Max number of source items to return"
+    )
+    query_context_sources_max_count: int = Field(
+        20, description="Max number of retrieved source items to pass to the LLM"
+    )
+    query_result_brief_content_max_len: int = Field(
+        400, description="Max length of each source brief_content"
+    )
+
     log_level: str = Field("INFO", description="Logging level for the application")
     log_file: str = Field("logs/app.log", description="Path to the application log file")
 
