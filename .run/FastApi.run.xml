@@ -9,9 +9,9 @@
     <envs>
       <env name="GEMINI_API_KEY" value="AIzaSyADCZYsy5zhrNzuIuMZDLS28Oq_vnevLcM" />
       <env name="LLAMA_EMBEDDING_URL" value="http://localhost:8081/v1" />
-      <env name="LLAMA_LLM_URL" value="http://localhost:8080/v1" />
+      <env name="LLAMA_LLM_URL" value="http://localhost:8082/v1" />
       <env name="QDRANT_HOST" value="localhost" />
-      <env name="QDRANT_PORT" value="6333" />
+      <env name="QDRANT_PORT" value="6335" />
       <env name="LLM_PROVIDER" value="lmstudio" />
     </envs>
     <option name="SDK_HOME" value="" />

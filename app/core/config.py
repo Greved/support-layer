@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     debug: bool = Field(False, description="Enable FastAPI debug mode")
 
     qdrant_host: str = Field("localhost", description="Qdrant hostname")
-    qdrant_port: int = Field(6333, description="Qdrant HTTP port")
+    qdrant_port: int = Field(6335, description="Qdrant HTTP port")
     qdrant_api_key: str | None = Field(default=None, description="Optional Qdrant API key")
     qdrant_collection: str = Field(
         "documents", description="Qdrant collection name for RAG content"
@@ -21,7 +21,7 @@ class Settings(BaseSettings):
         description="LLM provider to use: 'local' for llama.cpp or 'gemini' for Google Gemini",
     )
     llama_llm_url: AnyHttpUrl = Field(
-        "http://localhost:8080/v1",
+        "http://localhost:8082/v1",
         description="HTTP endpoint of llama.cpp server hosting the chat/generation model",
     )
     llama_llm_model: str = Field(

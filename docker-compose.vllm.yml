@@ -41,7 +41,7 @@ services:
     container_name: qdrant
     restart: unless-stopped
     ports:
-      - "6333:6333"
+      - "6335:6333"
     volumes:
       - qdrant_data:/qdrant/storage
     environment:
@@ -60,7 +60,7 @@ services:
     container_name: vllm-llm
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8082:8080"
     command:
       - "--model"
       - "${VLLM_LLM_MODEL:-Qwen/Qwen2.5-3B-Instruct}"

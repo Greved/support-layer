@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import glob
 import json
 import sys
@@ -96,6 +97,40 @@ def load_documents_from_paths(
             converter = html_converter
         else:
             converter = txt_converter
+
+        if suffix == ".docx":
+            try:
+                import docx as python_docx  # noqa: PLC0415
+
+                word_doc = python_docx.Document(str(path))
+                text = "\n".join(p.text for p in word_doc.paragraphs if p.text.strip())
+                raw_docs = [Document(content=text, meta={})]
+            except Exception as exc:  # pragma: no cover
+                typer.echo(f"[ingest] Failed to convert DOCX {path}: {exc}", err=True)
+                continue
+            for doc in raw_docs:
+                if doc.meta is None:
+                    doc.meta = {}
+                doc.meta["source"] = str(path)
+                documents.append(normalize_document(doc))
+            continue
+
+        if suffix == ".csv":
+            try:
+                with path.open(newline="", encoding="utf-8-sig") as fh:
+                    reader = csv.reader(fh)
+                    rows = [", ".join(row) for row in reader]
+                text = "\n".join(rows)
+                raw_docs = [Document(content=text, meta={})]
+            except Exception as exc:  # pragma: no cover
+                typer.echo(f"[ingest] Failed to convert CSV {path}: {exc}", err=True)
+                continue
+            for doc in raw_docs:
+                if doc.meta is None:
+                    doc.meta = {}
+                doc.meta["source"] = str(path)
+                documents.append(normalize_document(doc))
+            continue
 
         try:
             result = converter.run(sources=[path])

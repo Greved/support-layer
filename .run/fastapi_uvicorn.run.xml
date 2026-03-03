@@ -11,8 +11,8 @@
     <option name="MODULE_MODE" value="true" />
     <envs>
       <env name="QDRANT_HOST" value="localhost" />
-      <env name="QDRANT_PORT" value="6333" />
-      <env name="LLAMA_LLM_URL" value="http://localhost:8080/v1" />
+      <env name="QDRANT_PORT" value="6335" />
+      <env name="LLAMA_LLM_URL" value="http://localhost:8082/v1" />
       <env name="LLAMA_EMBEDDING_URL" value="http://localhost:8081/v1" />
     </envs>
   </configuration>
