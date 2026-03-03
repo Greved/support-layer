@@ -1,0 +1,155 @@
+# docker-compose.vllm.yml
+#
+# GPU-accelerated stack using vLLM (OpenAI-compatible) instead of llama.cpp.
+# Requirements:
+#   - NVIDIA GPU with CUDA 12+
+#   - nvidia-container-toolkit installed on the host
+#   - Docker >= 19.03 with --gpus support
+#
+# First run: vLLM downloads HuggingFace models into the `hf_cache` volume (~3–10 GB).
+# Subsequent starts use the cached weights.
+#
+# Usage:
+#   docker compose -f docker-compose.vllm.yml up -d
+#
+# To use a gated model (Llama 3, Mistral, etc.) create a .env file with:
+#   HUGGING_FACE_HUB_TOKEN=hf_...
+
+x-vllm-base: &vllm-base
+  image: vllm/vllm-openai:latest
+  ipc: host                          # required for shared memory between GPU processes
+  ulimits:
+    memlock: -1
+    stack: 67108864
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+  environment:
+    HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN:-}
+  volumes:
+    - hf_cache:/root/.cache/huggingface
+
+services:
+
+  # ── Vector store ────────────────────────────────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__STORAGE__STORAGE_PATH: /qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── vLLM — chat / generation model ─────────────────────────────────────────
+  # Exposes OpenAI-compatible /v1/chat/completions on port 8080.
+  # Change VLLM_LLM_MODEL to any OpenAI-compatible HuggingFace model.
+  vllm-llm:
+    <<: *vllm-base
+    container_name: vllm-llm
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    command:
+      - "--model"
+      - "${VLLM_LLM_MODEL:-Qwen/Qwen2.5-3B-Instruct}"
+      - "--port"
+      - "8080"
+      - "--host"
+      - "0.0.0.0"
+      - "--max-model-len"
+      - "8192"
+      - "--gpu-memory-utilization"
+      - "0.45"             # share GPU with the embedding service; raise to 0.9 if LLM-only
+      - "--dtype"
+      - "half"
+      - "--trust-remote-code"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 180s   # model load can take a few minutes
+
+  # ── vLLM — embedding model ──────────────────────────────────────────────────
+  # Exposes OpenAI-compatible /v1/embeddings on port 8081.
+  # --task embed enables the text-embedding API (vLLM >= 0.4).
+  vllm-embed:
+    <<: *vllm-base
+    container_name: vllm-embed
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    command:
+      - "--model"
+      - "${VLLM_EMBED_MODEL:-BAAI/bge-large-en-v1.5}"
+      - "--port"
+      - "8081"
+      - "--host"
+      - "0.0.0.0"
+      - "--task"
+      - "embed"
+      - "--gpu-memory-utilization"
+      - "0.45"             # share GPU with the LLM service
+      - "--dtype"
+      - "half"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 120s
+
+  # ── FastAPI / Haystack app ──────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    container_name: rag-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+      LLM_PROVIDER: local
+      LLAMA_LLM_URL: http://vllm-llm:8080/v1
+      LLAMA_LLM_MODEL: ${VLLM_LLM_MODEL:-Qwen/Qwen2.5-3B-Instruct}
+      LLAMA_EMBEDDING_URL: http://vllm-embed:8081/v1
+      LLAMA_EMBEDDING_MODEL: ${VLLM_EMBED_MODEL:-BAAI/bge-large-en-v1.5}
+      LOG_LEVEL: INFO
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      vllm-llm:
+        condition: service_healthy
+      vllm-embed:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  default:
+    name: ragnet-vllm
+    driver: bridge
+
+volumes:
+  qdrant_data:
+    driver: local
+  hf_cache:           # persists HuggingFace model weights across restarts
+    driver: local

@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="FastApi" type="Python.FastAPI">
     <option name="additionalOptions" />
-    <option name="file" value="C:\projects\haystack-practice\app\main.py" />
-    <module name="haystack-practice" />
+    <option name="file" value="C:\projects\SupportLayer\app\main.py" />
+    <module name="SupportLayer" />
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />

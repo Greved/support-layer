@@ -400,7 +400,9 @@ def _build_snippet(content: str, query: str, answer: str, max_len: int = 600) ->
     return snippet
 
 
-def run_query(settings: Settings, query: str, filters: dict[str, Any] | None = None) -> dict:
+def run_query(
+    settings: Settings, tenant_id: str, query: str, filters: dict[str, Any] | None = None
+) -> dict:
     embedder = EmbeddingService(settings)
     searcher = QdrantService(settings)
     total_start = time.time()
@@ -412,7 +414,10 @@ def run_query(settings: Settings, query: str, filters: dict[str, Any] | None = N
         )
         search_start = time.time()
         results = searcher.search(
-            vector, top_k=settings.query_context_sources_max_count, filters=filters
+            vector,
+            tenant_id=tenant_id,
+            top_k=settings.query_context_sources_max_count,
+            filters=filters,
         )
         logger.info(
             "Search stage finished duration_ms=%s", int((time.time() - search_start) * 1000)

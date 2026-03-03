@@ -307,7 +307,15 @@ def ingest(
         None,
         "--collection",
         "-n",
-        help="Qdrant collection name (overrides config when provided)",
+        help="Qdrant collection name (overrides config and --tenant-id when provided)",
+    ),
+    tenant_id: str | None = typer.Option(  # noqa: B008
+        None,
+        "--tenant-id",
+        help=(
+            "Tenant slug; resolves collection as 'tenant_<id>'"
+            " (required unless --collection is set)"
+        ),
     ),
     artifacts_dir: Path | None = typer.Option(  # noqa: B008
         None,
@@ -319,6 +327,9 @@ def ingest(
     ),
 ):
     settings = get_settings()
+    if collection is None and tenant_id is None:
+        typer.echo("[ingest] Error: provide --tenant-id <slug> or --collection <name>", err=True)
+        raise typer.Exit(code=1)
     typer.echo(f"[ingest] Loading config from {config}")
     config_data = load_yaml_config(config)
 
@@ -335,7 +346,12 @@ def ingest(
         source_globs.append(paths)
     if not source_globs:
         source_globs = config_data.get("sources", [])
-    selected_collection = collection or config_data.get("collection", "documents")
+    if collection:
+        selected_collection = collection
+    elif tenant_id:
+        selected_collection = f"tenant_{tenant_id}"
+    else:
+        selected_collection = config_data.get("collection", "documents")
     chunking = config_data.get("chunking", {})
     split_by = chunking.get("split_by", "word")
     split_length = int(chunking.get("split_length", 200))

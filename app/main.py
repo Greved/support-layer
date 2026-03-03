@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api.internal import router as internal_router
 from app.api.routes import router
 from app.core.config import get_settings
 from app.core.logging_config import configure_logging
@@ -30,6 +31,7 @@ def create_app() -> FastAPI:
         openapi_url="/api/openapi.json",
     )
     app.include_router(router, prefix=settings.api_prefix)
+    app.include_router(internal_router, prefix="/internal")
     return app
 
 

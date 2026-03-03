@@ -1,0 +1,268 @@
+{
+  "projectName": "Travel Tech Support RAG Chatbot",
+  "version": "0.1.0",
+  "description": "Production-ready RAG (Retrieval-Augmented Generation) system for travel technology support, featuring local-first deployment with cloud LLM fallback, comprehensive document ingestion, and intelligent query routing.",
+
+  "architecture": {
+    "type": "Microservices RAG System",
+    "components": {
+      "webFramework": "FastAPI 0.115.5+ with Uvicorn",
+      "ragOrchestration": "Haystack 2.1+",
+      "vectorDatabase": "Qdrant (HNSW indexing)",
+      "embeddingModel": "llama.cpp + bge-large-en-v1.5 (1024-dim)",
+      "llmProviders": [
+        "Qwen 2.5 4B Instruct (local, Q4_K_M quantization)",
+        "Google Gemini 2.5 Flash (cloud fallback)",
+        "LM Studio (OpenAI-compatible alternative)"
+      ],
+      "ingestionFramework": "Typer CLI with Haystack document converters",
+      "observability": "Loguru with rotating file handlers (Phoenix/Arize planned)",
+      "containerization": "Docker + Docker Compose"
+    }
+  },
+
+  "techStack": {
+    "runtime": "Python 3.11+ (targeting 3.12)",
+    "keyDependencies": {
+      "rag": ["haystack-ai>=2.1.0", "qdrant-client>=1.9.0", "qdrant-haystack>=0.0.1"],
+      "llm": ["google-genai-haystack>=0.2.2"],
+      "api": ["fastapi>=0.115.5", "uvicorn[standard]>=0.24.0"],
+      "config": ["pydantic-settings>=2.2.1", "python-dotenv>=1.0.1"],
+      "cli": ["typer>=0.12.5"],
+      "logging": ["loguru>=0.7.2"],
+      "devTools": ["ruff>=0.6.8", "black>=24.10.0", "mypy>=1.12.0", "pytest>=8.3.3", "pre-commit>=3.8.0"]
+    }
+  },
+
+  "currentFeatures": {
+    "ingestion": {
+      "supportedFormats": ["PDF", "HTML", "Markdown", "TXT"],
+      "chunkingStrategy": "Word-based: 256 words with 64-word overlap",
+      "batchProcessing": "Adaptive batch sizing with retry logic",
+      "metadataStorage": "Source filename, page number, chunk offset"
+    },
+    "retrieval": {
+      "searchMethod": "Vector similarity (cosine distance)",
+      "topKRetrieval": 20,
+      "sourcesReturned": 5,
+      "filtering": "Pass-through (extensible for RBAC)"
+    },
+    "generation": {
+      "streaming": "Server-Sent Events (SSE) with JSON parsing",
+      "reasoningFilter": "Strips <think> blocks from Qwen outputs",
+      "contextWindow": "4096 tokens for generation, 512 for embeddings",
+      "promptEngineering": "Context-aware with retrieved chunks"
+    },
+    "api": {
+      "endpoints": [
+        "POST /api/query - Main RAG query endpoint",
+        "GET /api/healthz - Health check"
+      ],
+      "documentation": "OpenAPI/Swagger at /api/docs"
+    }
+  },
+
+  "deploymentOptions": {
+    "local": "make install && make compose-infra && make run",
+    "dockerFull": "docker compose -f docker-compose.full.yml up -d",
+    "dockerInfra": "docker compose -f docker-compose.infra.yml up -d",
+    "ports": {
+      "api": 8000,
+      "qdrant": 6333,
+      "llamaLLM": 8080,
+      "llamaEmbedding": 8081
+    }
+  },
+
+  "bestPracticesEvaluation": {
+    "strengths": [
+      "Modern Haystack 2.x framework (modular, production-ready)",
+      "Qdrant vector DB (fast HNSW indexing, scalable, supports filtering)",
+      "Local-first approach with llama.cpp (budget-friendly, privacy-preserving)",
+      "Proper chunking strategy (256 words, 64 overlap - good for Q&A)",
+      "Structured logging and configuration management (Pydantic Settings)",
+      "Docker containerization with compose orchestration",
+      "FastAPI for modern async API (automatic OpenAPI docs)",
+      "Pre-commit hooks and type checking (code quality)",
+      "Streaming responses (better UX for long answers)",
+      "Multi-LLM provider support (flexibility, cloud fallback)"
+    ],
+    "criticalGaps": [
+      "No evaluation framework (RAGAS/LangSmith) - Cannot measure RAG quality",
+      "No observability/tracing (Phoenix/Arize) - Limited debugging capabilities",
+      "Basic similarity search only - Missing hybrid search (semantic + BM25)",
+      "No reranking - Lower precision in top results",
+      "No document/query classification - Cannot route or filter intelligently",
+      "Missing URL metadata tracking - Cannot link back to original sources",
+      "No user feedback mechanism - Cannot improve based on likes/dislikes",
+      "No RBAC/filtering - All users see all documents",
+      "No chat history - Cannot handle multi-turn conversations",
+      "No frontend UI - Limited accessibility"
+    ],
+    "recommendedImprovements": [
+      "Add RAGAS for automated evaluation (precision, recall, faithfulness)",
+      "Integrate Phoenix/Arize for request tracing and debugging",
+      "Implement hybrid search (BM25 + vector) using Qdrant payload filtering",
+      "Add cross-encoder reranker (Cohere/Voyage/local BAAI)",
+      "Implement document classification pipeline (tags for filtering)",
+      "Extend metadata to include URLs, timestamps, document types",
+      "Build user feedback API (likes/dislikes, corrections)",
+      "Add RBAC with Qdrant filtering by user role metadata",
+      "Consider Redis for caching frequent queries",
+      "Build TypeScript React component for frontend",
+      "Add PostgreSQL for chat history and user feedback storage",
+      "Upgrade embedding model to Qwen2.5-Coder or similar (better quality)"
+    ]
+  },
+
+  "budgetOptimization": {
+    "currentApproach": "Local-first with llama.cpp (minimal cloud costs)",
+    "costBreakdown": {
+      "infrastructure": "Self-hosted or cloud VM ($10-50/month depending on specs)",
+      "llmCosts": "Zero (local Qwen 2.5 4B) or minimal Gemini API calls",
+      "vectorDB": "Qdrant OSS (free) or Qdrant Cloud ($25+/month for managed)",
+      "embeddings": "Zero (local bge-large-en-v1.5)",
+      "observability": "Phoenix OSS (free) or Arize ($0-99/month)"
+    },
+    "recommendations": [
+      "Keep local llama.cpp for primary LLM (Qwen 2.5 7B for better quality)",
+      "Use Gemini Flash only for edge cases or complex queries (cost-efficient)",
+      "Self-host Qdrant in Docker for development, migrate to Qdrant Cloud for production",
+      "Use Phoenix OSS for observability (free, self-hosted)",
+      "Cache frequent queries in Redis to reduce LLM calls",
+      "Consider quantized reranker models (local deployment)",
+      "Monitor token usage and implement rate limiting"
+    ]
+  },
+
+  "roadmapPriorities": {
+    "phase1_foundation": [
+      "Set up RAGAS evaluation framework with test queries",
+      "Integrate Phoenix for tracing and observability",
+      "Add URL metadata to ingestion pipeline",
+      "Implement document classification with tag extraction"
+    ],
+    "phase2_quality": [
+      "Implement hybrid search (BM25 + vector)",
+      "Add cross-encoder reranking",
+      "Upgrade embedding model to Qwen2.5-Coder or Voyage",
+      "Build comprehensive test suite with RAGAS metrics"
+    ],
+    "phase3_production": [
+      "Add user feedback API (likes/dislikes)",
+      "Implement RBAC with role-based filtering",
+      "Build TypeScript React frontend component",
+      "Set up CI/CD pipeline with automated testing",
+      "Add chat history storage (PostgreSQL)"
+    ],
+    "phase4_optimization": [
+      "Implement query caching (Redis)",
+      "Add guardrails (content safety, PII detection)",
+      "Optimize chunk sizes based on evaluation results",
+      "Fine-tune prompt templates",
+      "Set up monitoring and alerting"
+    ]
+  },
+
+  "instructions": {
+    "forFutureClaudeRuns": {
+      "codebaseContext": "This is a production-grade RAG system for travel tech support. Prioritize: (1) Evaluation/testing before new features, (2) Observability for debugging, (3) Budget-friendly local-first architecture, (4) Modular design following Haystack patterns.",
+
+      "developmentGuidelines": [
+        "Always read existing code before modifications - follow established patterns",
+        "Use Haystack components where possible (don't reinvent primitives)",
+        "Maintain backward compatibility with existing ingestion artifacts",
+        "Add type hints and docstrings for all new functions",
+        "Update tests when adding features (use pytest)",
+        "Run 'make format && make lint' before committing",
+        "Document configuration changes in .env.example",
+        "Prefer editing existing files over creating new ones",
+        "Keep local-first approach - cloud services should be optional fallbacks"
+      ],
+
+      "architecturalPrinciples": [
+        "Modularity: Each service/component should have single responsibility",
+        "Configuration: All settings via environment variables or YAML",
+        "Observability: Log all critical operations with structured context",
+        "Error Handling: Graceful degradation, never crash on retrieval failures",
+        "Efficiency: Batch operations where possible, cache when beneficial",
+        "Privacy: Default to local models, minimize data sent to cloud",
+        "Testability: Write testable code, maintain high coverage"
+      ],
+
+      "commonTasks": {
+        "addNewDocumentSource": "Extend ingestion/cli.py, add converter in pipelines/components.py, update filesystem.yaml config",
+        "changeChunkingStrategy": "Modify ingestion config YAML (split_length, split_overlap, split_by)",
+        "addNewLLMProvider": "Extend app/services/query_service.py, add settings in core/config.py, update .env.example",
+        "improveRetrieval": "Modify app/services/qdrant_service.py for search logic, consider hybrid search implementation",
+        "addMetadataField": "Update ingestion pipeline to populate field, modify Qdrant payload schema, extend API response model",
+        "setupEvaluation": "Create tests/ directory, add RAGAS framework, build test query dataset, define metrics",
+        "addTracing": "Integrate Phoenix SDK, wrap pipeline steps with spans, add context propagation"
+      },
+
+      "criticalFiles": {
+        "configuration": [
+          "app/core/config.py - All environment settings (Pydantic BaseSettings)",
+          ".env.example - Template for configuration",
+          "ingestion/config/filesystem.example.yaml - Ingestion parameters"
+        ],
+        "ingestion": [
+          "ingestion/cli.py - CLI entry point for document processing",
+          "ingestion/pipelines/components.py - Custom Haystack components (LlamaCppEmbedding)"
+        ],
+        "api": [
+          "app/main.py - FastAPI application factory",
+          "app/api/routes.py - REST endpoints",
+          "app/services/query_service.py - Core RAG orchestration logic"
+        ],
+        "vectorDB": [
+          "app/services/qdrant_service.py - Qdrant client wrapper"
+        ],
+        "infrastructure": [
+          "docker-compose.full.yml - Full stack deployment",
+          "Dockerfile.app - FastAPI container",
+          "Makefile - Development commands"
+        ]
+      },
+
+      "testingStrategy": [
+        "Unit tests: Test individual components in isolation (embedding, chunking, etc.)",
+        "Integration tests: Test full ingestion pipeline and query flow",
+        "Evaluation tests: Use RAGAS to measure RAG quality (precision, recall, faithfulness)",
+        "Performance tests: Measure latency and throughput under load",
+        "Regression tests: Ensure changes don't degrade existing quality metrics"
+      ],
+
+      "deploymentChecklist": [
+        "Verify all required environment variables are set",
+        "Test health endpoints for all services (app, qdrant, llama servers)",
+        "Run ingestion on production document corpus",
+        "Validate retrieval quality with test queries",
+        "Set up monitoring and alerting (Phoenix, logs)",
+        "Configure backup strategy for Qdrant data",
+        "Set up CI/CD pipeline with automated tests",
+        "Document API endpoints and usage examples",
+        "Implement rate limiting and authentication",
+        "Test disaster recovery procedures"
+      ]
+    }
+  },
+
+  "knownIssues": [
+    "Embedding batch size fallback may slow ingestion on large corpora",
+    "No conversation history - each query is independent",
+    "Reasoning filter is Qwen-specific - may need adjustment for other models",
+    "Local models require significant CPU/RAM (consider GPU deployment)",
+    "No automatic document refresh - ingestion must be triggered manually"
+  ],
+
+  "futureConsiderations": [
+    "Multi-modal support (images, tables in PDFs)",
+    "Real-time document updates via webhook triggers",
+    "Multi-language support with language-specific embeddings",
+    "Query expansion and reformulation",
+    "Answer citation with exact source highlighting",
+    "A/B testing framework for prompt optimization",
+    "Custom embedding fine-tuning on domain data"
+  ]
+}

@@ -2,7 +2,7 @@ import logging
 import time
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from pydantic import BaseModel
 
 from app.core.config import Settings, get_settings
@@ -41,12 +41,12 @@ def health(settings: Annotated[Settings, Depends(get_settings)]) -> HealthRespon
 
 
 @router.post("/query", response_model=QueryResponse, tags=["query"])
-def query(payload: QueryRequest) -> QueryResponse:
+def query(payload: QueryRequest, x_tenant_id: str = Header(...)) -> QueryResponse:
     settings = get_settings()
     start = time.time()
-    logger.info("Received query request filters=%s", payload.filters)
+    logger.info("Received query request tenant=%s filters=%s", x_tenant_id, payload.filters)
     try:
-        result = run_query(settings, payload.query, payload.filters)
+        result = run_query(settings, x_tenant_id, payload.query, payload.filters)
         logger.info(
             "Query answered sources=%s duration_ms=%s provider=%s",
             len(result.get("sources", [])),

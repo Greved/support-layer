@@ -1,3 +1,31 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+[Pp]ublish/
+[Rr]elease/
+[Dd]ebug/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/dotnet/
+TestResults/
+*.coverage
+*.coveragexml
+_ReSharper*/
+*.DotSettings.user
+launchSettings.json
+
+# .NET secrets
+**/secrets.json
+appsettings.*.json
+!appsettings.Development.json
+
 __pycache__/
 *.pyc
 .env

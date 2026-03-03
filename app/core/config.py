@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     log_level: str = Field("INFO", description="Logging level for the application")
     log_file: str = Field("logs/app.log", description="Path to the application log file")
 
+    internal_secret: str = Field(
+        "change-me-secret", description="Shared secret for X-Internal-Secret header"
+    )
+    database_url: str | None = Field(default=None, description="PostgreSQL connection URL")
+    redis_url: str | None = Field(default=None, description="Redis connection URL")
+
     ingest_bucket: str | None = Field(
         default=None,
         description="Optional bucket/root directory where exported Confluence/PDF docs are stored",

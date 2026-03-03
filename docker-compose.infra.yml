@@ -47,6 +47,36 @@ services:
       retries: 30
       start_period: 120s
 
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: supportlayer
+      POSTGRES_USER: supportlayer
+      POSTGRES_PASSWORD: supportlayer
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supportlayer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   default:
     name: ragnet
@@ -54,4 +84,6 @@ networks:
 
 volumes:
   qdrant_data:
+    driver: local
+  postgres_data:
     driver: local
