@@ -194,6 +194,23 @@ These run continuously in production (sampled, not every query):
 - [ ] Admin feedback review queue: "promote to golden dataset" action
 - [ ] Nightly drift detection job + alerting
 
+### Frontend Design
+> Reference: `docs/references/design/stitch_stark_fintech_prd/quality_assurance/`
+
+**Portal Quality page (Eval v4 milestone — sidebar "Quality" entry):**
+- Left sidebar "Analysis" sub-section: Assurance · Audit Logs entries
+- Two donut charts side by side: Groundedness score (e.g. 92%) · Answer Relevancy score (e.g. 78%); each with numeric label in center and color arc
+- Low-confidence queries table below charts: QUERY · GENERATED ANSWER columns; flagged items in the list represent production queries that scored below threshold
+- Right panel "Trace View": vertical step display — USER QUERY → RETRIEVED DOCS → LLM REASONING → FINAL ANSWER; each step is expandable to show full content
+- Per-row actions: "Mark Correct" (promote to golden dataset) · "Fix in Knowledge Base" (opens document manager filtered to relevant doc)
+
+**Admin eval additions (Eval v3 milestone):**
+- Quality tab on tenant detail: sparkline charts per metric over time; per-run drill-down table: question · answer · per-metric scores · retrieved chunks preview
+- Global heatmap: all tenants × metrics grid, cells color-coded green/yellow/red by score band
+
+**Widget feedback UI (Eval v5 milestone):**
+- Subtle 👍/👎 row beneath each bot response in the chat widget; optional free-text comment on thumbs-down; no interruption to the conversation flow
+
 ### Quality Gate ✅ (Phase 6)
 - Synthetic dataset generated for at least one real tenant
 - All RAGAS metrics computed and stored

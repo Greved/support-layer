@@ -50,6 +50,38 @@ Tenants (additions)
 - Infrastructure health panel: live status of all services
 - Log viewer: recent errors per tenant (Loki query via Grafana)
 
+### Frontend Design
+> References: `docs/references/design/stitch_stark_fintech_prd/`
+> `internal_ops_dashboard/` · `tenants_management_stark_refined/` · `audit_log_stark_admin_dark/` · `audit_log_stark_admin_light/`
+
+**Design system — Admin SPA:**
+- Dark theme throughout: near-black sidebar and top bar (`≈#0f1117`), white body text, orange brand accent (visually distinct from portal's blue)
+- Branding: "MISSION CONTROL" header text; global `● SYSTEMS HEALTHY / DEGRADED` status badge top-right of top bar
+- Left sidebar: icon + ALL-CAPS label navigation — DASHBOARD · TENANTS · API KEYS · USERS · AUDIT LOG · SETTINGS · SUPPORT
+- Global search input in top bar; no page-level breadcrumb needed
+
+**Internal Ops Dashboard:**
+- 4 KPI cards in a row: Active Tenants · Global RPS · Error Rate (%) · Platform MRR — each with a numeric trend delta indicator
+- Infrastructure panels: LLM Gateway (active request count + latency sparkline), Vector DB Cluster (per-collection storage progress bars), Job Queue (pending / failed / processed counts)
+- Tenant activity table at bottom: avatar · tenant name · slug · plan badge · status dot · last activity timestamp
+
+**Tenant Management page:**
+- Filter row: search input + "Plan: All" dropdown + "Status: Active" dropdown
+- 4 KPI summary cards: Total Tenants · Active Queries (30D) · Avg Quality Score · Suspended count
+- Table columns: NAME/SLUG · PLAN · STATUS · QUERIES (30D) · QUALITY SCORE · ACTIONS
+  - Plan badges: Enterprise = filled orange pill · Pro = outlined pill · Free = plain text
+  - Status dot: Active = green · Trial = amber · Suspended = red
+  - QUERIES column: inline mini bar-chart sparkline showing 30-day distribution
+  - Quality score: `x.x / 10` numeric text
+  - Actions: pencil/edit icon
+- "+ Create Tenant" primary button top-right; pagination row at footer
+
+**Audit Log page:**
+- Filter row: date range picker + Tenant context dropdown + Event type dropdown
+- Table columns: TIMESTAMP · ACTOR · TENANT · EVENT · DETAILS · ACTIONS
+- EVENT column: monospace fixed-width codes, color-coded — neutral bold (e.g. CONFIG_UPDT), success green (AUTH_SUCCESS), security violation red (SEC_VIO_04)
+- Row-level expand or modal for full diff/context JSON
+
 ### Tasks
 - [ ] `api-admin` with separate super-admin JWT issuer (not shared with portal)
 - [ ] Stats aggregation: query `billing_events` and `chat_messages` with window functions

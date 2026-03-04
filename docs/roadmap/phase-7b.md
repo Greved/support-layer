@@ -45,6 +45,22 @@ Condition steps have two outgoing edges labelled **Yes** (green) and **No** (red
 - **Step edit drawer**: clicking any node opens the same form components from Phase 7's list editor, in a side drawer
 - **Simulation replay**: after a simulation run, executed steps are highlighted (green = passed, red = failed branch) using `conversation_json` from `simulation_runs`
 
+### Frontend Design
+> Reference: `docs/references/design/stitch_stark_fintech_prd/procedure_editor/`
+
+**Canvas view appearance:**
+- Full-width canvas area with a subtle dot-grid background; node shapes per step type (see node table above)
+- Toolbar strip on the left edge: icons for each node type — drag from toolbar onto canvas to add a new step
+- Top bar: procedure name + STATUS badge (ACTIVE / DRAFT) left; "Simulate" secondary button + "Save Procedure" primary button right; "List / Canvas" toggle in header
+- Connecting edges: straight arrows between sequential steps; condition nodes (diamond) emit two labeled edges — "Yes" (green) / "No" (red); non-linear jumps rendered as curved arrows
+- Node selected state: highlighted border; opens step-edit side drawer (reuses Phase 7 form components) without leaving canvas
+- Right panel (step-edit drawer): ATTRIBUTES section listing context attributes available to the step; CONNECTED TOOLS section showing linked tools with connection status chip (Connected = green dot, Inactive = gray) and endpoint info; "+ Connect Tool" button
+
+**Simulation replay overlay:**
+- After a simulation run, executed nodes highlighted: green fill = step passed / reached, red fill = step where failure/wrong branch occurred
+- Arrows along the executed path highlighted in the corresponding color
+- Non-executed branches remain at default opacity
+
 ### Tasks
 - [ ] Add `canvas_x`, `canvas_y` float columns to `procedure_steps` migration
 - [ ] Install `@xyflow/react` + `dagre` in portal SPA

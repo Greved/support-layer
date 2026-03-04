@@ -245,6 +245,25 @@ Supported auth types: `none`, `bearer` (static token), `api_key` (header or quer
 - Simulation results feed into the tenant's overall quality dashboard
 - CI gate: procedure can only go `live` if all its simulations pass
 
+### Frontend Design
+> References: `docs/references/design/stitch_stark_fintech_prd/`
+> `textual_procedure_editor_stark_refined/` · `procedure_simulation_runner_stark/`
+
+**Textual Procedure Editor (default / list view):**
+- Breadcrumb in top bar: PROCEDURES › PROCEDURE NAME (all-caps, uppercase styling)
+- Tabs: Canvas · History · Analytics (Canvas is the default; list/text view is always available via toggle)
+- Left panel "PROCEDURE EDITOR" label + numbered STEPS list: current step shows filled checkmark; others show unfilled circle; drag-handle icon on right of each row for reordering; "+ Add New Step" footer button
+- Center panel: step name as heading + ACTIVE/DRAFT status badge; STEP TYPE dropdown (Instruction / Condition / Tool Call / …); INSTRUCTIONS FOR AGENT textarea with monospace hint text `Use {{attribute}} to inject dynamic data` in a blue info bar; "Delete Step" (red) + "Duplicate" buttons at bottom
+- Right panel, two sub-sections:
+  - ATTRIBUTES: scrollable list of defined attributes — attribute name (monospace blue) + type label + description; "+" add button top-right
+  - CONNECTED TOOLS: connected tools shown with name + Connected/Inactive status chip + HTTP method + endpoint path; greyed-out inactive tools; "+ Connect Tool" text button at bottom
+
+**Simulation Runner (Simulation tab inside procedure editor):**
+- 3-panel layout:
+  - Left: simulation scenarios list — scenario name, scenario description excerpt; active scenario highlighted
+  - Center: conversation replay — customer/bot message bubbles (same style as widget); tool call events shown inline as an expandable "tool call" card between messages displaying tool name + request/response JSON summary
+  - Right: Configure API Call panel — METHOD dropdown + URL input + HEADERS key-value editor + BODY JSON textarea + RESPONSE MAPPING fields
+
 ### Tasks
 - [ ] `procedure/` Python module in `rag-core`: `trigger.py`, `executor.py`, `tool_runner.py`, `simulation.py`
 - [ ] PG migrations for procedures schema

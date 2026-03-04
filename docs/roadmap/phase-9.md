@@ -35,6 +35,17 @@ Usage
   GET    /portal/billing/usage             (queries this period vs quota, documents vs limit, storage used)
 ```
 
+### Frontend Design
+> Reference: `docs/references/design/stitch_stark_fintech_prd/usage_billing_stark_blue_theme/`
+
+**Usage & Billing page (portal sidebar "Usage" and "Billing" entries):**
+- Current plan card: plan name + billing period + "X% Used" circular or linear progress bar for primary quota; "Upgrade Plan" CTA button
+- 3 metric cards in a row: Total Queries this period · Tokens Consumed · Avg Latency — each with a +/- trend badge vs previous period
+- DAILY QUERY PERFORMANCE stacked bar chart: automated queries = blue bars, escalated queries = orange bars; 30-day x-axis; y-axis = query count
+- Recent query log table below the chart: timestamp · query preview · latency · resolution status
+- Usage progress bars for secondary limits (documents, storage, team members) shown in the plan card or a sub-section
+- Warning state: progress bars turn amber at 80% and red at 100%; banner alert shown at 100%
+
 ### Tasks
 - [ ] Integrate Stripe SDK: products, prices, subscriptions, webhooks (`invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted`)
 - [ ] Map Stripe plan → `plan_limits` row; enforce on every upload and query

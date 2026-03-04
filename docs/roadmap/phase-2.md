@@ -30,6 +30,19 @@ GET    /v1/session/{id}          (retrieve session history)
 </script>
 ```
 
+### Frontend Design
+> Reference: `docs/references/design/stitch_stark_fintech_prd/chat_widget_embed/`
+
+**Widget appearance:**
+- Floating launcher: filled circle button (color from `data-color`) anchored to the corner set by `data-position` (`bottom-right` default · `bottom-left` · `inline`); toggles to an X icon when the window is open
+- Chat window: ≈360 px wide popup anchored above the launcher; white background; rounded corners with shadow
+- Header row: small bot avatar (circle, ≈32 px) + bot name (`data-title`) + green "ONLINE" status dot; minimize/close button top-right
+- Message bubbles: user messages — dark/black background, white text, right-aligned; bot messages — white/light-gray card, left-aligned with bot avatar beside the first bubble in a group; 12–16 px border-radius
+- Source Context card: rendered below each bot response; bordered card showing source document name + page/line reference in monospace; collapsible
+- Streaming: bot bubble renders tokens incrementally with a blinking cursor animation until `[DONE]`
+- Input bar: full-width textarea + Send icon button; Enter to submit, Shift+Enter for newline
+- Theme: CSS custom properties driven by `data-color`; no external font dependency; shadow DOM or sandboxed iframe to prevent host-page style bleed
+
 ### Tasks
 - [ ] `api-public`: API key auth middleware (lookup hash in DB, attach tenant context)
 - [ ] Rate limiting: Redis sliding window per API key (configurable per tenant plan)
