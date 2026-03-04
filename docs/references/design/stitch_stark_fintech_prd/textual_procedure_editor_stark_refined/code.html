@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#214ded",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101422",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .stark-border { border: 1px solid #111218; }
+        .stark-shadow { box-shadow: 4px 4px 0px 0px #111218; }
+    </style>
+</head>
+<body class="bg-background-light text-slate-900 font-display">
+<div class="flex h-screen flex-col overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="h-16 border-b border-stark-border flex items-center justify-between px-6 flex-shrink-0 bg-white">
+<div class="flex items-center gap-6">
+<div class="flex flex-col">
+<div class="flex items-center gap-2 text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">
+<span>Procedures</span>
+<span class="material-symbols-outlined text-[10px]">chevron_right</span>
+<span class="text-primary">Order Management</span>
+</div>
+<h1 class="font-display font-bold text-xl tracking-tighter text-stark-black">Procedure Editor</h1>
+</div>
+<nav class="flex items-center gap-4 ml-4">
+<a class="text-sm font-semibold text-stark-black px-3 py-1 bg-stark-gray rounded-md" href="#">Canvas</a>
+<a class="text-sm font-medium text-gray-500 hover:text-stark-black transition-colors" href="#">History</a>
+<a class="text-sm font-medium text-gray-500 hover:text-stark-black transition-colors" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-stark-gray border border-stark-border rounded-md text-sm font-medium text-stark-black hover:border-gray-400 transition-colors">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+            Preview
+        </button>
+<button class="flex items-center gap-2 px-4 py-1.5 bg-stark-black text-white rounded-md text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px]">save</span>
+            Save Procedure
+        </button>
+<div class="h-4 w-[1px] bg-stark-border mx-2"></div>
+<div class="w-8 h-8 rounded bg-gradient-to-br from-gray-200 to-gray-300 border border-stark-border flex items-center justify-center text-xs font-bold text-stark-black">
+            JD
+        </div>
+</div>
+</header>
+<!-- Main Editor Layout -->
+<div class="flex flex-1 overflow-hidden">
+<!-- Left Panel: Step List -->
+<aside class="w-[240px] flex flex-col border-r border-stark-border bg-white flex-shrink-0 z-20">
+<div class="h-16 flex items-center px-5 border-b border-stark-border/50">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 bg-stark-black rounded-sm flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+</div>
+<span class="font-display font-bold text-lg tracking-tight text-stark-black">Stark Fintech</span>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1 p-3 overflow-y-auto bg-stark-gray/30">
+<div class="px-3 pb-2 text-xs font-mono text-gray-400 uppercase tracking-wider mt-2">Procedure Editor</div>
+<div class="flex flex-col gap-1">
+<div class="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Steps</div>
+<a class="group flex items-center justify-between px-3 py-2 rounded-md bg-white border border-stark-border shadow-sm text-stark-black" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-green-500">check_circle</span>
+<span class="text-sm font-medium tracking-tight">1. Greet</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-gray-400">drag_indicator</span>
+</a>
+<a class="group flex items-center justify-between px-3 py-2 rounded-md bg-stark-black text-white relative shadow-md" href="#">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 bg-white rounded-r-full"></div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+<span class="text-sm font-medium tracking-tight">2. Get Order Details</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-gray-400">drag_indicator</span>
+</a>
+<a class="group flex items-center justify-between px-3 py-2 rounded-md text-gray-500 hover:bg-white hover:text-stark-black transition-colors border border-transparent hover:border-stark-border" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">radio_button_unchecked</span>
+<span class="text-sm font-medium tracking-tight">3. Look up</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-gray-300">drag_indicator</span>
+</a>
+<a class="group flex items-center justify-between px-3 py-2 rounded-md text-gray-500 hover:bg-white hover:text-stark-black transition-colors border border-transparent hover:border-stark-border" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">radio_button_unchecked</span>
+<span class="text-sm font-medium tracking-tight">4. Process Payment</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-gray-300">drag_indicator</span>
+</a>
+<a class="group flex items-center justify-between px-3 py-2 rounded-md text-gray-500 hover:bg-white hover:text-stark-black transition-colors border border-transparent hover:border-stark-border" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">radio_button_unchecked</span>
+<span class="text-sm font-medium tracking-tight">5. Confirm</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-gray-300">drag_indicator</span>
+</a>
+</div>
+</nav>
+<div class="p-3 border-t border-stark-border bg-stark-gray/30">
+<button class="w-full flex items-center justify-center gap-2 py-2 bg-white border border-stark-border rounded-md font-bold text-sm text-stark-black hover:border-gray-400 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            Add New Step
+        </button>
+</div>
+</aside>
+<!-- Center: Active Step Editor -->
+<main class="flex-1 bg-stark-gray/20 p-8 overflow-y-auto">
+<div class="max-w-4xl mx-auto">
+<div class="mb-6 flex items-end justify-between">
+<div>
+<h2 class="text-3xl font-display font-bold text-stark-black tracking-tight">Get Order Details</h2>
+<p class="text-sm text-gray-500 mt-1">Define the behavior for this deterministic step.</p>
+</div>
+<div class="flex gap-2">
+<span class="px-2 py-1 text-[10px] font-bold bg-green-50 text-green-600 border border-green-100 rounded uppercase tracking-wider">Active</span>
+</div>
+</div>
+<div class="bg-white border border-stark-border rounded-lg p-8">
+<div class="grid grid-cols-1 gap-8">
+<!-- Step Configuration -->
+<div>
+<label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Step Type</label>
+<div class="relative">
+<select class="w-full appearance-none bg-white border border-stark-border rounded-md p-3 pr-10 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+<option>Instruction</option>
+<option>Conditional Branch</option>
+<option>API Call</option>
+<option>Customer Input</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Instructions for Agent</label>
+<textarea class="w-full border border-stark-border rounded-md p-4 font-body text-base leading-relaxed focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all min-h-[200px]" placeholder="Type instructions here...">Ask the customer for their order number. Ensure you verify the last name associated with the account before proceeding to look up any sensitive financial information.</textarea>
+<div class="mt-3 p-3 bg-blue-50/50 border border-blue-100 rounded-md flex items-start gap-2 text-xs text-primary font-medium">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span>Use <code>{{attribute}}</code> to inject dynamic data into instructions. This allows the AI to reference context from previous steps.</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-6 border-t border-stark-border">
+<button class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-500 hover:bg-red-50 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+                        Delete Step
+                    </button>
+<div class="flex gap-3">
+<button class="px-4 py-1.5 border border-stark-border bg-white rounded-md font-semibold text-sm text-stark-black hover:bg-stark-gray transition-colors">Duplicate</button>
+<button class="px-6 py-1.5 bg-stark-black text-white rounded-md font-semibold text-sm hover:bg-gray-800 transition-colors shadow-sm">Update Logic</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Panel: Context & Tools -->
+<aside class="w-[320px] flex-shrink-0 bg-white border-l border-stark-border flex flex-col z-20">
+<!-- Attributes Section -->
+<div class="h-16 flex items-center px-5 border-b border-stark-border">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-gray-500">Attributes</h2>
+<button class="ml-auto flex items-center justify-center w-6 h-6 rounded-full hover:bg-stark-gray transition-colors">
+<span class="material-symbols-outlined text-[18px] text-gray-400">add</span>
+</button>
+</div>
+<div class="p-4 flex-1 overflow-y-auto space-y-3">
+<div class="p-3 border border-stark-border rounded-md bg-stark-gray/20 flex items-center justify-between group hover:border-primary/30 transition-colors">
+<div class="flex flex-col">
+<span class="text-[11px] font-mono font-bold text-primary">order_id</span>
+<span class="text-[10px] text-gray-400">System String</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-gray-300 group-hover:text-gray-500 cursor-pointer">drag_handle</span>
+</div>
+<div class="p-3 border border-stark-border rounded-md bg-stark-gray/20 flex items-center justify-between group hover:border-primary/30 transition-colors">
+<div class="flex flex-col">
+<span class="text-[11px] font-mono font-bold text-primary">email</span>
+<span class="text-[10px] text-gray-400">Customer Contact</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-gray-300 group-hover:text-gray-500 cursor-pointer">drag_handle</span>
+</div>
+<div class="p-3 border border-stark-border rounded-md bg-stark-gray/20 flex items-center justify-between group hover:border-primary/30 transition-colors">
+<div class="flex flex-col">
+<span class="text-[11px] font-mono font-bold text-primary">customer_name</span>
+<span class="text-[10px] text-gray-400">User Profile</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-gray-300 group-hover:text-gray-500 cursor-pointer">drag_handle</span>
+</div>
+<!-- Connected Tools Section -->
+<div class="pt-4">
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="text-[11px] font-bold uppercase tracking-widest text-gray-400">Connected Tools</h2>
+</div>
+<div class="space-y-3">
+<div class="p-4 border border-stark-border rounded-lg bg-white shadow-sm">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-8 h-8 bg-stark-black flex items-center justify-center rounded text-white">
+<span class="material-symbols-outlined text-[16px]">api</span>
+</div>
+<div>
+<p class="text-sm font-bold text-stark-black">Order Lookup</p>
+<p class="text-[10px] text-green-600 font-semibold">Connected</p>
+</div>
+</div>
+<div class="flex gap-1.5">
+<span class="px-2 py-0.5 bg-stark-gray text-[10px] font-mono font-bold border border-stark-border rounded">GET</span>
+<span class="px-2 py-0.5 bg-stark-gray text-[10px] font-mono text-gray-500 border border-stark-border rounded">v2/orders</span>
+</div>
+</div>
+<div class="p-4 border border-stark-border rounded-lg bg-stark-gray/10 opacity-60 grayscale">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-gray-200 flex items-center justify-center rounded text-gray-500">
+<span class="material-symbols-outlined text-[16px]">payments</span>
+</div>
+<div>
+<p class="text-sm font-bold text-gray-500">Stripe Payments</p>
+<p class="text-[10px] text-gray-400">Inactive</p>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full mt-4 flex items-center justify-center gap-2 py-2 border border-dashed border-stark-border rounded-md text-gray-500 font-bold text-xs hover:bg-stark-gray/50 transition-colors">
+<span class="material-symbols-outlined text-[16px]">add_link</span>
+                Connect Tool
+            </button>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</body></html>

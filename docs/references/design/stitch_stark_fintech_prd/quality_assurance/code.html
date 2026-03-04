@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stark Fintech - Quality Assurance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        /* Custom Scrollbar for the table/list */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#214ded",
+                        "primary-dark": "#1a3bb5",
+                        "background-light": "#ffffff",
+                        "background-dark": "#101422",
+                        "surface-light": "#F9FAFB",
+                        "border-light": "#E5E7EB",
+                        "text-main": "#111827",
+                        "text-subtle": "#6B7280",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light text-text-main antialiased min-h-screen flex flex-col overflow-hidden">
+<!-- Top Navigation -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light px-6 py-3 bg-white z-20">
+<div class="flex items-center gap-4 text-text-main">
+<div class="size-6 text-primary">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+</div>
+<h2 class="text-text-main text-lg font-bold leading-tight tracking-[-0.015em] font-display">Stark Fintech</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<nav class="flex items-center gap-1 hidden md:flex">
+<a class="text-text-subtle hover:text-text-main px-3 py-2 text-sm font-medium leading-normal rounded transition-colors" href="#">Dashboard</a>
+<a class="text-text-subtle hover:text-text-main px-3 py-2 text-sm font-medium leading-normal rounded transition-colors" href="#">Procedures</a>
+<a class="text-text-subtle hover:text-text-main px-3 py-2 text-sm font-medium leading-normal rounded transition-colors" href="#">Configuration</a>
+<a class="text-text-main bg-surface-light px-3 py-2 text-sm font-medium leading-normal rounded transition-colors" href="#">Quality</a>
+<a class="text-text-subtle hover:text-text-main px-3 py-2 text-sm font-medium leading-normal rounded transition-colors" href="#">Docs</a>
+</nav>
+<div class="h-8 w-[1px] bg-border-light hidden md:block"></div>
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center rounded px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-bold transition-colors">
+                    Deploy Widget
+                </button>
+<div class="bg-gray-200 bg-center bg-no-repeat bg-cover rounded-full size-9 border border-border-light" data-alt="User profile avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBIviYSggQJPE-XEyUsjCGahee32anCY1lDk-raZrQVHrg6xALFi7DGKcRmOtJjNDsCRLc8yIbCZoeXY70Cdvkt-XPnflsaAk7r9mVoHyZmFPpddhhQmsBZlpLnLHLjBmyXkBfdfr0r_IfNajGyb4tTj2VY8kU5T9cLE47i63M8xGcT2I6dluQayHvaA_Ktfk5VyNm0BTcYU3MmpJ6FbxrAsePXc6Wzus4BaaUKSyrnzywo1NQ1NMnnIZf8937JLkvcFd_8k72hb98");'></div>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Sidebar Navigation (Optional context, keeping minimal based on prompt focus) -->
+<aside class="w-64 border-r border-border-light bg-surface-light hidden lg:flex flex-col justify-between py-6 px-4">
+<div class="space-y-1">
+<div class="px-3 mb-2 text-xs font-semibold text-text-subtle uppercase tracking-wider">Analysis</div>
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-text-main bg-white border border-border-light rounded shadow-sm" href="#">
+<span class="material-symbols-outlined text-[20px]">troubleshoot</span>
+                    Assurance
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-text-subtle hover:text-text-main hover:bg-white/50 rounded transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+                    Performance
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-text-subtle hover:text-text-main hover:bg-white/50 rounded transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">history</span>
+                    Audit Logs
+                </a>
+</div>
+<div class="p-4 bg-white border border-border-light rounded">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-yellow-500 text-[20px]">warning</span>
+<span class="text-sm font-bold">Alert</span>
+</div>
+<p class="text-xs text-text-subtle leading-relaxed">
+                    Hallucination rate spiked by 2.4% in the last hour. Check trace logs.
+                </p>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-background-light overflow-y-auto">
+<!-- Page Header -->
+<div class="border-b border-border-light bg-white px-8 py-6 sticky top-0 z-10">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-3xl font-bold tracking-tight text-text-main font-display">Quality Assurance</h1>
+<p class="text-text-subtle mt-1 text-sm">Analyze AI performance, hallucination rates, and confidence scores.</p>
+</div>
+<div class="flex items-center gap-3">
+<!-- Date Range Picker -->
+<button class="group flex items-center gap-2 px-4 py-2 rounded-full border border-border-light bg-white hover:border-primary/50 hover:bg-surface-light transition-all">
+<span class="material-symbols-outlined text-[18px] text-text-subtle group-hover:text-primary">calendar_today</span>
+<span class="text-sm font-medium text-text-main">Oct 24 - Oct 31, 2023</span>
+<span class="material-symbols-outlined text-[18px] text-text-subtle">expand_more</span>
+</button>
+<!-- Export Button -->
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-text-subtle hover:text-text-main hover:bg-surface-light transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span class="text-sm font-medium">Export CSV</span>
+</button>
+</div>
+</div>
+</div>
+<div class="p-8 space-y-8 max-w-[1400px] mx-auto w-full">
+<!-- Score Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Card 1: Faithfulness -->
+<div class="p-6 rounded border border-border-light bg-white flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-1">
+<span class="text-xs font-semibold uppercase tracking-wider text-text-subtle">Faithfulness</span>
+<span class="text-4xl font-bold font-display text-text-main">92%</span>
+<div class="flex items-center gap-1 text-emerald-600 mt-2">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span class="text-xs font-medium">+2.4% vs last week</span>
+</div>
+</div>
+<div class="relative size-16">
+<svg class="size-full rotate-[-90deg]" viewbox="0 0 36 36">
+<path class="text-gray-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="92, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+<!-- Card 2: Relevance -->
+<div class="p-6 rounded border border-border-light bg-white flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-1">
+<span class="text-xs font-semibold uppercase tracking-wider text-text-subtle">Answer Relevance</span>
+<span class="text-4xl font-bold font-display text-text-main">78%</span>
+<div class="flex items-center gap-1 text-amber-600 mt-2">
+<span class="material-symbols-outlined text-[16px]">trending_flat</span>
+<span class="text-xs font-medium">0.1% vs last week</span>
+</div>
+</div>
+<div class="relative size-16">
+<svg class="size-full rotate-[-90deg]" viewbox="0 0 36 36">
+<path class="text-gray-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-amber-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="78, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+<!-- Card 3: Context Recall -->
+<div class="p-6 rounded border border-border-light bg-white flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-1">
+<span class="text-xs font-semibold uppercase tracking-wider text-text-subtle">Context Recall</span>
+<span class="text-4xl font-bold font-display text-text-main">85%</span>
+<div class="flex items-center gap-1 text-emerald-600 mt-2">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span class="text-xs font-medium">+5.1% vs last week</span>
+</div>
+</div>
+<div class="relative size-16">
+<svg class="size-full rotate-[-90deg]" viewbox="0 0 36 36">
+<path class="text-gray-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-emerald-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="85, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Low Confidence Table Section -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-bold text-text-main font-display">Low Confidence Queries</h3>
+<div class="flex items-center gap-2">
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-text-subtle">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</span>
+<input class="pl-9 pr-4 py-2 text-sm border border-border-light rounded-full focus:outline-none focus:border-text-main focus:ring-0 transition-colors w-64" placeholder="Search queries..." type="text"/>
+</div>
+<button class="p-2 text-text-subtle hover:text-text-main hover:bg-surface-light rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</button>
+</div>
+</div>
+<div class="w-full border border-border-light rounded bg-white overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-border-light bg-surface-light">
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-text-subtle w-1/3">Query</th>
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-text-subtle w-1/3">Generated Answer</th>
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-text-subtle w-32">Score</th>
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-text-subtle w-40">Date</th>
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-text-subtle text-right w-20">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-light">
+<!-- Row 1: Critical -->
+<tr class="group hover:bg-surface-light transition-colors cursor-pointer">
+<td class="py-4 px-6">
+<p class="text-sm font-medium text-text-main truncate max-w-[300px]" title="How do I process a refund for a non-existent transaction?">How do I process a refund for a non-existent transaction?</p>
+</td>
+<td class="py-4 px-6">
+<p class="text-sm text-text-subtle truncate max-w-[300px]" title="You can process the refund by clicking on the transaction ID and selecting 'Force Refund'.">You can process the refund by clicking on the transaction ID and selecting 'Force Refund'.</p>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">
+                                            42%
+                                        </span>
+</td>
+<td class="py-4 px-6 text-sm text-text-subtle font-mono">Oct 24, 14:02</td>
+<td class="py-4 px-6 text-right">
+<button class="text-text-subtle group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Warning -->
+<tr class="group hover:bg-surface-light transition-colors cursor-pointer">
+<td class="py-4 px-6">
+<p class="text-sm font-medium text-text-main truncate max-w-[300px]" title="What are the rate limits for the Enterprise plan?">What are the rate limits for the Enterprise plan?</p>
+</td>
+<td class="py-4 px-6">
+<p class="text-sm text-text-subtle truncate max-w-[300px]" title="The enterprise plan usually allows for higher limits, but check your contract.">The enterprise plan usually allows for higher limits, but check your contract.</p>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
+                                            65%
+                                        </span>
+</td>
+<td class="py-4 px-6 text-sm text-text-subtle font-mono">Oct 24, 13:45</td>
+<td class="py-4 px-6 text-right">
+<button class="text-text-subtle group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Critical -->
+<tr class="group hover:bg-surface-light transition-colors cursor-pointer">
+<td class="py-4 px-6">
+<p class="text-sm font-medium text-text-main truncate max-w-[300px]" title="Can I deploy to on-prem servers?">Can I deploy to on-prem servers?</p>
+</td>
+<td class="py-4 px-6">
+<p class="text-sm text-text-subtle truncate max-w-[300px]" title="Yes, we support on-premise deployment via Docker containers.">Yes, we support on-premise deployment via Docker containers.</p>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">
+                                            38%
+                                        </span>
+</td>
+<td class="py-4 px-6 text-sm text-text-subtle font-mono">Oct 24, 11:20</td>
+<td class="py-4 px-6 text-right">
+<button class="text-text-subtle group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Good (Borderline) -->
+<tr class="group hover:bg-surface-light transition-colors cursor-pointer">
+<td class="py-4 px-6">
+<p class="text-sm font-medium text-text-main truncate max-w-[300px]" title="Reset my API key for production environment">Reset my API key for production environment</p>
+</td>
+<td class="py-4 px-6">
+<p class="text-sm text-text-subtle truncate max-w-[300px]" title="You can reset keys in settings.">You can reset keys in settings.</p>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                            81%
+                                        </span>
+</td>
+<td class="py-4 px-6 text-sm text-text-subtle font-mono">Oct 24, 10:05</td>
+<td class="py-4 px-6 text-right">
+<button class="text-text-subtle group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Warning -->
+<tr class="group hover:bg-surface-light transition-colors cursor-pointer">
+<td class="py-4 px-6">
+<p class="text-sm font-medium text-text-main truncate max-w-[300px]" title="Why is my sentiment score low?">Why is my sentiment score low?</p>
+</td>
+<td class="py-4 px-6">
+<p class="text-sm text-text-subtle truncate max-w-[300px]" title="Sentiment scores are calculated based on user feedback.">Sentiment scores are calculated based on user feedback.</p>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
+                                            72%
+                                        </span>
+</td>
+<td class="py-4 px-6 text-sm text-text-subtle font-mono">Oct 24, 09:15</td>
+<td class="py-4 px-6 text-right">
+<button class="text-text-subtle group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="px-6 py-4 border-t border-border-light bg-surface-light flex items-center justify-between">
+<span class="text-xs text-text-subtle">Showing 1-5 of 24 results</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 text-xs font-medium text-text-subtle border border-border-light bg-white rounded hover:bg-gray-50 disabled:opacity-50" disabled="">Previous</button>
+<button class="px-3 py-1 text-xs font-medium text-text-main border border-border-light bg-white rounded hover:bg-gray-50">Next</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Drawer (Trace View) - Simulated Open State for Context -->
+<aside class="w-[400px] bg-white border-l border-border-light shadow-2xl flex flex-col z-30 fixed right-0 top-[65px] bottom-0 transform transition-transform duration-300 translate-x-0">
+<div class="p-6 border-b border-border-light flex items-center justify-between bg-white">
+<div>
+<h3 class="font-bold text-lg text-text-main font-display">Trace View</h3>
+<p class="text-xs text-text-subtle font-mono">ID: trc_8293x920a</p>
+</div>
+<button class="text-text-subtle hover:text-text-main p-1 rounded hover:bg-surface-light">
+<span class="material-symbols-outlined text-[24px]">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-8">
+<!-- Query Block -->
+<div class="relative pl-6 border-l-2 border-border-light">
+<div class="absolute -left-[9px] top-0 size-4 bg-white border-2 border-primary rounded-full"></div>
+<h4 class="text-xs font-semibold uppercase tracking-wider text-text-subtle mb-2">User Query</h4>
+<div class="bg-surface-light p-4 rounded border border-border-light text-sm text-text-main">
+                        "How do I process a refund for a non-existent transaction?"
+                    </div>
+</div>
+<!-- Retrieval Step -->
+<div class="relative pl-6 border-l-2 border-border-light">
+<div class="absolute -left-[9px] top-0 size-4 bg-white border-2 border-amber-500 rounded-full"></div>
+<div class="flex items-center gap-2 mb-2">
+<h4 class="text-xs font-semibold uppercase tracking-wider text-text-subtle">Retrieval (RAG)</h4>
+<span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-mono">Low Relevance</span>
+</div>
+<div class="space-y-3">
+<div class="p-3 rounded border border-border-light bg-white text-xs">
+<div class="flex justify-between items-center mb-1">
+<span class="font-semibold text-text-main">doc_refund_policy.pdf</span>
+<span class="text-amber-600 font-mono">Score: 0.62</span>
+</div>
+<p class="text-text-subtle line-clamp-3">...refunds can be processed for any transaction that has a status of 'Settled'. If the transaction is 'Pending', void it instead...</p>
+</div>
+<div class="p-3 rounded border border-border-light bg-white text-xs opacity-60">
+<div class="flex justify-between items-center mb-1">
+<span class="font-semibold text-text-main">api_reference_v2.md</span>
+<span class="text-gray-500 font-mono">Score: 0.45</span>
+</div>
+<p class="text-text-subtle line-clamp-2">...POST /v1/refunds takes a transaction_id as a required parameter...</p>
+</div>
+</div>
+</div>
+<!-- Reasoning Step -->
+<div class="relative pl-6 border-l-2 border-border-light">
+<div class="absolute -left-[9px] top-0 size-4 bg-white border-2 border-purple-500 rounded-full"></div>
+<h4 class="text-xs font-semibold uppercase tracking-wider text-text-subtle mb-2">LLM Reasoning</h4>
+<div class="bg-surface-light p-4 rounded border border-border-light text-xs font-mono text-text-subtle leading-relaxed">
+                        User is asking about non-existent transactions. <br/>
+                        &gt; Context mentions refunds require 'Settled' status.<br/>
+                        &gt; No direct policy found for "non-existent".<br/>
+                        &gt; Assumption: User might mean "Force Refund" admin override.<br/>
+                        &gt; Generating response based on Admin functionality.
+                    </div>
+</div>
+<!-- Output Step -->
+<div class="relative pl-6 border-l-2 border-transparent">
+<div class="absolute -left-[9px] top-0 size-4 bg-white border-2 border-red-500 rounded-full"></div>
+<h4 class="text-xs font-semibold uppercase tracking-wider text-text-subtle mb-2">Final Answer</h4>
+<div class="bg-red-50 p-4 rounded border border-red-100 text-sm text-text-main">
+                        You can process the refund by clicking on the transaction ID and selecting 'Force Refund'.
+                    </div>
+<div class="mt-2 flex gap-2">
+<span class="inline-flex items-center gap-1 text-red-700 text-xs font-bold">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                            Hallucination Detected
+                        </span>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-border-light bg-surface-light gap-3 flex">
+<button class="flex-1 bg-white border border-border-light text-text-main px-4 py-2 rounded text-sm font-bold hover:bg-gray-50 transition-colors">
+                    Mark Correct
+                </button>
+<button class="flex-1 bg-primary text-white px-4 py-2 rounded text-sm font-bold hover:bg-primary-dark transition-colors shadow-sm">
+                    Fix in Knowledge Base
+                </button>
+</div>
+</aside>
+</div>
+</body></html>

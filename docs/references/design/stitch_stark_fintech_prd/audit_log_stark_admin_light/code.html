@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html class="" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Audit Log | Stark Fintech Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#111827",
+                        "background": "#FFFFFF",
+                        "surface": "#F3F4F6",
+                        "border": "#E5E7EB",
+                        "accent": "#214ded"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                    borderRadius: {"DEFAULT": "0", "md": "4px", "full": "9999px"},
+                },
+            },
+        }</script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined { font-size: 24px; }
+    </style>
+</head>
+<body class="bg-white text-[#111827] min-h-screen font-display">
+<div class="flex h-screen overflow-hidden">
+<!-- Side Navigation Bar -->
+<aside class="w-64 bg-[#F3F4F6] flex flex-col h-full border-r border-[#E5E7EB] shrink-0">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 rounded-full bg-black flex items-center justify-center text-white">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div>
+<h1 class="text-[#111827] text-base font-bold leading-tight uppercase tracking-wider">Stark Fintech</h1>
+<p class="text-slate-500 text-xs font-medium">Admin Console</p>
+</div>
+</div>
+<nav class="flex-1 px-2 py-4 space-y-0.5">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<span class="text-xs font-bold uppercase tracking-tight">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">corporate_fare</span>
+<span class="text-xs font-bold uppercase tracking-tight">Tenants</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">group</span>
+<span class="text-xs font-bold uppercase tracking-tight">Users</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-black text-white" href="#">
+<span class="material-symbols-outlined text-xl">history_toggle_off</span>
+<span class="text-xs font-bold uppercase tracking-tight">Audit Log</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-black hover:bg-black/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span class="text-xs font-bold uppercase tracking-tight">Settings</span>
+</a>
+</nav>
+<div class="p-4 mt-auto border-t border-white/5">
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-sm font-medium">Support</span>
+</a>
+<div class="mt-4 flex items-center gap-3 px-3">
+<div class="size-8 rounded-full bg-slate-700 overflow-hidden">
+<img alt="Admin Avatar" data-alt="Professional admin user profile photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCVs_eH6HT6lwtU3utpR-6liu8jNwEvMWDJiASG2ZTYPywPFWZe4OC_m7chBM0EoO43CSkaowC9bYXVFnP0dyOKwNY2UxGqGQ8G_DMbz7sl5fOYxz3RRxT6KDzGwuO0sLyML3Y2VYJokedCy7fGGFqAk40ZkBEBzHNmpB_0AmHI-YtNvFd-uQQkobuXRv-XGSyW0SmfzLsJgZjzQlcwmGBnMk5dolStt0rdMPT50CNColZCx-21i_R4PUeUIWMueKuIMvuHA1lNPY"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-white text-xs font-bold truncate">Alex Rivera</p>
+<p class="text-slate-500 text-[10px] truncate">Super Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Header -->
+<header class="h-14 border-b border-[#E5E7EB] bg-white flex items-center shrink-0"><div class="flex flex-1 items-center px-8 gap-8">
+<div class="flex items-center gap-3">
+<h2 class="text-sm font-bold uppercase tracking-widest text-[#111827]">Mission Control</h2>
+<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-tighter border border-emerald-500/20">System Healthy</span>
+</div>
+<div class="flex-1 max-w-xl relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
+<input class="w-full bg-[#F9FAFB] border-[#E5E7EB] text-xs py-1.5 pl-10 focus:ring-1 focus:ring-[#214ded] transition-all text-[#111827]" placeholder="Search tenants, logs, or infrastructure..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6 px-8 border-l border-border h-full">
+<button class="text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer">
+<div class="size-7 bg-black flex items-center justify-center text-white font-bold text-[10px]">AR</div>
+<span class="text-xs font-bold">Alex Rivera</span>
+</div>
+</div></header>
+<!-- Filters & Tools -->
+<div class="p-8 pb-0 space-y-6 flex-1 overflow-y-auto">
+<div class="grid grid-cols-4 bg-white border border-[#E5E7EB]"><div class="flex flex-col border-r border-border">
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4 py-2">Date Range</label>
+<input class="bg-transparent border-none text-xs font-mono text-[#111827] px-4 py-2 focus:ring-0" type="text" value="2023-10-24 - 2023-10-31"/>
+</div>
+<div class="flex flex-col border-r border-border">
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4 py-2">Tenant Context</label>
+<select class="bg-transparent border-none text-xs font-mono text-[#111827] px-4 py-2 focus:ring-0">
+<option class="bg-surface">All Tenants</option>
+<option class="bg-surface">Global Scope</option>
+<option class="bg-surface">Acme Corp</option>
+</select>
+</div>
+<div class="flex flex-col border-r border-border">
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4 py-2">Event Filter</label>
+<select class="bg-transparent border-none text-xs font-mono text-[#111827] px-4 py-2 focus:ring-0">
+<option class="bg-surface">All Events</option>
+</select>
+</div>
+<div class="flex items-center px-4 bg-black hover:bg-slate-800 transition-colors cursor-pointer">
+<button class="w-full text-white text-[10px] font-black uppercase tracking-widest">Refresh Stream</button>
+</div></div>
+<!-- Audit Log Table -->
+<div class="bg-white border border-[#E5E7EB] overflow-hidden mt-6">
+<div class="overflow-x-auto">
+<table class="w-full border-collapse">
+<thead>
+<tr class="bg-gray-50 border-b border-[#E5E7EB]">
+<th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest border-r border-border last:border-r-0">Timestamp</th>
+<th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest border-r border-border last:border-r-0">Actor</th>
+<th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest border-r border-border last:border-r-0">Tenant</th>
+<th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest border-r border-border last:border-r-0">Event</th>
+<th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest border-r border-border last:border-r-0">Details</th>
+<th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest border-r border-border last:border-r-0">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#E5E7EB]"><tr class="border-b border-[#E5E7EB] hover:bg-gray-50 transition-colors">
+<td class="px-4 py-2.5 font-mono text-[11px] text-slate-400 border-r border-border">2023-10-24 14:22:15.002</td>
+<td class="px-4 py-2.5 font-mono text-[11px] border-r border-border">
+<span class="text-[#214ded] font-medium">alex.rivera@stark.io</span>
+</td>
+<td class="px-4 py-2.5 font-mono text-[11px] border-r border-border">
+<span class="px-1.5 py-0.5 border border-[#E5E7EB] bg-gray-50 text-slate-700">ACME_PROD</span>
+</td>
+<td class="px-4 py-2.5 font-mono text-[11px] border-r border-border">
+<span class="text-[#111827] font-bold">CONFIG_UPDT</span>
+</td>
+<td class="px-4 py-2.5 font-mono text-[11px] text-slate-400 border-r border-border">
+        rate_limit: 1000 -&gt; 5000 | scope: global
+    </td>
+<td class="px-4 py-2.5 text-center">
+<span class="material-symbols-outlined text-sm text-slate-500 cursor-pointer hover:text-white">terminal</span>
+</td>
+</tr>
+<tr class="border-b border-[#E5E7EB] hover:bg-gray-50 transition-colors">
+<td class="px-4 py-2.5 font-mono text-[11px] text-slate-400 border-r border-border">2023-10-24 13:05:42.118</td>
+<td class="px-4 py-2.5 font-mono text-[11px] border-r border-border">
+<span class="text-[#214ded] font-medium">sara.miller@acme.com</span>
+</td>
+<td class="px-4 py-2.5 font-mono text-[11px] border-r border-border">
+<span class="px-1.5 py-0.5 border border-[#E5E7EB] bg-gray-50 text-slate-700">ACME_PROD</span>
+</td>
+<td class="px-4 py-2.5 font-mono text-[11px] border-r border-border">
+<span class="text-emerald-600 font-bold">AUTH_SUCCESS</span>
+</td>
+<td class="px-4 py-2.5 font-mono text-[11px] text-slate-400 border-r border-border">
+        ip: 192.168.1.1 | agent: chrome_macos
+    </td>
+<td class="px-4 py-2.5 text-center">
+<span class="material-symbols-outlined text-sm text-slate-500 cursor-pointer hover:text-white">terminal</span>
+</td>
+</tr>
+<tr class="border-b border-[#E5E7EB] hover:bg-gray-50 transition-colors">
+<td class="px-4 py-2.5 font-mono text-[11px] text-slate-400 border-r border-border">2023-10-24 12:45:10.884</td>
+<td class="px-4 py-2.5 font-mono text-[11px] border-r border-border">
+<span class="text-red-400">SYSTEM_CRON</span>
+</td>
+<td class="px-4 py-2.5 font-mono text-[11px] border-r border-border">
+<span class="px-1.5 py-0.5 border border-[#E5E7EB] bg-gray-50 text-slate-700">GLOBAL</span>
+</td>
+<td class="px-4 py-2.5 font-mono text-[11px] border-r border-border">
+<span class="text-red-400 font-bold">SEC_VIO_04</span>
+</td>
+<td class="px-4 py-2.5 font-mono text-[11px] text-slate-400 border-r border-border">
+        unauthorized_access: /admin/billing | priority: HIGH
+    </td>
+<td class="px-4 py-2.5 text-center">
+<span class="material-symbols-outlined text-sm text-slate-500 cursor-pointer hover:text-white">terminal</span>
+</td>
+</tr></tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-4 py-3 border-t border-[#E5E7EB] flex items-center justify-between bg-white">
+<p class="text-xs text-slate-500 dark:text-slate-400">Showing <span class="font-bold">1-5</span> of <span class="font-bold">1,284</span> events</p>
+<div class="flex items-center gap-2">
+<button class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/5 disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded-lg bg-primary text-white text-xs font-bold">1</button>
+<button class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/5 text-xs font-bold">2</button>
+<button class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/5 text-xs font-bold">3</button>
+<button class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/5">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Space Footer -->
+<footer class="h-10 flex items-center justify-center border-t border-[#E5E7EB] px-8 text-[9px] text-slate-500 uppercase tracking-widest font-bold mt-auto bg-[#F3F4F6]">
+                © 2023 Stark Fintech Solutions Ltd. All rights reserved.
+            </footer>
+</main>
+<!-- Right Side Panel (Optional/Contextual Info) -->
+</div>
+</body></html>

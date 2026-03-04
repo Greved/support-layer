@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stark Fintech - Admin Tenant Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#FFFFFF",
+                        "sidebar-light": "#F3F4F6",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "2px", "lg": "4px", "xl": "6px", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style></head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="flex min-h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 bg-[#F3F4F6] border-r border-slate-200 text-slate-900 flex flex-col shrink-0">
+<div class="p-6 flex flex-col h-full justify-between">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-3">
+<div class="bg-primary rounded-full size-10 flex items-center justify-center">
+<span class="material-symbols-outlined text-white">bolt</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-black text-base font-black leading-tight">Stark Fintech</h1>
+<p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Admin Console</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2"><a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-black hover:bg-slate-200/50 rounded transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-semibold">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-white border border-slate-200 text-black rounded" href="#">
+<span class="material-symbols-outlined">corporate_fare</span>
+<span class="text-sm font-bold">Tenants</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-black hover:bg-slate-200/50 rounded transition-colors" href="#">
+<span class="material-symbols-outlined">key</span>
+<span class="text-sm font-semibold">API Keys</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-black hover:bg-slate-200/50 rounded transition-colors" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="text-sm font-semibold">Usage</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-black hover:bg-slate-200/50 rounded transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-semibold">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-black hover:bg-slate-200/50 rounded transition-colors mt-4 border-t border-slate-200 pt-6" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-sm font-semibold">Support</span>
+</a></nav>
+</div>
+<button class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
+<span class="material-symbols-outlined text-sm">add</span>
+<span>New Project</span>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-y-auto">
+<!-- Header -->
+<header class="p-8 pb-4">
+<div class="flex flex-wrap justify-between items-end gap-4">
+<div class="flex flex-col gap-1">
+<h2 class="text-3xl font-black tracking-tighter text-black">Tenant Management</h2>
+<p class="text-slate-500 dark:text-slate-400 text-base">Manage and monitor all client instances globally.</p>
+</div>
+<button class="flex items-center gap-2 rounded border border-black bg-black text-white px-6 py-2.5 text-sm font-bold transition-all hover:bg-slate-800 active:scale-95">
+<span class="material-symbols-outlined">add_business</span>
+<span>Create Tenant</span>
+</button>
+</div>
+</header>
+<!-- Filters -->
+<section class="px-8 py-4 flex flex-wrap items-center gap-3">
+<div class="relative flex-1 min-w-[300px]">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full bg-white border-slate-300 rounded-lg pl-11 pr-4 py-2.5 text-sm focus:ring-black focus:border-black transition-all" placeholder="Search tenants by name or slug..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative inline-block">
+<button class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm font-bold text-black hover:bg-slate-50">
+<span>Plan: All</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+<div class="relative inline-block">
+<button class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm font-bold text-black hover:bg-slate-50">
+<span>Status: Active</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+<button class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm font-bold text-black hover:bg-slate-50">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</section>
+<!-- Stats Overview (Optional context) -->
+<section class="px-8 py-2 grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+<div class="bg-white p-5 rounded-lg border border-slate-200">
+<p class="text-xs font-semibold text-slate-500 uppercase">Total Tenants</p>
+<p class="text-2xl font-bold">1,284</p>
+</div>
+<div class="bg-white p-5 rounded-lg border border-slate-200">
+<p class="text-xs font-semibold text-slate-500 uppercase">Active Queries</p>
+<p class="text-2xl font-bold">4.2M</p>
+</div>
+<div class="bg-white p-5 rounded-lg border border-slate-200">
+<p class="text-xs font-semibold text-slate-500 uppercase">Avg Quality</p>
+<p class="text-2xl font-bold text-primary">9.4</p>
+</div>
+<div class="bg-white p-5 rounded-lg border border-slate-200">
+<p class="text-xs font-semibold text-slate-500 uppercase">Suspended</p>
+<p class="text-2xl font-bold text-red-500">12</p>
+</div>
+</section>
+<!-- Table Content -->
+<section class="px-8 pb-8 flex-1 @container">
+<div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200">
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-900">Name/Slug</th>
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-900">Plan</th>
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-900">Status</th>
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-900">Queries (30d)</th>
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-900">Quality Score</th>
+<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-900">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-white">Acme Corp</span>
+<span class="text-xs text-slate-400 font-mono">acme-prod-01</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20">Enterprise</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-emerald-500"></span>
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Active</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-24 h-6 flex items-end gap-0.5">
+<div class="bg-primary/30 w-full h-[40%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[60%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[50%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[80%] rounded-t-sm"></div>
+<div class="bg-primary w-full h-[95%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[70%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[85%] rounded-t-sm"></div>
+</div>
+<span class="text-sm font-bold">12.4k</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">
+<div class="flex items-center gap-2">
+<span class="font-bold text-emerald-600 dark:text-emerald-400">9.8</span>
+<span class="text-slate-400">/ 10</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-white">Globex Industries</span>
+<span class="text-xs text-slate-400 font-mono">globex-alpha</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full">Pro</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-amber-500"></span>
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Trial</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-24 h-6 flex items-end gap-0.5">
+<div class="bg-primary/30 w-full h-[20%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[30%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[25%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[40%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[35%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[45%] rounded-t-sm"></div>
+<div class="bg-primary w-full h-[50%] rounded-t-sm"></div>
+</div>
+<span class="text-sm font-bold">2.1k</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">
+<div class="flex items-center gap-2">
+<span class="font-bold text-amber-600 dark:text-amber-400">7.2</span>
+<span class="text-slate-400">/ 10</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-white">Umbrella Corp</span>
+<span class="text-xs text-slate-400 font-mono">umb-legacy</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20">Enterprise</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-red-500"></span>
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Suspended</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-24 h-6 flex items-end gap-0.5">
+<div class="bg-slate-200 dark:bg-slate-700 w-full h-[80%] rounded-t-sm"></div>
+<div class="bg-slate-200 dark:bg-slate-700 w-full h-[70%] rounded-t-sm"></div>
+<div class="bg-slate-200 dark:bg-slate-700 w-full h-[60%] rounded-t-sm"></div>
+<div class="bg-slate-200 dark:bg-slate-700 w-full h-[30%] rounded-t-sm"></div>
+<div class="bg-slate-200 dark:bg-slate-700 w-full h-[10%] rounded-t-sm"></div>
+<div class="bg-slate-200 dark:bg-slate-700 w-full h-[5%] rounded-t-sm"></div>
+<div class="bg-slate-200 dark:bg-slate-700 w-full h-[2%] rounded-t-sm"></div>
+</div>
+<span class="text-sm font-bold text-slate-400">0</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-400">N/A</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-white">Soylent Green Co</span>
+<span class="text-xs text-slate-400 font-mono">soylent-prod</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full">Pro</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-emerald-500"></span>
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Active</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-24 h-6 flex items-end gap-0.5">
+<div class="bg-primary/30 w-full h-[50%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[55%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[45%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[60%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[65%] rounded-t-sm"></div>
+<div class="bg-primary w-full h-[80%] rounded-t-sm"></div>
+<div class="bg-primary/70 w-full h-[75%] rounded-t-sm"></div>
+</div>
+<span class="text-sm font-bold">8.4k</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">
+<div class="flex items-center gap-2">
+<span class="font-bold text-emerald-600 dark:text-emerald-400">9.1</span>
+<span class="text-slate-400">/ 10</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-white">Initech</span>
+<span class="text-xs text-slate-400 font-mono">initech-dev</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full">Free</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-emerald-500"></span>
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Active</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-24 h-6 flex items-end gap-0.5">
+<div class="bg-primary/30 w-full h-[10%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[15%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[12%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[18%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[25%] rounded-t-sm"></div>
+<div class="bg-primary/30 w-full h-[20%] rounded-t-sm"></div>
+<div class="bg-primary w-full h-[30%] rounded-t-sm"></div>
+</div>
+<span class="text-sm font-bold">428</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">
+<div class="flex items-center gap-2">
+<span class="font-bold text-amber-600 dark:text-amber-400">8.2</span>
+<span class="text-slate-400">/ 10</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+<p class="text-sm text-slate-500">Showing <span class="font-bold text-slate-900 dark:text-white">1-5</span> of <span class="font-bold text-slate-900 dark:text-white">1,284</span> tenants</p>
+<div class="flex items-center gap-2">
+<button class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:bg-white dark:hover:bg-slate-800">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+</body></html>

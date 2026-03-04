@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config" innerhtml='tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#214ded",
+                        "stark-black": "#111827",
+                        "stark-gray": "#F3F4F6",
+                        "stark-border": "#E5E7EB",
+                        "background-light": "#FFFFFF",
+                        "background-dark": "#101422",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "4px",
+                        "sm": "2px",
+                        "md": "4px",
+                        "lg": "6px",
+                        "xl": "8px",
+                    },
+                },
+            },
+        }'>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#214ded",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101422",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>/* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E5E7EB;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D1D5DB;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen overflow-hidden flex h-screen w-full antialiased selection:bg-primary/20 selection:text-primary font-body"><!-- Left Sidebar -->
+<aside class="w-[240px] flex flex-col border-r border-stark-border bg-white flex-shrink-0 z-20 fixed inset-y-0 left-0">
+<!-- Logo Area -->
+<div class="h-16 flex items-center px-5 border-b border-stark-border/50">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 bg-stark-black rounded-sm flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+</div>
+<span class="font-display font-bold text-lg tracking-tight text-stark-black">Stark Fintech</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 flex flex-col gap-1 p-3 overflow-y-auto">
+<div class="flex flex-col gap-1">
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-sm font-medium tracking-tight">Dashboard</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+<span class="text-sm font-medium tracking-tight">Procedures</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+<span class="text-sm font-medium tracking-tight">Configuration</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+<span class="text-sm font-medium tracking-tight">Quality</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md bg-stark-gray text-stark-black relative" href="#">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 bg-stark-black rounded-r-full"></div>
+<span class="material-symbols-outlined text-[20px] icon-filled text-stark-black">description</span>
+<span class="text-sm font-medium tracking-tight">Docs</span>
+</a>
+</div>
+<div class="mt-8 px-3 pb-2 text-xs font-mono text-gray-400 uppercase tracking-wider">System</div>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm font-medium tracking-tight">Settings</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">api</span>
+<span class="text-sm font-medium tracking-tight">API Keys</span>
+</a>
+</nav>
+<!-- User Profile -->
+<div class="p-3 border-t border-stark-border">
+<button class="flex items-center gap-3 w-full px-3 py-2 hover:bg-stark-gray/50 rounded-md transition-colors text-left">
+<div class="w-8 h-8 rounded bg-gradient-to-br from-gray-200 to-gray-300 border border-stark-border flex items-center justify-center text-xs font-bold text-stark-black">JD</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-stark-black leading-none">John Doe</span>
+<span class="text-xs text-gray-500 mt-1 leading-none">Stark Corp</span>
+</div>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full pl-[240px] bg-white">
+<!-- Header -->
+<header class="h-16 border-b border-stark-border flex items-center justify-between px-6 flex-shrink-0 bg-white sticky top-0 z-30">
+<div class="flex flex-col">
+<h1 class="font-display font-bold text-2xl tracking-tighter text-stark-black">Documents</h1>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-sm text-gray-500 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+System Operational
+</span>
+<div class="h-4 w-[1px] bg-stark-border mx-2"></div>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-stark-gray border border-stark-border rounded-md text-sm font-medium text-stark-black hover:border-gray-400 transition-colors">
+<span class="material-symbols-outlined text-[16px]">search</span>
+Search Files
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-stark-black text-white rounded-md text-sm font-medium hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-[16px]">upload_file</span>
+Upload Documents
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6">
+<div class="max-w-[1200px] mx-auto flex flex-col gap-6">
+<!-- Filter Tabs -->
+<div class="flex border-b border-stark-border">
+<button class="px-4 py-2 text-sm font-semibold text-stark-black border-b-2 border-stark-black">All Documents</button>
+<button class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-stark-black transition-colors">Processing</button>
+<button class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-stark-black transition-colors">Completed</button>
+<button class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-stark-black transition-colors">Errors</button>
+</div>
+<!-- Documents Table -->
+<div class="border border-stark-border rounded-lg overflow-hidden">
+<table class="w-full text-left">
+<thead class="bg-stark-gray/50 border-b border-stark-border">
+<tr>
+<th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Name</th>
+<th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
+<th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Chunks</th>
+<th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Size</th>
+<th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Uploaded</th>
+<th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-stark-border">
+<tr class="hover:bg-stark-gray/20 transition-colors">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400">description</span>
+<span class="text-sm font-medium text-stark-black">financial_report_q3.pdf</span>
+</div>
+</td>
+<td class="px-4 py-4">
+<span class="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Ready
+</span>
+</td>
+<td class="px-4 py-4 text-sm font-mono text-gray-500">124</td>
+<td class="px-4 py-4 text-sm font-mono text-gray-500">2.4 MB</td>
+<td class="px-4 py-4 text-sm text-gray-500">Oct 12, 2023</td>
+<td class="px-4 py-4 text-sm">
+<button class="text-gray-400 hover:text-stark-black"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="hover:bg-stark-gray/20 transition-colors">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400">description</span>
+<span class="text-sm font-medium text-stark-black">legal_contract_v2.docx</span>
+</div>
+</td>
+<td class="px-4 py-4">
+<span class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Processing
+</span>
+</td>
+<td class="px-4 py-4 text-sm font-mono text-gray-500">88</td>
+<td class="px-4 py-4 text-sm font-mono text-gray-500">1.1 MB</td>
+<td class="px-4 py-4 text-sm text-gray-500">Oct 14, 2023</td>
+<td class="px-4 py-4 text-sm">
+<button class="text-gray-400 hover:text-stark-black"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="hover:bg-stark-gray/20 transition-colors">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400">image</span>
+<span class="text-sm font-medium text-stark-black">invoice_scan_01.png</span>
+</div>
+</td>
+<td class="px-4 py-4">
+<span class="inline-flex items-center gap-1 text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Error
+</span>
+</td>
+<td class="px-4 py-4 text-sm font-mono text-gray-500">0</td>
+<td class="px-4 py-4 text-sm font-mono text-gray-500">450 KB</td>
+<td class="px-4 py-4 text-sm text-gray-500">Oct 15, 2023</td>
+<td class="px-4 py-4 text-sm">
+<button class="text-gray-400 hover:text-stark-black"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="hover:bg-stark-gray/20 transition-colors">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400">folder_zip</span>
+<span class="text-sm font-medium text-stark-black">tax_filing_2023.zip</span>
+</div>
+</td>
+<td class="px-4 py-4">
+<span class="inline-flex items-center gap-1 text-xs font-medium text-gray-500 bg-gray-50 px-2 py-0.5 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Queued
+</span>
+</td>
+<td class="px-4 py-4 text-sm font-mono text-gray-500">--</td>
+<td class="px-4 py-4 text-sm font-mono text-gray-500">15.8 MB</td>
+<td class="px-4 py-4 text-sm text-gray-500">Oct 15, 2023</td>
+<td class="px-4 py-4 text-sm">
+<button class="text-gray-400 hover:text-stark-black"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between">
+<p class="text-sm text-gray-500">Showing 1 to 4 of 12 results</p>
+<div class="flex gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-stark-border hover:bg-stark-gray transition-colors text-gray-400"><span class="material-symbols-outlined text-lg">chevron_left</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-stark-black text-white text-sm font-medium">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-stark-border hover:bg-stark-gray transition-colors text-sm font-medium text-stark-black">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-stark-border hover:bg-stark-gray transition-colors text-sm font-medium text-stark-black">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-stark-border hover:bg-stark-gray transition-colors text-gray-400"><span class="material-symbols-outlined text-lg">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</main></body></html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stark Fintech - Procedure Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#214ded", // Used for primary actions/active states
+                        "background-light": "#ffffff",
+                        "background-subtle": "#F9FAFB",
+                        "border-subtle": "#E5E7EB",
+                        "border-strong": "#111827",
+                        "text-main": "#111827",
+                        "text-subtle": "#6B7280",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem", // 2px - Sharp/Stark look
+                        "sm": "0.25rem", // 4px
+                        "md": "0.375rem", // 6px
+                        "lg": "0.5rem", // 8px
+                        "full": "9999px",
+                    },
+                    boxShadow: {
+                        'stark': '0 0 0 1px #E5E7EB',
+                        'stark-active': '0 0 0 1px #111827',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent full page scroll, canvas handles it */
+        }
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Grid Pattern for Canvas */
+        .bg-grid-pattern {
+            background-size: 20px 20px;
+            background-image: radial-gradient(circle, #D1D5DB 1px, transparent 1px);
+        }
+
+        /* Custom Scrollbar for panels */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E5E7EB;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9CA3AF;
+        }
+
+        /* Connector Line Animation (Simulated) */
+        .connector-path {
+            stroke-dasharray: 10;
+            animation: dash 30s linear infinite;
+        }
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+    </style>
+</head>
+<body class="flex h-screen w-full flex-col bg-background-light text-text-main">
+<!-- Top Navigation Bar -->
+<header class="flex h-14 items-center justify-between border-b border-border-subtle bg-white px-5 z-20 shrink-0">
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-2 text-text-subtle hover:text-text-main transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</a>
+<div class="h-6 w-[1px] bg-border-subtle"></div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h1 class="font-display text-sm font-bold tracking-tight text-text-main">Refund Automation Workflow</h1>
+<span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium uppercase text-text-subtle tracking-wide">Draft</span>
+</div>
+<span class="text-[10px] text-text-subtle">Last edited 2 mins ago by Admin</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 text-xs text-text-subtle mr-4">
+<span class="material-symbols-outlined text-[16px] text-green-600">check_circle</span>
+<span>All changes saved</span>
+</div>
+<button class="group flex h-8 items-center justify-center gap-2 rounded-sm border border-border-subtle bg-white px-3 text-xs font-semibold text-text-main hover:border-border-strong hover:bg-gray-50 transition-all">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+                Simulate
+            </button>
+<button class="flex h-8 items-center justify-center gap-2 rounded-sm bg-primary px-4 text-xs font-semibold text-white hover:bg-blue-700 transition-all shadow-sm">
+                Save Procedure
+            </button>
+</div>
+</header>
+<!-- Main Workspace Area -->
+<div class="relative flex flex-1 overflow-hidden">
+<!-- Floating Toolbelt (Left) -->
+<div class="absolute left-5 top-5 z-10 flex flex-col gap-2">
+<div class="flex flex-col rounded-lg border border-border-subtle bg-white p-1 shadow-lg shadow-gray-200/50">
+<button class="group relative flex size-10 items-center justify-center rounded hover:bg-background-subtle" title="Message">
+<span class="material-symbols-outlined text-text-subtle group-hover:text-text-main">chat_bubble</span>
+<span class="absolute left-full ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">Send Message</span>
+</button>
+<button class="group relative flex size-10 items-center justify-center rounded hover:bg-background-subtle" title="Ask Question">
+<span class="material-symbols-outlined text-text-subtle group-hover:text-text-main">help</span>
+<span class="absolute left-full ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">Ask User</span>
+</button>
+<button class="group relative flex size-10 items-center justify-center rounded hover:bg-background-subtle" title="API Call">
+<span class="material-symbols-outlined text-text-subtle group-hover:text-text-main">api</span>
+<span class="absolute left-full ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">API Action</span>
+</button>
+<button class="group relative flex size-10 items-center justify-center rounded hover:bg-background-subtle" title="Condition">
+<span class="material-symbols-outlined text-text-subtle group-hover:text-text-main">alt_route</span>
+<span class="absolute left-full ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">Logic / Branch</span>
+</button>
+</div>
+<div class="flex flex-col rounded-lg border border-border-subtle bg-white p-1 shadow-lg shadow-gray-200/50 mt-2">
+<button class="flex size-10 items-center justify-center rounded hover:bg-background-subtle">
+<span class="material-symbols-outlined text-text-subtle">undo</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded hover:bg-background-subtle">
+<span class="material-symbols-outlined text-text-subtle">redo</span>
+</button>
+</div>
+</div>
+<!-- Infinite Canvas Area -->
+<div class="flex-1 bg-background-subtle bg-grid-pattern relative cursor-grab active:cursor-grabbing overflow-hidden">
+<!-- Canvas Controls (Bottom Left) -->
+<div class="absolute bottom-5 left-5 z-10 flex items-center rounded-lg border border-border-subtle bg-white p-1 shadow-sm">
+<button class="flex size-8 items-center justify-center rounded hover:bg-gray-50">
+<span class="material-symbols-outlined text-[18px] text-text-main">remove</span>
+</button>
+<span class="min-w-[40px] text-center text-xs font-medium text-text-main">100%</span>
+<button class="flex size-8 items-center justify-center rounded hover:bg-gray-50">
+<span class="material-symbols-outlined text-[18px] text-text-main">add</span>
+</button>
+</div>
+<!-- SVG Layer for Connections -->
+<svg class="absolute inset-0 h-full w-full pointer-events-none z-0">
+<!-- Connection: Start -> Ask Order ID -->
+<path d="M 360 140 C 420 140, 420 220, 480 220" fill="none" stroke="#E5E7EB" stroke-width="2"></path>
+<!-- Connection: Ask Order ID -> API Call (Selected) -->
+<path class="connector-path" d="M 720 220 C 780 220, 780 220, 840 220" fill="none" stroke="#214ded" stroke-width="2"></path>
+<!-- Connection: API Call -> Success Message -->
+<path d="M 1080 220 C 1140 220, 1140 140, 1200 140" fill="none" stroke="#E5E7EB" stroke-width="2"></path>
+<!-- Connection: API Call -> Error Message -->
+<path d="M 1080 220 C 1140 220, 1140 320, 1200 320" fill="none" stroke="#E5E7EB" stroke-width="2"></path>
+</svg>
+<!-- Node Container (Absolute positioning on canvas) -->
+<div class="absolute inset-0 z-0">
+<!-- Node: Start -->
+<div class="absolute left-[200px] top-[120px] w-[160px] rounded-lg border border-border-subtle bg-white p-0 shadow-sm transition-all hover:border-green-500 hover:shadow-md">
+<div class="flex items-center gap-2 border-b border-border-subtle bg-green-50 px-3 py-2 rounded-t-lg">
+<span class="material-symbols-outlined text-[16px] text-green-600">flag</span>
+<span class="font-display text-xs font-bold text-gray-900">Trigger</span>
+</div>
+<div class="p-3">
+<p class="text-[11px] text-text-subtle">User types "Refund"</p>
+</div>
+<!-- Output Handle -->
+<div class="absolute -right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-green-500 bg-white hover:bg-green-50 cursor-crosshair"></div>
+</div>
+<!-- Node: Ask Question -->
+<div class="absolute left-[480px] top-[160px] w-[240px] rounded-lg border border-border-subtle bg-white shadow-sm transition-all hover:border-border-strong hover:shadow-md group/node">
+<!-- Input Handle -->
+<div class="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-border-strong bg-white hover:bg-gray-50 cursor-crosshair opacity-0 group-hover/node:opacity-100 transition-opacity"></div>
+<div class="flex items-center justify-between border-b border-border-subtle bg-gray-50/50 px-3 py-2 rounded-t-lg">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-text-subtle">help</span>
+<span class="font-display text-xs font-bold text-gray-900">Ask Question</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-gray-400 cursor-pointer hover:text-red-500">more_horiz</span>
+</div>
+<div class="p-3">
+<p class="mb-2 text-[11px] font-medium text-text-main">What is your order ID?</p>
+<div class="rounded border border-dashed border-gray-300 bg-gray-50 px-2 py-1.5">
+<span class="font-mono text-[10px] text-gray-500">var: payment_id</span>
+</div>
+</div>
+<!-- Output Handle -->
+<div class="absolute -right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-border-strong bg-white hover:bg-gray-50 cursor-crosshair"></div>
+</div>
+<!-- Node: API Call (Selected State) -->
+<div class="absolute left-[840px] top-[140px] w-[240px] rounded-lg border-2 border-primary bg-white shadow-md z-10">
+<!-- Input Handle -->
+<div class="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-primary bg-white hover:bg-blue-50 cursor-crosshair"></div>
+<div class="flex items-center justify-between border-b border-border-subtle bg-blue-50/30 px-3 py-2 rounded-t-lg">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">api</span>
+<span class="font-display text-xs font-bold text-primary">Stripe Refund</span>
+</div>
+<span class="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary">POST</span>
+</div>
+<div class="p-3">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-medium text-text-subtle">Endpoint</span>
+<span class="material-symbols-outlined text-[12px] text-green-600">check_circle</span>
+</div>
+<code class="block truncate rounded bg-gray-900 px-2 py-1 font-mono text-[10px] text-gray-100">/v1/refunds</code>
+</div>
+</div>
+<!-- Output Handle -->
+<div class="absolute -right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-primary bg-white hover:bg-blue-50 cursor-crosshair"></div>
+</div>
+<!-- Node: Success Message -->
+<div class="absolute left-[1200px] top-[100px] w-[220px] rounded-lg border border-border-subtle bg-white shadow-sm transition-all hover:border-border-strong hover:shadow-md group/node">
+<!-- Input Handle -->
+<div class="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-border-strong bg-white hover:bg-gray-50 cursor-crosshair opacity-0 group-hover/node:opacity-100 transition-opacity"></div>
+<div class="flex items-center justify-between border-b border-border-subtle bg-gray-50/50 px-3 py-2 rounded-t-lg">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-text-subtle">chat</span>
+<span class="font-display text-xs font-bold text-gray-900">Success Msg</span>
+</div>
+</div>
+<div class="p-3">
+<p class="text-[11px] text-text-main leading-relaxed">Your refund of <span class="bg-blue-100 text-blue-800 px-1 rounded">{{amount}}</span> has been processed.</p>
+</div>
+</div>
+<!-- Node: Error Message -->
+<div class="absolute left-[1200px] top-[280px] w-[220px] rounded-lg border border-border-subtle bg-white shadow-sm transition-all hover:border-border-strong hover:shadow-md group/node">
+<!-- Input Handle -->
+<div class="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-border-strong bg-white hover:bg-gray-50 cursor-crosshair opacity-0 group-hover/node:opacity-100 transition-opacity"></div>
+<div class="flex items-center justify-between border-b border-border-subtle bg-gray-50/50 px-3 py-2 rounded-t-lg">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-text-subtle">warning</span>
+<span class="font-display text-xs font-bold text-gray-900">Error Msg</span>
+</div>
+</div>
+<div class="p-3">
+<p class="text-[11px] text-text-main leading-relaxed">We couldn't find that Order ID. Please try again.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Properties Panel (Context Aware) -->
+<div class="w-[320px] border-l border-border-subtle bg-white flex flex-col z-20 shadow-xl shadow-gray-200/50">
+<!-- Panel Header -->
+<div class="flex h-12 items-center justify-between border-b border-border-subtle px-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">api</span>
+<h2 class="font-display text-sm font-bold text-text-main">Configure API Call</h2>
+</div>
+<div class="flex items-center gap-1">
+<button class="flex size-7 items-center justify-center rounded hover:bg-gray-100 text-text-subtle">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+<button class="flex size-7 items-center justify-center rounded hover:bg-gray-100 text-text-subtle">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+<!-- Panel Content -->
+<div class="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
+<!-- Section: Basic Info -->
+<div class="flex flex-col gap-3">
+<label class="text-[10px] font-bold uppercase tracking-wider text-text-subtle">Node Name</label>
+<input class="h-9 w-full rounded-sm border border-border-subtle bg-white px-3 py-2 text-sm text-text-main placeholder-gray-400 focus:border-border-strong focus:outline-none focus:ring-0" type="text" value="Stripe Refund"/>
+<p class="text-[11px] text-text-subtle">Internal identifier for logs and debugging.</p>
+</div>
+<hr class="border-border-subtle"/>
+<!-- Section: API Configuration -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<label class="text-[10px] font-bold uppercase tracking-wider text-text-subtle">Request</label>
+<span class="text-[10px] text-primary cursor-pointer hover:underline">Test Connection</span>
+</div>
+<!-- Method & URL -->
+<div class="flex gap-2">
+<div class="w-1/3">
+<select class="h-9 w-full rounded-sm border border-border-subtle bg-gray-50 px-2 text-xs font-semibold text-text-main focus:border-border-strong focus:outline-none focus:ring-0">
+<option>GET</option>
+<option selected="">POST</option>
+<option>PUT</option>
+<option>DELETE</option>
+</select>
+</div>
+<div class="w-2/3">
+<input class="h-9 w-full rounded-sm border border-border-subtle bg-white px-3 py-2 text-xs font-mono text-text-main focus:border-border-strong focus:outline-none focus:ring-0" type="text" value="https://api.stripe.com/v1"/>
+</div>
+</div>
+<!-- Route -->
+<div class="flex flex-col gap-1">
+<label class="text-[11px] font-medium text-text-main">Endpoint Route</label>
+<input class="h-9 w-full rounded-sm border border-border-subtle bg-white px-3 py-2 text-xs font-mono text-text-main focus:border-border-strong focus:outline-none focus:ring-0" type="text" value="/refunds"/>
+</div>
+<!-- Headers -->
+<div class="flex flex-col gap-2">
+<label class="text-[11px] font-medium text-text-main">Headers</label>
+<div class="flex gap-2">
+<input class="h-8 w-1/2 rounded-sm border border-border-subtle bg-gray-50 px-2 text-[11px] text-gray-500" disabled="" type="text" value="Authorization"/>
+<input class="h-8 w-1/2 rounded-sm border border-border-subtle bg-white px-2 text-[11px] font-mono text-text-main focus:border-border-strong focus:outline-none" type="text" value="Bearer sk_test..."/>
+</div>
+<button class="flex items-center gap-1 text-[11px] text-primary hover:text-blue-700 font-medium mt-1">
+<span class="material-symbols-outlined text-[14px]">add</span> Add Header
+                        </button>
+</div>
+<!-- Body -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="text-[11px] font-medium text-text-main">Body (JSON)</label>
+<span class="text-[10px] text-text-subtle font-mono">{} Variables</span>
+</div>
+<div class="relative rounded-sm border border-border-subtle bg-gray-900 p-3">
+<textarea class="h-32 w-full resize-none bg-transparent font-mono text-xs text-gray-300 focus:outline-none" spellcheck="false">{
+  "payment_intent": "{{payment_id}}",
+  "reason": "requested_by_customer"
+}</textarea>
+<div class="absolute bottom-2 right-2 text-[10px] text-gray-500">JSON</div>
+</div>
+</div>
+</div>
+<hr class="border-border-subtle"/>
+<!-- Section: Output Variables -->
+<div class="flex flex-col gap-3">
+<label class="text-[10px] font-bold uppercase tracking-wider text-text-subtle">Save Response To</label>
+<div class="flex items-center gap-2 rounded-sm border border-border-subtle p-2 bg-gray-50">
+<span class="material-symbols-outlined text-[16px] text-text-subtle">data_object</span>
+<input class="w-full bg-transparent text-xs font-mono text-text-main focus:outline-none" type="text" value="refund_status"/>
+</div>
+</div>
+</div>
+<!-- Panel Footer -->
+<div class="border-t border-border-subtle bg-background-subtle p-4">
+<button class="w-full rounded-sm bg-text-main py-2 text-xs font-bold text-white hover:bg-gray-800 transition-colors">
+                    Apply Changes
+                </button>
+</div>
+</div>
+</div>
+</body></html>

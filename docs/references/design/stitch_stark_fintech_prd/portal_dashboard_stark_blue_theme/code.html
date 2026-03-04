@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stark Fintech - Portal Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2563EB",
+                        "stark-black": "#111827",
+                        "stark-gray": "#F3F4F6",
+                        "stark-border": "#E5E7EB",
+                        "background-light": "#FFFFFF",
+                        "background-dark": "#101422",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "4px",
+                        "sm": "2px",
+                        "md": "4px",
+                        "lg": "6px",
+                        "xl": "8px",
+                    },
+                },
+            },
+        }</script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E5E7EB;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D1D5DB;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light text-stark-black font-body overflow-hidden flex h-screen w-full antialiased selection:bg-primary/20 selection:text-primary">
+<!-- Left Sidebar -->
+<aside class="w-[240px] flex flex-col border-r border-stark-border bg-white flex-shrink-0 z-20">
+<!-- Logo Area -->
+<div class="h-16 flex items-center px-5 border-b border-stark-border/50">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 bg-stark-black rounded-sm flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+</div>
+<span class="font-display font-bold text-lg tracking-tight text-stark-black">Stark Fintech</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 flex flex-col gap-1 p-3 overflow-y-auto">
+<div class="flex flex-col gap-1">
+<!-- Active Item -->
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md bg-stark-gray text-stark-black relative" href="#">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 bg-stark-black rounded-r-full"></div>
+<span class="material-symbols-outlined text-[20px] icon-filled text-stark-black">dashboard</span>
+<span class="text-sm font-medium tracking-tight">Dashboard</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+<span class="text-sm font-medium tracking-tight">Procedures</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+<span class="text-sm font-medium tracking-tight">Configuration</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+<span class="text-sm font-medium tracking-tight">Quality</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span class="text-sm font-medium tracking-tight">Docs</span>
+</a>
+</div>
+<div class="mt-8 px-3 pb-2 text-xs font-mono text-gray-400 uppercase tracking-wider">System</div>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm font-medium tracking-tight">Settings</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 hover:bg-stark-gray/50 hover:text-stark-black transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">api</span>
+<span class="text-sm font-medium tracking-tight">API Keys</span>
+</a>
+</nav>
+<!-- User Profile -->
+<div class="p-3 border-t border-stark-border">
+<button class="flex items-center gap-3 w-full px-3 py-2 hover:bg-stark-gray/50 rounded-md transition-colors text-left">
+<div class="w-8 h-8 rounded bg-gradient-to-br from-gray-200 to-gray-300 border border-stark-border flex items-center justify-center text-xs font-bold text-stark-black" data-alt="User avatar placeholder with initials">
+                    JD
+                </div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-stark-black leading-none">John Doe</span>
+<span class="text-xs text-gray-500 mt-1 leading-none">Stark Corp</span>
+</div>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-white relative z-10">
+<!-- Header -->
+<header class="h-16 border-b border-stark-border flex items-center justify-between px-6 flex-shrink-0">
+<div class="flex flex-col">
+<h1 class="font-display font-bold text-2xl tracking-tighter text-stark-black">Dashboard</h1>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-sm text-gray-500 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    System Operational
+                </span>
+<div class="h-4 w-[1px] bg-stark-border mx-2"></div>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-stark-gray border border-stark-border rounded-md text-sm font-medium text-stark-black hover:border-gray-400 transition-colors">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                    Last 24 Hours
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-stark-black text-white rounded-md text-sm font-medium hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+                    New Procedure
+                </button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6">
+<div class="max-w-[1200px] mx-auto flex flex-col gap-6">
+<!-- Metrics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Metric 1 -->
+<div class="p-5 border border-stark-border rounded-lg bg-white flex flex-col justify-between h-32 hover:border-stark-black/20 transition-colors group">
+<div class="flex justify-between items-start">
+<h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 group-hover:text-primary transition-colors">Total Conversations</h3>
+<span class="text-xs font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">trending_up</span> 12%
+                            </span>
+</div>
+<div class="mt-2">
+<span class="font-display font-bold text-3xl tracking-tight text-stark-black">14,203</span>
+</div>
+<!-- Simple Sparkline SVG -->
+<div class="h-8 w-full mt-2 relative overflow-hidden" data-alt="Green rising trend line">
+<svg class="w-full h-full text-green-500" preserveaspectratio="none" viewbox="0 0 100 20">
+<path d="M0,15 L10,12 L20,16 L30,10 L40,12 L50,5 L60,8 L70,4 L80,6 L90,2 L100,0" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"></path>
+<path d="M0,15 L10,12 L20,16 L30,10 L40,12 L50,5 L60,8 L70,4 L80,6 L90,2 L100,0 L100,20 L0,20 Z" fill="currentColor" opacity="0.1"></path>
+</svg>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="p-5 border border-stark-border rounded-lg bg-white flex flex-col justify-between h-32 hover:border-stark-black/20 transition-colors group">
+<div class="flex justify-between items-start">
+<h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 group-hover:text-primary transition-colors">Msg / User</h3>
+<span class="text-xs font-medium text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">remove</span> 0.1%
+                            </span>
+</div>
+<div class="mt-2">
+<span class="font-display font-bold text-3xl tracking-tight text-stark-black">4.2</span>
+</div>
+<!-- Simple Sparkline SVG -->
+<div class="h-8 w-full mt-2 relative overflow-hidden" data-alt="Gray flat trend line">
+<svg class="w-full h-full text-gray-400" preserveaspectratio="none" viewbox="0 0 100 20">
+<path d="M0,10 L20,12 L40,9 L60,11 L80,10 L100,10" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"></path>
+</svg>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="p-5 border border-stark-border rounded-lg bg-white flex flex-col justify-between h-32 hover:border-stark-black/20 transition-colors group">
+<div class="flex justify-between items-start">
+<h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 group-hover:text-primary transition-colors">Resolution Rate</h3>
+<span class="text-xs font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">trending_up</span> 2.4%
+                            </span>
+</div>
+<div class="mt-2">
+<span class="font-display font-bold text-3xl tracking-tight text-stark-black">94.1%</span>
+</div>
+<!-- Simple Sparkline SVG -->
+<div class="h-8 w-full mt-2 relative overflow-hidden" data-alt="Green rising trend line">
+<svg class="w-full h-full text-green-500" preserveaspectratio="none" viewbox="0 0 100 20">
+<path d="M0,18 L15,14 L30,16 L45,10 L60,12 L75,5 L100,2" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"></path>
+<path d="M0,18 L15,14 L30,16 L45,10 L60,12 L75,5 L100,2 L100,20 L0,20 Z" fill="currentColor" opacity="0.1"></path>
+</svg>
+</div>
+</div>
+<!-- Metric 4 -->
+<div class="p-5 border border-stark-border rounded-lg bg-white flex flex-col justify-between h-32 hover:border-stark-black/20 transition-colors group">
+<div class="flex justify-between items-start">
+<h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 group-hover:text-primary transition-colors">Avg Sentiment</h3>
+<span class="text-xs font-medium text-primary bg-blue-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">trending_up</span> 0.5%
+                            </span>
+</div>
+<div class="mt-2">
+<span class="font-display font-bold text-3xl tracking-tight text-stark-black">8.9<span class="text-lg text-gray-400 font-normal">/10</span></span>
+</div>
+<!-- Simple Sparkline SVG -->
+<div class="h-8 w-full mt-2 relative overflow-hidden" data-alt="Blue rising trend line">
+<svg class="w-full h-full text-primary" preserveaspectratio="none" viewbox="0 0 100 20">
+<path d="M0,12 L20,10 L40,14 L60,8 L80,6 L100,4" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"></path>
+<path d="M0,12 L20,10 L40,14 L60,8 L80,6 L100,4 L100,20 L0,20 Z" fill="currentColor" opacity="0.1"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Charts Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[400px]">
+<!-- Main Area Chart (Token Usage) -->
+<div class="lg:col-span-2 border border-stark-border rounded-lg p-6 bg-white flex flex-col">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h3 class="font-display text-lg font-semibold text-stark-black">Token Usage</h3>
+<p class="text-sm text-gray-500 mt-1">Cost volume analysis over time</p>
+</div>
+<div class="flex gap-2">
+<button class="px-2 py-1 text-xs font-medium bg-stark-gray text-stark-black rounded">1H</button>
+<button class="px-2 py-1 text-xs font-medium text-gray-500 hover:text-stark-black rounded">24H</button>
+<button class="px-2 py-1 text-xs font-medium text-gray-500 hover:text-stark-black rounded">7D</button>
+</div>
+</div>
+<div class="flex-1 w-full relative" data-alt="Area chart showing token usage rising and falling over time">
+<!-- SVG Chart Simulation -->
+<svg class="w-full h-full text-primary" preserveaspectratio="none" viewbox="0 0 800 300">
+<!-- Grid Lines -->
+<g class="text-gray-100" stroke="currentColor" stroke-dasharray="4 4" stroke-width="1">
+<line x1="0" x2="800" y1="250" y2="250"></line>
+<line x1="0" x2="800" y1="200" y2="200"></line>
+<line x1="0" x2="800" y1="150" y2="150"></line>
+<line x1="0" x2="800" y1="100" y2="100"></line>
+<line x1="0" x2="800" y1="50" y2="50"></line>
+</g>
+<!-- Area Gradient Def -->
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="currentColor" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- The Path -->
+<path d="M0,250 C50,240 100,180 150,200 C200,220 250,150 300,120 C350,90 400,160 450,140 C500,120 550,60 600,80 C650,100 700,50 750,40 L800,20" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+<path d="M0,250 C50,240 100,180 150,200 C200,220 250,150 300,120 C350,90 400,160 450,140 C500,120 550,60 600,80 C650,100 700,50 750,40 L800,20 V300 H0 Z" fill="url(#chartGradient)" stroke="none"></path>
+</svg>
+<!-- X Axis Labels -->
+<div class="absolute bottom-0 left-0 w-full flex justify-between text-xs text-gray-400 font-mono mt-2">
+<span>00:00</span>
+<span>04:00</span>
+<span>08:00</span>
+<span>12:00</span>
+<span>16:00</span>
+<span>20:00</span>
+<span>23:59</span>
+</div>
+</div>
+</div>
+<!-- Topic Distribution (Right) -->
+<div class="border border-stark-border rounded-lg p-6 bg-white flex flex-col">
+<h3 class="font-display text-lg font-semibold text-stark-black mb-6">Top Intents</h3>
+<div class="flex flex-col gap-5 flex-1 justify-center">
+<!-- Bar Item 1 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-stark-black">Refund Status</span>
+<span class="font-mono text-gray-500">42%</span>
+</div>
+<div class="w-full bg-gray-100 rounded-sm h-2 overflow-hidden">
+<div class="h-full rounded-sm bg-primary" style="width: 42%"></div>
+</div>
+</div>
+<!-- Bar Item 2 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-stark-black">Pricing Inquiry</span>
+<span class="font-mono text-gray-500">28%</span>
+</div>
+<div class="w-full bg-gray-100 rounded-sm h-2 overflow-hidden">
+<div class="bg-primary h-full rounded-sm" style="width: 28%"></div>
+</div>
+</div>
+<!-- Bar Item 3 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-stark-black">API Errors</span>
+<span class="font-mono text-gray-500">15%</span>
+</div>
+<div class="w-full bg-gray-100 rounded-sm h-2 overflow-hidden">
+<div class="bg-gray-400 h-full rounded-sm" style="width: 15%"></div>
+</div>
+</div>
+<!-- Bar Item 4 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-stark-black">Account Access</span>
+<span class="font-mono text-gray-500">9%</span>
+</div>
+<div class="w-full bg-gray-100 rounded-sm h-2 overflow-hidden">
+<div class="bg-gray-300 h-full rounded-sm" style="width: 9%"></div>
+</div>
+</div>
+<!-- Bar Item 5 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-stark-black">Other</span>
+<span class="font-mono text-gray-500">6%</span>
+</div>
+<div class="w-full bg-gray-100 rounded-sm h-2 overflow-hidden">
+<div class="bg-gray-200 h-full rounded-sm" style="width: 6%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Rail (Activity Feed) -->
+<aside class="w-[300px] flex-shrink-0 bg-white border-l border-stark-border flex flex-col z-20">
+<div class="h-16 flex items-center px-5 border-b border-stark-border">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-gray-500">Live Feed</h2>
+<div class="ml-auto w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+</div>
+<div class="flex-1 overflow-y-auto p-0">
+<div class="divide-y divide-stark-border/50">
+<!-- Feed Item -->
+<div class="px-5 py-4 hover:bg-stark-gray/30 transition-colors group cursor-default">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-mono text-gray-400">10:42:05</span>
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 mt-1"></span>
+</div>
+<p class="text-sm text-stark-black font-medium leading-snug">Refund processed</p>
+<p class="text-xs text-gray-500 mt-1 truncate">User_9281 • $49.00 USD</p>
+</div>
+<!-- Feed Item -->
+<div class="px-5 py-4 hover:bg-stark-gray/30 transition-colors group cursor-default">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-mono text-gray-400">10:41:12</span>
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1"></span>
+</div>
+<p class="text-sm text-stark-black font-medium leading-snug">New Conversation</p>
+<p class="text-xs text-gray-500 mt-1 truncate">User_1029 connected from US</p>
+</div>
+<!-- Feed Item -->
+<div class="px-5 py-4 hover:bg-stark-gray/30 transition-colors group cursor-default">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-mono text-gray-400">10:38:55</span>
+<span class="w-1.5 h-1.5 rounded-full bg-red-500 mt-1"></span>
+</div>
+<p class="text-sm text-stark-black font-medium leading-snug">Hallucination Flagged</p>
+<p class="text-xs text-gray-500 mt-1 truncate">Low confidence score (0.42)</p>
+<button class="mt-2 text-xs font-medium text-primary hover:underline">Inspect Trace</button>
+</div>
+<!-- Feed Item -->
+<div class="px-5 py-4 hover:bg-stark-gray/30 transition-colors group cursor-default">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-mono text-gray-400">10:35:20</span>
+<span class="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1"></span>
+</div>
+<p class="text-sm text-stark-black font-medium leading-snug">Procedure Updated</p>
+<p class="text-xs text-gray-500 mt-1 truncate">"Returns Policy" v1.2 deployed</p>
+</div>
+<!-- Feed Item -->
+<div class="px-5 py-4 hover:bg-stark-gray/30 transition-colors group cursor-default">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-mono text-gray-400">10:32:01</span>
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1"></span>
+</div>
+<p class="text-sm text-stark-black font-medium leading-snug">New Conversation</p>
+<p class="text-xs text-gray-500 mt-1 truncate">User_8821 connected from UK</p>
+</div>
+<!-- Feed Item -->
+<div class="px-5 py-4 hover:bg-stark-gray/30 transition-colors group cursor-default">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-mono text-gray-400">10:30:15</span>
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 mt-1"></span>
+</div>
+<p class="text-sm text-stark-black font-medium leading-snug">Handoff Complete</p>
+<p class="text-xs text-gray-500 mt-1 truncate">Bot -&gt; Agent Sarah J.</p>
+</div>
+<!-- Feed Item -->
+<div class="px-5 py-4 hover:bg-stark-gray/30 transition-colors group cursor-default">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-mono text-gray-400">10:28:44</span>
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 mt-1"></span>
+</div>
+<p class="text-sm text-stark-black font-medium leading-snug">Subscription Updated</p>
+<p class="text-xs text-gray-500 mt-1 truncate">Plan upgrade confirmed</p>
+</div>
+</div>
+</div>
+</aside>
+</body></html>
