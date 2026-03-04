@@ -317,9 +317,16 @@ Supported auth types: `none`, `bearer` (static token), `api_key` (header or quer
 - [ ] Mock tool failure → simulation detects and reports error handling
 
 #### E2E tests (Playwright .NET — portal)
-- [ ] Create procedure → add steps → add condition → run simulation → see pass
-- [ ] Set procedure live → chat widget triggers it → procedure completes
-- [ ] Edit procedure → simulation reruns → regression detected → blocked from going live
+- [ ] **Procedure list:** Navigate to Procedures → verify table renders with NAME / STATUS / TRIGGER RATE / RESOLUTION RATE columns → verify status badges (Live = green, Paused = amber, Draft = outlined) → filter to Active tab → verify only live procedures shown → search by name → verify filtered result
+- [ ] **Create from template:** Click "+ Create from Template" → select template → verify steps pre-populated in step list → save → verify new procedure appears in list with Draft status
+- [ ] **Step builder:** Create new procedure → add Instruction step (enter instructions text) → add Condition step (set true/false branch targets) → add Tool Call step (configure URL + method) → add End step → save → verify step list shows all 4 steps in correct order
+- [ ] **Attribute injection:** Define attribute `order_id` → reference it in an instruction step as `{{order_id}}` → verify blue info bar hint is visible → save → verify attribute listed in right panel ATTRIBUTES section
+- [ ] **Tool connector:** Add HTTP tool with Bearer auth → configure base URL + endpoint → click "Connect Tool" → verify tool listed as Connected with green status chip → verify endpoint path shown
+- [ ] **Simulation runner:** Add simulation with scenario and success criteria → add mock tool response → run simulation → verify conversation replay panel shows customer/bot message bubbles → verify tool call event card visible between messages → verify pass/fail judgment shown
+- [ ] **Regression gate:** Create passing simulation → set procedure live → edit a step in a breaking way → attempt to re-publish → verify blocked with simulation failure message → verify procedure reverts to Draft
+- [ ] **Widget trigger:** Set procedure live → open embedded widget → send message matching trigger phrase → verify procedure executes (bot follows procedure steps instead of RAG) → verify procedure completes and session ends correctly
+- [ ] **Analytics tab:** Open procedure → click Analytics tab → verify 4 KPI cards render (Trigger Rate / Completion Rate / Escalation Rate / Abandon Rate) → verify Performance Trends chart has two lines → verify Tool Call Performance table lists connected tools with success rates
+- [ ] **Tenant isolation:** Tenant A creates procedure → Tenant B logs in → verify Tenant B cannot see or trigger Tenant A's procedure
 
 ### Quality Gate ✅
 - At least one complete procedure runs end-to-end via chat widget

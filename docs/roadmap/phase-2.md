@@ -66,8 +66,15 @@ GET    /v1/session/{id}          (retrieve session history)
   - Streaming: all SSE frames received, `[DONE]` received, session persisted
   - CORS: origin not in allowlist returns 403
 - **E2E (Playwright .NET):**
-  - Widget loads on test HTML page, user types question, streaming response appears
-  - Widget works on mobile viewport
+  - Load test HTML page with embedded widget script → click launcher button → verify chat window opens with header showing bot name and ONLINE status
+  - Type question in input → press Enter → verify streaming tokens appear progressively in bot bubble → verify cursor animation → verify `[DONE]` ends stream and cursor disappears
+  - Send question about ingested document → verify Source Context card appears below answer with filename, page/line, and excerpt
+  - Send two messages → reload page → open widget again → verify session history is restored (both messages visible)
+  - Send messages until rate limit is hit → verify error message rendered in chat bubble (not a silent failure)
+  - Embed widget with `data-position="bottom-left"` → verify launcher renders in bottom-left corner
+  - Embed widget with `data-auto-open-delay-seconds="2"` → wait 3 seconds → verify widget opens automatically without user interaction
+  - Test on 375×667 mobile viewport → verify launcher is fully visible → open widget → verify chat window fits screen without overflow → type and send message
+  - Embed widget with invalid API key → send message → verify user-facing error message appears in the chat (no raw stack trace exposed)
 - **Load test (k6):** 50 concurrent chat sessions, p95 latency < 5s
 
 ### Quality Gate ✅

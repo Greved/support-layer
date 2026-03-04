@@ -113,11 +113,46 @@
 - **Unit (Vitest):** Form validation, status badge logic, polling hook
 - **Component (React Testing Library):** Upload dropzone, config form, chat panel
 - **E2E (Playwright .NET):**
-  - New tenant: register → upload PDF → wait for ready → test chat → see answer
-  - Config change (system prompt) → reflected in next test-chat response
-  - Invite team member → member logs in → sees documents (not config, by role)
-  - API key create → copy → revoke → request with revoked key fails
-- **Visual regression (Playwright .NET screenshots):** Key pages across light/dark mode
+
+  **Auth flows:**
+  - Navigate to login page → verify "BOTPLATFORM" heading and SIGN IN card render → enter valid credentials → verify redirect to dashboard → verify sidebar and KPI cards visible
+  - Login with wrong password → verify inline error message shown (no page reload)
+  - Click "FORGOT PASSWORD?" → verify password reset page renders → enter email → click "SEND RESET LINK" → verify confirmation message shown
+  - Protected route guard: navigate directly to `/dashboard` without logging in → verify redirect to login page
+
+  **Onboarding wizard:**
+  - First login as new tenant → verify onboarding wizard appears at Step 1 → drag-and-drop a PDF onto the upload zone → verify file appears in RECENT UPLOADS → click "Continue to Step 2" → verify progress bar advances → complete all 4 steps → verify wizard marked complete → log out and back in → verify wizard does not reappear
+
+  **Document management:**
+  - Navigate to Knowledge Base → click upload button → select PDF → verify status badge shows Queued → transitions to Processing → transitions to Ready (poll with timeout 60s) → verify CHUNKS column shows non-zero count
+  - Click Errors tab → verify only error-status documents shown → click Processing tab → verify only in-flight documents shown
+  - Delete document → confirm dialog → verify document removed from All tab → verify no longer returned by test-chat
+
+  **Configuration:**
+  - Navigate to Configuration → change system prompt to include unique phrase → save → open Test Chat panel → send a question → verify answer references the unique phrase
+  - Change widget color → verify live chat preview panel updates color in real time without page reload
+  - Switch between Behavior / Retrieval / Appearance tabs → verify each tab content loads
+
+  **Team management:**
+  - Invite member with Member role → member receives invite (stub email check) → member logs in → verify member can view Documents page → verify member cannot access Configuration page (redirect or 403 shown) → verify member cannot access Settings
+  - Admin removes member → verify member session is invalidated → member's next request returns 401
+
+  **API keys:**
+  - Create API key with label → copy key value from one-time display → verify key visible in table with masked value → use key in `POST /v1/chat` → verify 200 → revoke key via trash icon → verify key no longer in table → repeat chat request with revoked key → verify 401
+
+  **Settings:**
+  - Navigate to Settings → General → change organization name → click "Save Changes" → reload page → verify new name persisted
+  - Navigate to Notifications → toggle off "Ingestion Complete" email → save → verify toggle state persists after reload
+  - Navigate to Security → verify MFA enrollment card renders with QR code step and Verify Code step
+
+  **MFA enrollment:**
+  - Begin MFA enrollment → verify QR code and SECRET KEY displayed → enter 6 valid TOTP digits → click "Verify & Enable" → verify success state → verify Backup Codes panel appears with 10 codes → verify "Download Codes" button triggers file download
+
+  **Dashboard:**
+  - Verify 4 KPI cards render with numeric values → verify LIVE FEED panel shows events → click "Inspect Trace" on a hallucination-flagged event → verify trace view opens with retrieval chain steps
+
+  **Visual regression (Playwright .NET screenshots):**
+  - Capture login page, dashboard, documents page, configuration page, team page, settings page → diff against approved baselines; max pixel diff < 0.5%
 
 ### Quality Gate ✅
 - Full new-tenant onboarding flow works end-to-end in Playwright .NET

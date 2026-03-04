@@ -54,6 +54,14 @@ Main merge:
 - **Chaos:** Qdrant restart mid-query, LLM server crash → graceful degradation
 - **Smoke (post-deploy):** 5-minute automated smoke test suite on every deploy
 
+#### E2E smoke tests (Playwright .NET — runs on every deploy to staging)
+- **Health endpoints:** `GET /portal/healthz`, `GET /admin/healthz`, `GET /v1/healthz`, `GET /internal/healthz` all return 200 within 3s
+- **Portal smoke:** Log in as smoke-test tenant → navigate to Dashboard → verify KPI cards render → navigate to Documents → verify page loads without network errors → log out
+- **Widget smoke:** Load smoke-test HTML page with embedded widget → open chat → send "ping" message → verify response arrives within 10s → verify no console errors
+- **Admin smoke:** Log in as super-admin → navigate to Ops Dashboard → verify all infrastructure panels render → navigate to Tenant Management → verify tenant list loads
+- **Security headers:** Request portal SPA root → verify response includes `Strict-Transport-Security`, `Content-Security-Policy`, `X-Frame-Options` headers
+- **No 5xx:** Navigate through all major portal routes (dashboard, documents, config, team, settings, quality, billing) → assert zero network requests returned 5xx during the session
+
 ### Quality Gate ✅
 - All k6 load scenarios pass acceptance thresholds
 - Zero P0/P1 OWASP ZAP findings

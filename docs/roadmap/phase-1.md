@@ -69,7 +69,14 @@ Chat (test)
   - Config update reflected in subsequent query responses
   - API key created → used in widget auth → revoked → rejected
   - Tenant A cannot access Tenant B documents (403)
-- **E2E (Playwright .NET against running stack):** Full ingest-then-query flow via portal API
+- **E2E (Playwright .NET against running stack):**
+  - Login with valid credentials → JWT stored → access protected endpoint → logout → re-request protected endpoint → 401
+  - Upload PDF → poll `GET /portal/documents/{id}/status` until `ready` → `POST /portal/chat` with a question answered by the doc → verify answer is non-empty and contains relevant content
+  - Upload unsupported file type (.exe) → verify 415 response with error body
+  - Upload file exceeding plan size limit → verify 413 response
+  - Upload document → delete it → verify `GET /portal/documents` no longer lists it and Qdrant collection no longer returns its chunks
+  - Create API key → use key to call `POST /v1/chat` → verify 200 → revoke key → repeat call → verify 401
+  - Tenant A uploads doc → Tenant B attempts `GET /portal/documents` with Tenant A token → verify 403
 
 ### Quality Gate ✅
 - A new tenant can register, upload a PDF, wait for ingestion, then successfully query it via test-chat

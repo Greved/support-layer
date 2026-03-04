@@ -79,7 +79,21 @@ All events include: `HMAC-SHA256` signature in `X-SupportLayer-Signature` header
 - **Integration:** Webhook delivery to test endpoint; retry on 5xx; delivery log entry written correctly
 - **Integration:** Zendesk ticket created on escalation (mock Zendesk API)
 - **Integration:** Slack bot responds in channel with formatted sources (mock Slack API)
-- **E2E:** Zapier Zap triggers on `ingestion.complete` event → action runs successfully in test mode
+
+#### E2E tests (Playwright .NET — portal)
+- [ ] **Webhooks page renders:** Navigate to Integrations → Webhooks → verify title "Webhooks" + description + "+ Create Webhook" button → verify subscriptions table with columns WEBHOOK URL / EVENTS / STATUS / CREATED DATE / ACTIONS → verify Delivery Log section with "LIVE UPDATES ●" badge
+- [ ] **Create webhook:** Click "+ Create Webhook" → fill in endpoint URL (test receiver) → select events: `ingestion.complete`, `escalation.triggered` → save → verify new row appears in subscriptions table with correct URL and event badges → verify STATUS shows LIVE (green pill)
+- [ ] **Webhook event badges:** Verify EVENTS column shows monospace badge(s) for each subscribed event type per webhook row
+- [ ] **Pause and resume webhook:** Click PAUSE on an active webhook row → verify STATUS changes to PAUSED (gray pill) → click RESUME → verify STATUS returns to LIVE (green pill) → verify state persists after page reload
+- [ ] **Delete webhook:** Click DELETE on a webhook row → confirm dialog → verify row removed from table → verify webhook no longer listed after reload
+- [ ] **Send test delivery:** Click "SEND TEST" action on a delivery log row (or on the webhook row) → verify new delivery log entry appears with current timestamp → verify STATUS CODE 200 OK (green badge) for a healthy test endpoint → verify delivery log updates without full page reload ("LIVE UPDATES" behavior)
+- [ ] **Delivery log status codes:** Seed webhook deliveries with 200 and 500 responses → navigate to Delivery Log → verify 200 OK rows show green badge → verify 500 Error rows show red badge → verify RETRY COUNT column shows non-zero for failed deliveries
+- [ ] **View all deliveries:** Click "VIEW ALL DELIVERIES ↓" link → verify full paginated delivery log page renders with all historical entries
+- [ ] **Integrations Marketplace renders:** Navigate to Integrations Marketplace tab → verify title "Integrations Marketplace" → verify tabs: All Integrations · Installed · Pending → verify integration cards in grid: Zendesk (teal) · HubSpot (orange) · Slack (purple) present → verify "Request Integration" dashed card at end of grid
+- [ ] **Install integration (OAuth flow):** Click "Install" on Zendesk card → verify OAuth2 redirect to Zendesk auth URL → complete OAuth in test/stub → verify redirect back to portal → verify Zendesk card now shows INSTALLED badge and "Configure" button → click Installed tab → verify Zendesk appears
+- [ ] **Configure installed integration:** Click "Configure" on an installed integration → verify configuration panel or modal opens with integration-specific settings → save settings → verify saved without error
+- [ ] **HMAC signature verification:** Create a webhook to a test endpoint that reads `X-SupportLayer-Signature` → trigger a real event (ingest a document) → capture the delivery → verify signature header present → verify HMAC-SHA256 computed correctly using the webhook secret
+- [ ] **Tenant isolation (webhooks):** Tenant A creates a webhook → Tenant B logs in → navigate to Webhooks → verify Tenant B sees only their own webhooks → attempt to call `GET /portal/webhooks/{tenantA_id}` with Tenant B JWT → verify 403
 
 ### Quality Gate ✅
 - Webhooks delivered with correct HMAC signatures; delivery log accurate; retries exhausted correctly

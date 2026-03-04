@@ -74,10 +74,18 @@ Condition steps have two outgoing edges labelled **Yes** (green) and **No** (red
 
 ### Tests (Phase 7b)
 - **Component (React Testing Library):** Canvas renders correct node count for a 5-step procedure; condition node renders two labeled edges
-- **E2E (Playwright):**
-  - Build a 3-step procedure with one condition branch using only the canvas (no list view used) → save → switch to list view → steps match
-  - Run simulation → canvas replay highlights correct execution path
-  - Auto-arrange button repositions all nodes without overlap
+
+#### E2E tests (Playwright .NET — portal)
+- [ ] **Canvas renders:** Open an existing procedure with 5+ steps → click "Canvas" toggle → verify React Flow canvas appears with dot-grid background → verify correct node count matches step count → verify node shapes: instruction=rectangle (blue), condition=diamond (amber), tool_call=hexagon (purple), end=filled circle (gray)
+- [ ] **List ↔ Canvas sync:** Build a 3-step procedure (instruction → condition → end) in list view → switch to canvas → verify 3 nodes present with correct shapes → drag condition node to new position → switch back to list view → verify steps unchanged → switch back to canvas → verify node in moved position
+- [ ] **Canvas-only build:** Start new procedure → switch to canvas → drag Instruction node from left toolbar onto canvas → enter step instructions in side drawer → drag Condition node → connect Instruction → Condition edge → set Yes branch to End node → save → switch to list view → verify 3 steps with correct types and order
+- [ ] **Condition edges:** Add a condition step on canvas → verify diamond shape has two outgoing edges labeled "Yes" (green) and "No" (red) → connect Yes branch to one step → connect No branch to another step → verify arrows render with correct colors
+- [ ] **Step edit drawer:** Click any node on canvas → verify side drawer opens without leaving canvas → edit step instructions text → click Save → verify node label updates in canvas → verify drawer closes → switch to list view → verify updated text persists
+- [ ] **Add node from toolbar:** Drag "Tool Call" node type from left toolbar onto canvas → verify hexagon appears → verify it can be connected to existing nodes by dragging edge between handles → verify added step appears in list view
+- [ ] **Auto-arrange:** Create a procedure with 6+ steps in list view → switch to canvas → verify nodes may overlap (random positions) → click "Auto-arrange" button → verify nodes rearrange without overlap → verify all edges still connect correctly → save → reload → verify layout persists
+- [ ] **Simulation replay on canvas:** Run a simulation → click "View on Canvas" (or switch to canvas) → verify executed path highlighted: passed steps green fill, failed/wrong-branch step red fill → verify edges along executed path highlighted in matching color → verify non-executed branches at reduced opacity
+- [ ] **Mini-map and zoom:** Open procedure with 8+ steps on canvas → verify mini-map renders in corner → click mini-map region → verify main canvas scrolls to that region → use zoom controls (+/−) → verify canvas zooms → click "Fit" or "Reset" → verify all nodes visible in viewport
+- [ ] **Node selection highlight:** Click a node → verify selection border appears → open drawer → press Escape → verify selection cleared → click canvas background (empty area) → verify no node selected
 
 ### Quality Gate ✅
 - A non-developer user can build a 4-step procedure with one condition branch using only the canvas in < 8 minutes (UX test)

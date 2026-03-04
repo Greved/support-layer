@@ -119,8 +119,15 @@ Tenants (additions)
   - Tenant deletion cascades correctly (PG rows + Qdrant collection gone)
   - Infrastructure health returns degraded when a service is down
 - **E2E (Playwright .NET):**
-  - Log in as super-admin, create tenant, view stats, delete tenant
-  - Infrastructure panel shows correct status when a service is intentionally stopped
+  - **Auth & navigation:** Log in as super-admin → verify dashboard KPI cards render → navigate to each sidebar section (Tenants, Users, Audit Log) → verify pages load without JS errors → log out → verify redirect to login
+  - **Tenant lifecycle:** Create new tenant via "+ Create Tenant" form → verify appears in tenant table with correct plan badge → edit plan → verify badge updates → soft-delete tenant → verify removed from active list → verify Qdrant collection purged (via infra API check)
+  - **Tenant detail:** Click through to tenant detail → verify all tabs load (Overview / Documents / Config / Billing / API Keys / Users) → verify Usage Quotas progress bars show values → click "View Full Audit Trail" → verify audit log filtered to that tenant
+  - **Tenant search & filter:** Enter partial tenant name in search → verify table filters live → apply "Plan: Enterprise" filter → verify only Enterprise tenants shown → apply "Status: Suspended" → verify only suspended shown
+  - **User management:** Navigate to User Management → search by email → verify matching user appears → filter by "Super Admin" role chip → verify role-filtered results → click ⋮ menu on user → suspend → verify status changes to Suspended pill
+  - **Audit log:** Perform a tenant config update → navigate to Audit Log → filter by tenant + event type CONFIG_UPDT → verify event row appears with correct actor, timestamp, and monospace event code
+  - **Infrastructure health:** Navigate to Ops Dashboard → verify all infrastructure panels show healthy status → verify LLM Gateway latency sparkline renders → verify Job Queue counts are numeric
+  - **Impersonation:** Click impersonate on a tenant → verify new tab/session opens with portal context of that tenant → verify audit log records the impersonation event → verify impersonated session expires after 15 minutes
+  - **Role isolation (API):** Use portal JWT to call `GET /admin/tenants` → verify 403; use admin JWT to call `GET /portal/documents` → verify 403
 
 ### Quality Gate ✅
 - All tenant data visible in admin with correct stats

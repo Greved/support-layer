@@ -211,6 +211,15 @@ These run continuously in production (sampled, not every query):
 **Widget feedback UI (Eval v5 milestone):**
 - Subtle 👍/👎 row beneath each bot response in the chat widget; optional free-text comment on thumbs-down; no interruption to the conversation flow
 
+#### E2E tests (Playwright .NET)
+- **Quality page renders:** Log in as tenant → navigate to Quality in sidebar → verify Groundedness and Answer Relevancy donut charts render with percentage labels in center → verify Low-Confidence Queries table has columns QUERY and GENERATED ANSWER
+- **Trace view:** Click on a row in the low-confidence table → verify right panel Trace View expands → verify all 4 steps visible: USER QUERY / RETRIEVED DOCS / LLM REASONING / FINAL ANSWER → verify each step is expandable
+- **Mark Correct action:** Click "Mark Correct" on a flagged query row → verify row disappears from the low-confidence list → navigate away and back → verify item no longer present (persisted dismissal)
+- **Fix in Knowledge Base:** Click "Fix in Knowledge Base" on a flagged row → verify redirect to Documents page filtered to the relevant document
+- **Widget thumbs feedback:** Open embedded widget → send a question → wait for response → click 👎 → verify free-text comment input appears → enter comment → submit → navigate to Admin feedback review queue → verify entry appears with correct query, rating, and comment text
+- **Admin eval heatmap:** Log in as super-admin → navigate to global eval view → verify tenant rows render with per-metric columns → verify cells use color coding (green / amber / red) based on score thresholds → hover cell → verify tooltip shows numeric score
+- **Admin tenant eval drill-down:** Click on a tenant in the heatmap → navigate to tenant eval runs list → click on a run → verify per-question breakdown table renders with question / answer / faithfulness / relevancy columns
+
 ### Quality Gate ✅ (Phase 6)
 - Synthetic dataset generated for at least one real tenant
 - All RAGAS metrics computed and stored

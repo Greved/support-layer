@@ -80,7 +80,19 @@ Usage
 - **Unit:** Quota enforcement logic, usage aggregation SQL
 - **Integration:** Stripe webhook handler processes `invoice.paid` → tenant plan updated → limits refreshed
 - **Integration:** Request at 100% query quota → 429 returned; plan upgrade → requests succeed again
-- **E2E:** Tenant upgrades plan via portal → Stripe Checkout (test mode) → subscription active → quota raised
+
+#### E2E tests (Playwright .NET — portal)
+- [ ] **Usage page renders:** Log in as tenant → navigate to Usage & Billing in sidebar → verify current plan card shows plan name + billing period + usage percentage → verify 3 metric cards render (Total Queries / Tokens Consumed / Avg Latency) each with trend badge → verify DAILY QUERY PERFORMANCE chart renders with blue and orange bars over 30-day axis
+- [ ] **Usage progress bars:** Verify secondary quota progress bars render for documents, storage, and team members → verify each shows used/limit values → navigate away and back → verify values persist (not zero)
+- [ ] **80% quota warning:** Seed a tenant at 85% query quota usage → navigate to Usage page → verify the relevant progress bar renders in amber color → verify a warning banner or indicator is visible → verify no 100% error banner shown
+- [ ] **100% quota enforcement:** Seed a tenant at 100% query quota → attempt to call `POST /v1/chat` via the widget → verify `429` response → verify `X-Quota-Exceeded: queries` header present → navigate to portal Usage page → verify red 100% indicator and banner alert visible
+- [ ] **Invoice list:** Navigate to Invoices section → verify tabs render: All Invoices · Paid · Pending · Overdue → verify table columns: DATE · INVOICE ID · CUSTOMER · AMOUNT · STATUS · ACTIONS → verify status badges: PAID=green, PENDING=amber, OVERDUE=red → click "Paid" tab → verify only paid invoices shown
+- [ ] **Invoice PDF download:** Click "↓ Download PDF" action on a paid invoice row → verify file download triggered (PDF MIME type) → verify file is non-empty
+- [ ] **Export CSV:** Click "↓ Export CSV" button on Invoices page → verify CSV file downloads → verify CSV contains expected columns (DATE, INVOICE ID, AMOUNT, STATUS)
+- [ ] **Plan upgrade flow:** Click "Upgrade Plan" button on current plan card → verify Plan Upgrade page renders with 3 plan cards → verify RECOMMENDED card visually distinct (blue border, larger scale) → verify current plan card shows "CURRENT PLAN" label → click "UPGRADE NOW" on a higher plan → verify redirect to Stripe Checkout (test mode) → complete Stripe test payment → verify redirect back to portal → verify plan card now shows upgraded plan name → verify quota limits reflect new plan
+- [ ] **Plan comparison table:** On Plan Upgrade page → click "FULL PLAN COMPARISON" expandable section → verify feature rows expand with checkmarks/crosses per plan column → verify FAQ accordion items expand with correct policy text
+- [ ] **Stripe portal redirect:** Click "Manage Billing" or equivalent → verify `POST /portal/billing/portal` called → verify redirect to Stripe Customer Portal URL (test mode) → verify portal page loads with subscription and payment method info
+- [ ] **Trial expiry state:** Log in as a tenant on trial with 0 days remaining → navigate to Usage page → verify trial expiry notice rendered → verify plan card shows trial expired state → verify "Upgrade Plan" CTA prominent
 
 ### Quality Gate ✅
 - End-to-end payment flow works in Stripe test mode
