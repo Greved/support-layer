@@ -18,7 +18,7 @@ export function MessageList({ messages }: Props) {
       style={{
         flex: 1,
         overflowY: 'auto',
-        padding: '12px',
+        padding: '12px 16px',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -28,6 +28,20 @@ export function MessageList({ messages }: Props) {
           Ask a question to get started.
         </p>
       )}
+
+      {messages.length > 0 && (
+        <div
+          style={{
+            textAlign: 'center',
+            margin: '4px 0 14px',
+          }}
+        >
+          <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600, letterSpacing: '0.06em' }}>
+            TODAY
+          </span>
+        </div>
+      )}
+
       {messages.map((m) => (
         <Message key={m.id} message={m} />
       ))}

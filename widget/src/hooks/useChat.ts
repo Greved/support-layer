@@ -14,6 +14,7 @@ export function useChat(apiBase: string, apiKey: string) {
         id: crypto.randomUUID(),
         role: 'user',
         content: query,
+        createdAt: Date.now(),
       }
       setMessages((prev) => [...prev, userMsg])
       setLoading(true)
@@ -22,7 +23,7 @@ export function useChat(apiBase: string, apiKey: string) {
       const assistantId = crypto.randomUUID()
       setMessages((prev) => [
         ...prev,
-        { id: assistantId, role: 'assistant', content: '', streaming: true },
+        { id: assistantId, role: 'assistant', content: '', streaming: true, createdAt: Date.now() },
       ])
 
       try {

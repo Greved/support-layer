@@ -12,6 +12,7 @@ export interface Message {
   content: string
   sources?: Source[]
   streaming?: boolean
+  createdAt?: number
 }
 
 export interface WidgetConfig {
