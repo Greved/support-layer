@@ -400,6 +400,195 @@ def _build_snippet(content: str, query: str, answer: str, max_len: int = 600) ->
     return snippet
 
 
+def _to_openai_messages_for_stream(query: str, contexts: list[str]) -> list[dict[str, str]]:
+    """Build OpenAI-format messages for streaming (reuses build_prompt logic)."""
+    messages = build_prompt(query, contexts)
+
+    def _msg_to_dict(msg: ChatMessage) -> dict[str, str]:
+        role = getattr(msg, "role", None)
+        role_val = getattr(role, "value", None) or str(role) if role else "user"
+        content_parts: list[str] = []
+        try:
+            for block in msg.content:  # type: ignore[attr-defined]
+                text_val = getattr(block, "text", None)
+                if text_val:
+                    content_parts.append(text_val)
+        except Exception:
+            pass
+        if not content_parts:
+            content_parts.append(str(msg))
+        return {"role": role_val, "content": "".join(content_parts)}
+
+    return [_msg_to_dict(m) for m in messages]
+
+
+def stream_query(
+    settings: Settings, tenant_id: str, query: str, filters: dict[str, Any] | None = None
+):
+    """Generator that yields SSE lines for a streaming RAG query.
+
+    Events:
+        data: {"type": "sources", "sources": [...]}
+        data: {"type": "token", "chunk": "..."}
+        data: {"type": "done", "answer": "..."}
+    """
+    import json as _json  # local to avoid circular issues at top level
+
+    embedder = EmbeddingService(settings)
+    searcher = QdrantService(settings)
+
+    try:
+        vector = embedder.embed_query(query)
+        results = searcher.search(
+            vector,
+            tenant_id=tenant_id,
+            top_k=settings.query_context_sources_max_count,
+            filters=filters,
+        )
+    except Exception as exc:  # pragma: no cover
+        logger.error("Stream query pipeline failed", exc_info=exc)
+        raise QueryError("Query pipeline failed") from exc
+
+    def _extract_payload(point: Any) -> dict[str, Any]:
+        if hasattr(point, "payload"):
+            return point.payload or {}
+        if isinstance(point, dict):
+            return point
+        return {}
+
+    points = results.points if hasattr(results, "points") else results
+    sources_raw: list[dict[str, Any]] = []
+    for point in points:
+        payload = _extract_payload(point)
+        meta = payload.get("meta") or payload
+        source_val = meta.get("source") or meta.get("file_path") or "unknown"
+        content = payload.get("content") or meta.get("content") or ""
+        score = getattr(point, "score", None)
+        sources_raw.append(
+            {
+                "file": str(source_val).split("\\")[-1].split("/")[-1],
+                "page": meta.get("page_number"),
+                "offset": meta.get("split_idx_start"),
+                "relevance_score": score,
+                "content": content,
+            }
+        )
+
+    # Select and sort sources same as run_query
+    relevant = [s for s in sources_raw if _is_relevant_match(s["content"], query)]
+    selected = relevant or sources_raw
+    selected.sort(
+        key=lambda s: (
+            s["relevance_score"] if isinstance(s.get("relevance_score"), int | float) else -1.0,
+        ),
+        reverse=True,
+    )
+    limit = max(0, int(settings.query_result_sources_max_count))
+    selected = selected[:limit] if limit else selected
+
+    sources_payload = [
+        {
+            "file": s["file"],
+            "page": s["page"],
+            "offset": s["offset"],
+            "relevance_score": s["relevance_score"],
+        }
+        for s in selected
+    ]
+    yield f"data: {_json.dumps({'type': 'sources', 'sources': sources_payload})}\n\n"
+
+    context_chunks = [s["content"] for s in selected]
+
+    if not context_chunks:
+        yield f"data: {_json.dumps({'type': 'done', 'answer': 'No matching content found.'})}\n\n"
+        return
+
+    openai_messages = _to_openai_messages_for_stream(query, context_chunks)
+    answer_chunks: list[str] = []
+
+    if settings.llm_provider.lower() == "gemini":
+        if not settings.gemini_api_key:
+            raise QueryError("Gemini API key is not configured")
+        try:
+            from haystack.dataclasses import StreamingChunk
+            from haystack.utils import Secret
+            from haystack_integrations.components.generators.google_genai import (
+                GoogleGenAIChatGenerator,
+            )
+
+            stream_buffer: list[str] = []
+
+            def _stream_cb(chunk: StreamingChunk) -> None:
+                if chunk and chunk.content:
+                    stream_buffer.append(chunk.content)
+
+            messages_haystack = build_prompt(query, context_chunks)
+            generator = GoogleGenAIChatGenerator(
+                model=settings.gemini_model,
+                api_key=Secret.from_token(settings.gemini_api_key),
+                streaming_callback=_stream_cb,
+                generation_kwargs={"temperature": 0.5, "max_output_tokens": 512},
+            )
+            generator.run(messages=messages_haystack)
+            for chunk_text in stream_buffer:
+                answer_chunks.append(chunk_text)
+                yield f"data: {_json.dumps({'type': 'token', 'chunk': chunk_text})}\n\n"
+        except Exception as exc:
+            logger.error("Gemini stream failed", exc_info=exc)
+            raise QueryError("Gemini request failed") from exc
+    else:
+        use_lm_studio = settings.llm_provider.lower() == "lmstudio"
+        base_url = settings.lm_studio_url if use_lm_studio else settings.llama_llm_url
+        model_name = settings.lm_studio_model if use_lm_studio else settings.llama_llm_model
+        payload = {
+            "model": model_name,
+            "messages": openai_messages,
+            "temperature": 0,
+            "max_tokens": 64000,
+            "stream": True,
+        }
+        try:
+            resp = requests.post(
+                f"{base_url}/chat/completions", json=payload, timeout=180, stream=True
+            )
+            resp.raise_for_status()
+        except requests.RequestException as exc:
+            logger.error("LLM stream request failed", exc_info=exc)
+            raise QueryError("LLM request failed") from exc
+
+        in_reasoning = False
+        for line in resp.iter_lines(decode_unicode=True):
+            if not line:
+                continue
+            if line.startswith("data:"):
+                line = line.removeprefix("data:").strip()
+            if line in ("[DONE]", ""):
+                continue
+            try:
+                data = _json.loads(line)
+            except _json.JSONDecodeError:
+                continue
+            for choice in data.get("choices", []):
+                delta = choice.get("delta") or {}
+                text = delta.get("content") or ""
+                if not text:
+                    continue
+                if "<think>" in text:
+                    in_reasoning = True
+                if in_reasoning:
+                    if "</think>" in text:
+                        in_reasoning = False
+                        text = text.split("</think>", 1)[1]
+                    else:
+                        continue
+                if text:
+                    answer_chunks.append(text)
+                    yield f"data: {_json.dumps({'type': 'token', 'chunk': text})}\n\n"
+
+    full_answer = "".join(answer_chunks).strip() or "I don't know based on the provided context."
+    yield f"data: {_json.dumps({'type': 'done', 'answer': full_answer})}\n\n"
+
+
 def run_query(
     settings: Settings, tenant_id: str, query: str, filters: dict[str, Any] | None = None
 ) -> dict:

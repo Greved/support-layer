@@ -9,6 +9,7 @@ public class PlanLimit
     public int MaxQueriesPerMonth { get; set; }
     public int MaxUsers { get; set; }
     public int MaxFileSizeMb { get; set; }
+    public int MaxRequestsPerMinute { get; set; }
 
     public Plan Plan { get; set; } = null!;
 }

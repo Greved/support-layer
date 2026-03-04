@@ -7,11 +7,12 @@ from typing import Annotated
 
 import requests
 from fastapi import APIRouter, Form, Header, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from qdrant_client import QdrantClient
 
 from app.core.config import get_settings
-from app.services.query_service import run_query
+from app.services.query_service import run_query, stream_query
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -69,6 +70,25 @@ async def internal_ingest(
         tmp_path.unlink(missing_ok=True)
 
     return {"chunks_written": chunks_written, "document_id": document_id}
+
+
+class InternalStreamRequest(BaseModel):
+    tenant_id: str
+    query: str
+    filters: dict | None = None
+
+
+@router.post("/stream", tags=["internal"])
+async def internal_stream(
+    payload: InternalStreamRequest,
+    x_internal_secret: str = Header(...),
+) -> StreamingResponse:
+    _check_secret(x_internal_secret)
+    settings = get_settings()
+    return StreamingResponse(
+        stream_query(settings, payload.tenant_id, payload.query, payload.filters),
+        media_type="text/event-stream",
+    )
 
 
 @router.post("/query", tags=["internal"])

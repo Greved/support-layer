@@ -26,6 +26,12 @@ launchSettings.json
 appsettings.*.json
 !appsettings.Development.json
 
+# Node / Frontend
+node_modules/
+dist/
+.npm/
+*.tsbuildinfo
+
 __pycache__/
 *.pyc
 .env
