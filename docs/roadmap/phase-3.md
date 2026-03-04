@@ -82,6 +82,25 @@ Tenants (additions)
 - EVENT column: monospace fixed-width codes, color-coded — neutral bold (e.g. CONFIG_UPDT), success green (AUTH_SUCCESS), security violation red (SEC_VIO_04)
 - Row-level expand or modal for full diff/context JSON
 
+**Tenant Detail page** (drill-down from Tenants list):
+> Reference: `docs/references/design/stitch_stark_fintech_prd/admin_tenant_detail_stark/`
+- Light theme (not dark) — tenant detail uses standard light layout despite admin being dark overall
+- Breadcrumb: Tenants › Active Tenants › {Tenant Name}
+- Title row: tenant name + ACTIVE/SUSPENDED status badge + Tenant ID; "Manage Status" secondary button + "Edit Tenant" primary button
+- Horizontal tabs: Overview · Documents · Config · Billing · API Keys · Users (underline active indicator)
+- Overview tab: 3 metric cards (Total Queries / Active API Keys with "N expiring soon" warning / Average Latency with "Within SLA" green badge); "Transaction Trends" bar chart with 7D/30D/90D toggle; "Recent System Events" table (EVENT / STATUS / USER / TIMESTAMP) with status chips SYSTEM/SUCCESS/PENDING
+- Right panel (sticky): "TENANT PROFILE" card — legal entity name, primary contact (avatar + name + email), subscription tier (icon + plan name), infrastructure region; "USAGE QUOTAS" — labelled progress bars for API Requests/Month + User Seats + Storage Capacity with used/limit values; quick-action links (Generate Master API Key, View Full Audit Trail); "Suspend Tenant" danger button (red, bottom of panel)
+
+**User Management page:**
+> Reference: `docs/references/design/stitch_stark_fintech_prd/global_user_management_stark_refined/`
+- Left sidebar label "NAVIGATION"; items: Overview · User Management · Tenant Control · Risk & Compliance · Audit Logs · API Keys; logged-in admin name + role bottom-left
+- Title: "USER MANAGEMENT" (all-caps) + description "Monitor and manage users across N active tenants globally."
+- Actions: "+ Invite User" primary button + "↓ Export CSV" secondary button top-right
+- Filter row: search input + quick-filter role chips (All Roles / Super Admin / Tenant Admin / Member / Suspended)
+- Table columns: USER (avatar + name + email) · TENANT SLUG (monospace pill) · ROLE (colored badge: Super Admin=blue, Tenant Admin=teal, Member=gray) · LAST LOGIN · STATUS (Active=green pill, Suspended=red pill) · ACTIONS (⋮ menu)
+- Pagination: showing N-N of total; numbered page buttons
+- Bottom summary cards: New Users (30D) · Daily Active · Suspended count
+
 ### Tasks
 - [ ] `api-admin` with separate super-admin JWT issuer (not shared with portal)
 - [ ] Stats aggregation: query `billing_events` and `chat_messages` with window functions

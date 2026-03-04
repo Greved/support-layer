@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stark Fintech - Portal Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#214ded",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101422",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col">
+<div class="p-6 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">token</span>
+</div>
+<div>
+<h1 class="text-sm font-bold uppercase tracking-wider">Stark Fintech</h1>
+<p class="text-[10px] text-slate-500 uppercase tracking-widest">Admin Portal</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="text-sm font-medium">Documents</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-primary/10 text-primary rounded border border-primary/20 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-sm font-medium">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Team</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 px-3 py-2">
+<div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold" data-alt="User avatar with initials">JD</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold truncate">John Doe</p>
+<p class="text-[10px] text-slate-500 truncate">j.doe@starkfin.com</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-8">
+<div class="flex items-center gap-2">
+<span class="text-slate-400">Settings</span>
+<span class="material-symbols-outlined text-slate-300 text-sm">chevron_right</span>
+<span class="font-bold">General</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded text-sm w-64 focus:ring-1 focus:ring-primary" placeholder="Search settings..." type="text"/>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">notifications</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
+<div class="max-w-4xl mx-auto space-y-8">
+<!-- Title Section -->
+<div class="flex items-end justify-between border-b border-slate-200 dark:border-slate-800 pb-6">
+<div>
+<h2 class="text-3xl font-bold tracking-tight">General Settings</h2>
+<p class="text-slate-500 mt-1">Manage your organization's core preferences and global identity.</p>
+</div>
+<button class="bg-primary text-white px-6 py-2.5 rounded font-bold text-sm hover:brightness-110 transition-all">
+                            Save Changes
+                        </button>
+</div>
+<!-- Profile Section -->
+<section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-8">
+<h3 class="text-lg font-bold mb-6">Profile Settings</h3>
+<div class="flex items-center gap-8">
+<div class="relative group">
+<div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-3xl font-bold text-primary border-2 border-slate-200 dark:border-slate-700" data-alt="Circular profile avatar with organization initials SF">
+                                    SF
+                                </div>
+<button class="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">photo_camera</span>
+</button>
+</div>
+<div class="space-y-2">
+<h4 class="font-bold text-sm">Organization Logo</h4>
+<p class="text-xs text-slate-500 max-w-xs leading-relaxed">Accepted formats: JPG, PNG, WEBP. Recommended size: 512x512px. Max file size: 2MB.</p>
+<div class="flex gap-2 pt-1">
+<button class="text-xs font-bold border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded hover:bg-slate-50 dark:hover:bg-slate-800">Upload New</button>
+<button class="text-xs font-bold text-red-500 hover:text-red-600 px-3 py-1.5">Remove</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Organization Details -->
+<section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-8">
+<h3 class="text-lg font-bold mb-6">Organization Details</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2 col-span-2">
+<label class="text-xs font-bold uppercase tracking-wider text-slate-500">Organization Name</label>
+<input class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-3 text-sm focus:ring-1 focus:ring-primary outline-none" type="text" value="Stark Fintech Solutions Inc."/>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wider text-slate-500">Default Language</label>
+<div class="relative">
+<select class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-3 text-sm focus:ring-1 focus:ring-primary outline-none">
+<option>English (United States)</option>
+<option>Spanish (ES)</option>
+<option>French (FR)</option>
+<option>German (DE)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wider text-slate-500">Timezone</label>
+<div class="relative">
+<select class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-3 text-sm focus:ring-1 focus:ring-primary outline-none">
+<option>(GMT-05:00) Eastern Time (US &amp; Canada)</option>
+<option>(GMT-08:00) Pacific Time (US &amp; Canada)</option>
+<option>(GMT+00:00) London</option>
+<option>(GMT+01:00) Paris</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Advanced Preferences -->
+<section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-8">
+<h3 class="text-lg font-bold mb-6">Regional Preferences</h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between p-4 border border-slate-100 dark:border-slate-800 rounded">
+<div>
+<p class="text-sm font-bold">Automatic Currency Conversion</p>
+<p class="text-xs text-slate-500">Update exchange rates every 24 hours based on ECB data.</p>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-4 border border-slate-100 dark:border-slate-800 rounded">
+<div>
+<p class="text-sm font-bold">Metric System</p>
+<p class="text-xs text-slate-500">Use metric units (kg, m) for all physical documentation.</p>
+</div>
+<div class="w-12 h-6 bg-slate-200 dark:bg-slate-700 rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-slate-500 rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="border border-red-200 dark:border-red-900/30 rounded p-8 bg-red-50/50 dark:bg-red-900/10">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="text-lg font-bold text-red-600 dark:text-red-500">Danger Zone</h3>
+<p class="text-sm text-red-500/80 mt-1">Irreversible actions for your organization portal.</p>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-red-200 dark:border-red-900/20">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-sm font-bold">Delete Organization</p>
+<p class="text-xs text-slate-500">Permanently remove all data, documents and member access.</p>
+</div>
+<button class="text-xs font-bold bg-white dark:bg-slate-900 text-red-600 border border-red-200 dark:border-red-900/50 px-4 py-2 rounded hover:bg-red-600 hover:text-white transition-colors uppercase tracking-widest">Delete</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+</body></html>

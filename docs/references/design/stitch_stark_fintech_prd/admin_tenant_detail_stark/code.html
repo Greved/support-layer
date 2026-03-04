@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Acme Corp | Stark Fintech Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#214ded",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101422",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex min-h-screen w-full flex-col">
+<!-- Header -->
+<header class="flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-8 dark:border-slate-800 dark:bg-background-dark">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="flex size-8 items-center justify-center rounded bg-primary text-white">
+<span class="material-symbols-outlined text-xl">token</span>
+</div>
+<h2 class="text-lg font-bold tracking-tight">Stark Fintech</h2>
+</div>
+<nav class="hidden items-center gap-6 md:flex">
+<a class="text-sm font-medium text-slate-500 hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-semibold text-primary" href="#">Tenants</a>
+<a class="text-sm font-medium text-slate-500 hover:text-primary transition-colors" href="#">Analytics</a>
+<a class="text-sm font-medium text-slate-500 hover:text-primary transition-colors" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="h-9 w-64 rounded border border-slate-200 bg-slate-50 pl-10 text-sm focus:border-primary focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-900" placeholder="Search systems..." type="text"/>
+</div>
+<button class="relative flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+<span class="material-symbols-outlined text-slate-600">notifications</span>
+<span class="absolute right-2 top-2 size-2 rounded-full bg-red-500 border-2 border-white"></span>
+</button>
+<div class="size-9 rounded-full bg-slate-200 overflow-hidden border border-slate-300" data-alt="User profile avatar placeholder">
+<img alt="Admin user" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDa5pC4HanR8SrE9X7uwVLIP5I8rUPpOcWk7TroH57u8iGUrMoKZjj2W3nnti0gPJNfKDrRm3cWcDEsJRqYXjIZR7L07-ZENG02KIvcH5EIQPavEHT65EWwPKjQ38LA2rfpXkzIGNTF0I3M9ibneCv4KW3vtFaZCHwZPaSp3uLFR79_6LeuhmmeYFUvYyQVbNhGKdOWYhP3sTH3ZP5vFATCLkpxjp2_ZAFivdt6hT0Ay1Jk2GQXJIk-NCX3c03oBWsrt3G9F6mgixQ"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-background-dark">
+<div class="mb-6 px-2">
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Admin Console</h3>
+<p class="text-xs text-slate-500">Super Admin Access</p>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 rounded px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-900" href="#">
+<span class="material-symbols-outlined text-xl">grid_view</span>
+                    Overview
+                </a>
+<a class="flex items-center gap-3 rounded bg-primary/10 px-3 py-2 text-sm font-semibold text-primary" href="#">
+<span class="material-symbols-outlined text-xl">corporate_fare</span>
+                    Tenants
+                </a>
+<a class="flex items-center gap-3 rounded px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-900" href="#">
+<span class="material-symbols-outlined text-xl">payments</span>
+                    Revenue
+                </a>
+<a class="flex items-center gap-3 rounded px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-900" href="#">
+<span class="material-symbols-outlined text-xl">verified_user</span>
+                    Security
+                </a>
+<a class="flex items-center gap-3 rounded px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-900" href="#">
+<span class="material-symbols-outlined text-xl">terminal</span>
+                    Audit Logs
+                </a>
+<div class="my-4 h-px bg-slate-100 dark:bg-slate-800"></div>
+<a class="flex items-center gap-3 rounded px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-900" href="#">
+<span class="material-symbols-outlined text-xl">help</span>
+                    Support
+                </a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 bg-white dark:bg-background-dark">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 px-8 py-4 text-xs font-medium text-slate-400">
+<a class="hover:text-primary" href="#">Tenants</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<a class="hover:text-primary" href="#">Active Tenants</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-slate-900 dark:text-slate-100">Acme Corp</span>
+</div>
+<!-- Page Header -->
+<div class="flex items-end justify-between px-8 pb-6">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Acme Corp</h1>
+<span class="rounded bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">ACTIVE</span>
+</div>
+<p class="mt-1 text-sm font-medium text-slate-500">Tenant ID: <span class="text-slate-900 dark:text-slate-100">STARK-ACME-9921</span></p>
+</div>
+<div class="flex gap-3">
+<button class="flex h-10 items-center gap-2 rounded border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+<span class="material-symbols-outlined text-lg">settings</span>
+                        Manage Status
+                    </button>
+<button class="flex h-10 items-center gap-2 rounded bg-primary px-4 text-sm font-bold text-white hover:bg-primary/90">
+<span class="material-symbols-outlined text-lg">edit</span>
+                        Edit Tenant
+                    </button>
+</div>
+</div>
+<!-- Tabbed Interface -->
+<div class="border-b border-slate-200 px-8 dark:border-slate-800">
+<nav class="flex gap-8">
+<a class="border-b-2 border-primary pb-4 text-sm font-bold text-primary" href="#">Overview</a>
+<a class="border-b-2 border-transparent pb-4 text-sm font-medium text-slate-500 hover:text-slate-700" href="#">Documents</a>
+<a class="border-b-2 border-transparent pb-4 text-sm font-medium text-slate-500 hover:text-slate-700" href="#">Config</a>
+<a class="border-b-2 border-transparent pb-4 text-sm font-medium text-slate-500 hover:text-slate-700" href="#">Billing</a>
+<a class="border-b-2 border-transparent pb-4 text-sm font-medium text-slate-500 hover:text-slate-700" href="#">API Keys</a>
+<a class="border-b-2 border-transparent pb-4 text-sm font-medium text-slate-500 hover:text-slate-700" href="#">Users</a>
+</nav>
+</div>
+<!-- Content Grid -->
+<div class="grid grid-cols-12 gap-8 p-8">
+<!-- Left Column: Metrics -->
+<div class="col-span-12 space-y-8 lg:col-span-8">
+<!-- Stats Grid -->
+<div class="grid grid-cols-3 gap-6">
+<div class="rounded border border-slate-200 p-5 dark:border-slate-800">
+<p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Transaction Vol</p>
+<h4 class="mt-2 text-2xl font-bold tracking-tight">$4.2M</h4>
+<div class="mt-2 flex items-center gap-1 text-emerald-600">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs font-bold">+12.5% this month</span>
+</div>
+</div>
+<div class="rounded border border-slate-200 p-5 dark:border-slate-800">
+<p class="text-xs font-bold uppercase tracking-wider text-slate-400">Active API Keys</p>
+<h4 class="mt-2 text-2xl font-bold tracking-tight">14</h4>
+<div class="mt-2 flex items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined text-sm">info</span>
+<span class="text-xs font-bold">2 expiring soon</span>
+</div>
+</div>
+<div class="rounded border border-slate-200 p-5 dark:border-slate-800">
+<p class="text-xs font-bold uppercase tracking-wider text-slate-400">Average Latency</p>
+<h4 class="mt-2 text-2xl font-bold tracking-tight">124ms</h4>
+<div class="mt-2 flex items-center gap-1 text-emerald-600">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span class="text-xs font-bold">Within SLA</span>
+</div>
+</div>
+</div>
+<!-- Chart Placeholder -->
+<div class="rounded border border-slate-200 p-6 dark:border-slate-800">
+<div class="mb-6 flex items-center justify-between">
+<h3 class="text-base font-bold">Transaction Trends</h3>
+<div class="flex gap-2">
+<button class="rounded border border-slate-200 bg-white px-3 py-1 text-xs font-bold dark:border-slate-800 dark:bg-slate-900">7D</button>
+<button class="rounded bg-primary px-3 py-1 text-xs font-bold text-white">30D</button>
+<button class="rounded border border-slate-200 bg-white px-3 py-1 text-xs font-bold dark:border-slate-800 dark:bg-slate-900">90D</button>
+</div>
+</div>
+<div class="h-64 w-full rounded bg-slate-50 dark:bg-slate-900/50 flex items-end justify-between px-4 pb-4 gap-2" data-alt="Bar chart showing transaction trends over 30 days">
+<div class="w-full bg-primary/20 rounded-t h-[40%]"></div>
+<div class="w-full bg-primary/20 rounded-t h-[60%]"></div>
+<div class="w-full bg-primary/20 rounded-t h-[55%]"></div>
+<div class="w-full bg-primary/20 rounded-t h-[80%]"></div>
+<div class="w-full bg-primary rounded-t h-[95%]"></div>
+<div class="w-full bg-primary/20 rounded-t h-[70%]"></div>
+<div class="w-full bg-primary/20 rounded-t h-[50%]"></div>
+<div class="w-full bg-primary/20 rounded-t h-[65%]"></div>
+<div class="w-full bg-primary/20 rounded-t h-[45%]"></div>
+<div class="w-full bg-primary/20 rounded-t h-[85%]"></div>
+</div>
+</div>
+<!-- Activity Log Table -->
+<div class="rounded border border-slate-200 dark:border-slate-800">
+<div class="border-b border-slate-200 p-4 dark:border-slate-800">
+<h3 class="text-base font-bold">Recent System Events</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-900">
+<tr>
+<th class="px-4 py-3">Event</th>
+<th class="px-4 py-3">Status</th>
+<th class="px-4 py-3">User</th>
+<th class="px-4 py-3">Timestamp</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 text-sm dark:divide-slate-800">
+<tr>
+<td class="px-4 py-4 font-medium">API Key Rotation</td>
+<td class="px-4 py-4"><span class="rounded bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700 uppercase">System</span></td>
+<td class="px-4 py-4 text-slate-500">Service Worker</td>
+<td class="px-4 py-4 text-slate-500">2 mins ago</td>
+</tr>
+<tr>
+<td class="px-4 py-4 font-medium">Webook Configuration Updated</td>
+<td class="px-4 py-4"><span class="rounded bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700 uppercase">Success</span></td>
+<td class="px-4 py-4 text-slate-500">alex.j@acme.com</td>
+<td class="px-4 py-4 text-slate-500">1 hour ago</td>
+</tr>
+<tr>
+<td class="px-4 py-4 font-medium">KYC Document Uploaded</td>
+<td class="px-4 py-4"><span class="rounded bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700 uppercase">Pending</span></td>
+<td class="px-4 py-4 text-slate-500">Compliance Bot</td>
+<td class="px-4 py-4 text-slate-500">3 hours ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Column: Sidebar Info -->
+<div class="col-span-12 space-y-8 lg:col-span-4">
+<!-- Organization Details -->
+<div class="rounded border border-slate-200 p-6 dark:border-slate-800">
+<h3 class="mb-4 text-sm font-bold uppercase tracking-wider text-slate-400">Tenant Profile</h3>
+<div class="space-y-4">
+<div>
+<label class="text-xs font-medium text-slate-400">Legal Entity Name</label>
+<p class="text-sm font-semibold">Acme Global Technologies Inc.</p>
+</div>
+<div>
+<label class="text-xs font-medium text-slate-400">Primary Contact</label>
+<div class="mt-1 flex items-center gap-3">
+<div class="size-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">AJ</div>
+<div>
+<p class="text-sm font-semibold">Alex Johnson</p>
+<p class="text-xs text-slate-500">alex.j@acme.com</p>
+</div>
+</div>
+</div>
+<div>
+<label class="text-xs font-medium text-slate-400">Subscription Tier</label>
+<div class="mt-1 flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-500">diamond</span>
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Enterprise Plus</p>
+</div>
+</div>
+<div>
+<label class="text-xs font-medium text-slate-400">Infrastructure Region</label>
+<div class="mt-1 flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400">public</span>
+<p class="text-sm font-semibold">AWS us-east-1</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Usage Limits -->
+<div class="rounded border border-slate-200 p-6 dark:border-slate-800">
+<h3 class="mb-6 text-sm font-bold uppercase tracking-wider text-slate-400">Usage Quotas</h3>
+<div class="space-y-6">
+<div>
+<div class="mb-2 flex justify-between text-xs font-bold">
+<span>API Requests / Month</span>
+<span class="text-slate-500">8.2M / 10M</span>
+</div>
+<div class="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+<div class="h-full bg-primary" style="width: 82%"></div>
+</div>
+</div>
+<div>
+<div class="mb-2 flex justify-between text-xs font-bold">
+<span>User Seats</span>
+<span class="text-slate-500">42 / 50</span>
+</div>
+<div class="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+<div class="h-full bg-primary" style="width: 84%"></div>
+</div>
+</div>
+<div>
+<div class="mb-2 flex justify-between text-xs font-bold">
+<span>Storage Capacity</span>
+<span class="text-slate-500">124GB / 500GB</span>
+</div>
+<div class="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+<div class="h-full bg-emerald-500" style="width: 25%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Actions -->
+<div class="space-y-3">
+<button class="w-full flex items-center justify-between rounded border border-slate-200 p-4 text-sm font-bold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+<span class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">key</span>
+                                Generate Master API Key
+                            </span>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between rounded border border-slate-200 p-4 text-sm font-bold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+<span class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">history</span>
+                                View Full Audit Trail
+                            </span>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between rounded border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-600 hover:bg-red-100 dark:border-red-900 dark:bg-red-900/10">
+<span class="flex items-center gap-3">
+<span class="material-symbols-outlined">block</span>
+                                Suspend Tenant
+                            </span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

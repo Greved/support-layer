@@ -41,6 +41,30 @@ All events include: `HMAC-SHA256` signature in `X-SupportLayer-Signature` header
 
 **Slack:** Install via Slack OAuth from portal. Bot joins designated channel; answers questions using tenant knowledge base. `/ask <question>` slash command for internal team use. Low-confidence queries escalate to a human review thread.
 
+### Frontend Design
+> References: `docs/references/design/stitch_stark_fintech_prd/`
+> `webhook_management_stark/` · `integrations_marketplace_stark_with_logos/`
+
+**Webhooks page (portal sidebar "Integrations" entry):**
+> Reference: `webhook_management_stark/`
+- Portal light theme; "Integrations" active in sidebar
+- Title: "Webhooks" + description; "+ Create Webhook" primary button top-right
+- Subscriptions table: WEBHOOK URL · EVENTS (monospace event-name badge) · STATUS (LIVE=green pill, PAUSED=gray pill) · CREATED DATE · ACTIONS
+  - Actions per row: EDIT (blue) · PAUSE / RESUME (amber) · DELETE (red) — as text links
+- "Delivery Log" section with "LIVE UPDATES ●" badge top-right
+- Delivery log table: TIMESTAMP · EVENT · STATUS CODE (200 OK=green badge, 500 Error=red badge) · RETRY COUNT · ACTION ("SEND TEST" button per row)
+- "VIEW ALL DELIVERIES ↓" text link at bottom of log
+
+**Integrations Marketplace page:**
+> Reference: `integrations_marketplace_stark_with_logos/`
+- Portal light theme; "Integrations" active in sidebar; "Search apps..." search input + bell icon in top bar
+- Title: "Integrations Marketplace"
+- Tabs: All Integrations · Installed · Pending · Collections
+- Integration cards in a 3-column grid:
+  - Each card: brand icon (colored square) · INSTALLED or AVAILABLE badge (top-right corner) · integration name (bold) · short description; CTA button: "Configure" (blue filled, for installed) or "Install" (outlined, for available)
+  - Integrations: Zendesk (teal) · HubSpot (orange) · Slack (purple) · Mattermost (blue) · Telegram (light blue)
+  - Final card: dashed border + "+" icon + "Request Integration" + "Can't find what you need? Let us know." — links to a request form
+
 ### Tasks
 - [ ] Webhook engine: `webhooks` + `webhook_delivery_logs` tables; HMAC signing; retry with exponential backoff (3 attempts max); delivery log with status + response body
 - [ ] Zapier app: `New Query`, `New Ingestion`, `New Escalation` triggers; `Ingest Document`, `Query Bot` actions — submit to Zapier app marketplace

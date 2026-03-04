@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stark Fintech - Procedure Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#214ded",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101422",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-10 py-3">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-6">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">Stark Fintech</h2>
+</div>
+<nav class="flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium" href="#">Dashboard</a>
+<a class="text-primary text-sm font-medium border-b-2 border-primary pb-1" href="#">Procedures</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium" href="#">Assets</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<label class="flex flex-col min-w-40 h-9 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded bg-slate-100 dark:bg-slate-800">
+<div class="text-slate-500 flex items-center justify-center pl-3">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="w-full bg-transparent border-none focus:ring-0 text-sm placeholder:text-slate-500 px-2" placeholder="Search procedure logs..." value=""/>
+</div>
+</label>
+<div class="flex items-center gap-2">
+<div class="bg-primary/10 text-primary rounded-full p-1 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</div>
+<div class="bg-slate-200 dark:bg-slate-700 aspect-square rounded-full size-8 bg-cover bg-center" data-alt="User profile avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCXQlTZ5a3DUzggcwIzVmAiQAwz69i_G85wKuXLtyCTrZsV1WlceeyL3JcN4JX-w2tkgtLKeErCpQ5VOCAgNradr1i3OriL2CWqh7w19bWLagmJ4RMKC5nVHLZBwcBI5HQXpo8M2tXfuwEZzcjNHolLqR_Kqa-I9nTYpsjj-f5wFbO9EhYaZFiVuWjLlQzLc9EpC2Hqvdwk43I91kLwC7VyyfT9mBZczkeSJz0fCnntS5by8zBe0_hZU0b-Xc5nAyY743raG0bRZms");'></div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col px-10 py-6 max-w-[1200px] mx-auto w-full">
+<!-- Editor Header Section -->
+<div class="flex justify-between items-end mb-6">
+<div>
+<div class="flex items-center gap-2 text-slate-500 text-xs mb-1">
+<span>Procedures</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>KYC Onboarding Flow</span>
+</div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">KYC Onboarding Analytics</h1>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Export Report</button>
+<button class="px-4 py-2 bg-primary text-white rounded text-sm font-medium hover:bg-primary/90 transition-colors">Edit Procedure</button>
+</div>
+</div>
+<!-- Tabbed Interface -->
+<div class="border-b border-slate-200 dark:border-slate-800 mb-6">
+<div class="flex gap-8">
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-slate-500 pb-3 text-sm font-semibold hover:text-slate-900 transition-colors" href="#">
+                            Steps
+                        </a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-slate-500 pb-3 text-sm font-semibold hover:text-slate-900 transition-colors" href="#">
+                            Simulations
+                        </a>
+<a class="flex flex-col items-center justify-center border-b-2 border-primary text-primary pb-3 text-sm font-bold" href="#">
+                            Analytics
+                        </a>
+</div>
+</div>
+<!-- Analytics Content Container -->
+<div class="flex flex-col gap-6">
+<!-- Top Row: Metric Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="flex flex-col gap-1 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+<div class="flex justify-between items-start">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Trigger Rate</p>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">bolt</span>
+</div>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">84.2%</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-emerald-500 text-[16px]">trending_up</span>
+<p class="text-emerald-500 text-xs font-bold">+2.4% vs last mo</p>
+</div>
+</div>
+<div class="flex flex-col gap-1 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+<div class="flex justify-between items-start">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Completion Rate</p>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">check_circle</span>
+</div>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">91.5%</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-rose-500 text-[16px]">trending_down</span>
+<p class="text-rose-500 text-xs font-bold">-1.2% vs last mo</p>
+</div>
+</div>
+<div class="flex flex-col gap-1 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+<div class="flex justify-between items-start">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Escalation Rate</p>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">priority_high</span>
+</div>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">4.2%</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-emerald-500 text-[16px]">trending_down</span>
+<p class="text-emerald-500 text-xs font-bold">-0.5% improvement</p>
+</div>
+</div>
+<div class="flex flex-col gap-1 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+<div class="flex justify-between items-start">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Abandon Rate</p>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">logout</span>
+</div>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">2.1%</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-emerald-500 text-[16px]">trending_down</span>
+<p class="text-emerald-500 text-xs font-bold">-0.3% vs last mo</p>
+</div>
+</div>
+</div>
+<!-- Middle: Line Chart Card -->
+<div class="rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Performance Trends</h3>
+<p class="text-slate-500 text-sm">Completion vs. Escalation (Last 30 Days)</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="size-3 rounded-full bg-primary"></span>
+<span class="text-xs font-medium text-slate-600">Completion</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="size-3 rounded-full bg-slate-400"></span>
+<span class="text-xs font-medium text-slate-600">Escalation</span>
+</div>
+<select class="text-xs border-slate-200 dark:border-slate-700 bg-transparent rounded px-2 py-1 outline-none">
+<option>Last 30 Days</option>
+<option>Last 7 Days</option>
+<option>Last 90 Days</option>
+</select>
+</div>
+</div>
+<div class="h-[280px] w-full relative">
+<!-- SVG Chart Simulation -->
+<svg class="w-full h-full" fill="none" preserveaspectratio="none" viewbox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#214ded" stop-opacity="0.1"></stop>
+<stop offset="100%" stop-color="#214ded" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid Lines -->
+<line stroke="#f1f5f9" stroke-width="1" x1="0" x2="1000" y1="40" y2="40"></line>
+<line stroke="#f1f5f9" stroke-width="1" x1="0" x2="1000" y1="80" y2="80"></line>
+<line stroke="#f1f5f9" stroke-width="1" x1="0" x2="1000" y1="120" y2="120"></line>
+<line stroke="#f1f5f9" stroke-width="1" x1="0" x2="1000" y1="160" y2="160"></line>
+<!-- Escalation Line (Subtle) -->
+<path d="M0 180 Q 100 175, 200 182 T 400 178 T 600 185 T 800 176 T 1000 180" fill="none" stroke="#94a3b8" stroke-width="2"></path>
+<!-- Completion Line (Primary) -->
+<path d="M0 120 Q 100 110, 200 130 T 400 90 T 600 100 T 800 110 T 1000 95" fill="none" stroke="#214ded" stroke-width="3"></path>
+<path d="M0 120 Q 100 110, 200 130 T 400 90 T 600 100 T 800 110 T 1000 95 V 200 H 0 Z" fill="url(#chartGradient)"></path>
+<!-- Dots -->
+<circle cx="400" cy="90" fill="#214ded" r="4"></circle>
+<circle cx="800" cy="110" fill="#214ded" r="4"></circle>
+</svg>
+<div class="flex justify-between mt-4 px-2">
+<p class="text-slate-400 text-[11px] font-bold tracking-wider">MAY 01</p>
+<p class="text-slate-400 text-[11px] font-bold tracking-wider">MAY 07</p>
+<p class="text-slate-400 text-[11px] font-bold tracking-wider">MAY 14</p>
+<p class="text-slate-400 text-[11px] font-bold tracking-wider">MAY 21</p>
+<p class="text-slate-400 text-[11px] font-bold tracking-wider">JUN 01</p>
+</div>
+</div>
+</div>
+<!-- Bottom: Tool Call Performance Table -->
+<div class="rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Tool Call Performance</h3>
+<p class="text-slate-500 text-sm">Real-time metrics for automated procedure tools</p>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50">
+<th class="px-6 py-3 text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider">Tool Name</th>
+<th class="px-6 py-3 text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider">Success Rate</th>
+<th class="px-6 py-3 text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider">Avg Latency</th>
+<th class="px-6 py-3 text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider">Failure Rate</th>
+<th class="px-6 py-3 text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider">Volume (30d)</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+<span class="text-sm font-semibold text-slate-900 dark:text-slate-100">IdentityVerifier_v2</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-emerald-500 rounded-full" style="width: 98.4%"></div>
+</div>
+<span class="text-sm font-medium">98.4%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">1.2s</td>
+<td class="px-6 py-4 text-sm font-medium text-rose-500">0.2%</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">12,402</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+</div>
+<span class="text-sm font-semibold text-slate-900 dark:text-slate-100">BankStatementParser</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-emerald-500 rounded-full" style="width: 92.1%"></div>
+</div>
+<span class="text-sm font-medium">92.1%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">4.8s</td>
+<td class="px-6 py-4 text-sm font-medium text-amber-500">2.4%</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">8,119</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+</div>
+<span class="text-sm font-semibold text-slate-900 dark:text-slate-100">ComplianceChecker</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-emerald-500 rounded-full" style="width: 99.8%"></div>
+</div>
+<span class="text-sm font-medium">99.8%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">0.4s</td>
+<td class="px-6 py-4 text-sm font-medium text-rose-500">0.05%</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">14,930</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">email</span>
+</div>
+<span class="text-sm font-semibold text-slate-900 dark:text-slate-100">NotificationGateway</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-emerald-500 rounded-full" style="width: 95.5%"></div>
+</div>
+<span class="text-sm font-medium">95.5%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">0.9s</td>
+<td class="px-6 py-4 text-sm font-medium text-rose-500">1.1%</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">22,015</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+<span class="text-xs text-slate-500">Showing 4 of 12 tools</span>
+<div class="flex gap-2">
+<button class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-500">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-500">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Meta -->
+<footer class="mt-auto px-10 py-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<div class="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-4">
+<p class="text-xs text-slate-500">© 2024 Stark Fintech. All rights reserved.</p>
+<div class="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
+<p class="text-xs text-slate-500 flex items-center gap-1">
+<span class="size-2 rounded-full bg-emerald-500"></span>
+                            System Online
+                        </p>
+</div>
+<div class="flex items-center gap-6">
+<a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">Documentation</a>
+<a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">API Status</a>
+<a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

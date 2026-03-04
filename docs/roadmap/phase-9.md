@@ -46,6 +46,26 @@ Usage
 - Usage progress bars for secondary limits (documents, storage, team members) shown in the plan card or a sub-section
 - Warning state: progress bars turn amber at 80% and red at 100%; banner alert shown at 100%
 
+**Plan Upgrade flow:**
+> Reference: `docs/references/design/stitch_stark_fintech_prd/plan_upgrade_flow_stark/`
+- Full-page layout (replaces portal content area or modal); dark/navy left nav sidebar with Portal / Upgrade Plan nav items
+- Title: "UPGRADE YOUR PLAN" + subtitle; plan cards in a row of 3
+- Each plan card: name · price/month · feature list with checkmark rows
+- Middle card (RECOMMENDED) visually highlighted: larger scale, blue border, "RECOMMENDED" label badge; "UPGRADE NOW" blue filled button
+- Other cards: "CURRENT PLAN" (if applicable, outlined) · "CONTACT SALES" for Enterprise
+- "FULL PLAN COMPARISON" expandable table below cards: FEATURE rows vs plan columns (checkmark/cross/text per cell)
+- Two FAQ accordion items at bottom: plan change policy + overage behavior
+
+**Invoices List page:**
+> Reference: `docs/references/design/stitch_stark_fintech_prd/invoices_list_stark/`
+- Title: "Invoices" + description + "↓ Export CSV" + "▼ Filter List" buttons
+- Tabs: All Invoices · Paid · Pending · Overdue · Drafts
+- Table columns: checkbox · DATE · INVOICE ID · CUSTOMER (colored initials avatar + name) · AMOUNT · STATUS · ACTIONS
+- Status badges: + PAID (green) · + PENDING (amber) · + OVERDUE (red)
+- Actions column: "↓ Download PDF" link per row
+- Pagination: "SHOWING N TO N OF N ENTRIES" + numbered pages
+- "+ New Invoice" button bottom-left (for manual invoice creation)
+
 ### Tasks
 - [ ] Integrate Stripe SDK: products, prices, subscriptions, webhooks (`invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted`)
 - [ ] Map Stripe plan → `plan_limits` row; enforce on every upload and query

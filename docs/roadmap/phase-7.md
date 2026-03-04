@@ -264,6 +264,23 @@ Supported auth types: `none`, `bearer` (static token), `api_key` (header or quer
   - Center: conversation replay — customer/bot message bubbles (same style as widget); tool call events shown inline as an expandable "tool call" card between messages displaying tool name + request/response JSON summary
   - Right: Configure API Call panel — METHOD dropdown + URL input + HEADERS key-value editor + BODY JSON textarea + RESPONSE MAPPING fields
 
+**Procedure List page:**
+> Reference: `docs/references/design/stitch_stark_fintech_prd/procedure_list_stark/`
+- Title: "Procedures {N} Total"; "+ Create from Template" secondary button + "+ New Procedure" primary button
+- Tabs: All Procedures · Active · Drafts · Archived; search input + Filter button
+- Table columns: NAME (bold + procedure ID in gray below) · STATUS · TRIGGER RATE (7D) · RESOLUTION RATE (progress bar + %) · ACTIONS (edit pencil + pin icon + ⋮ menu)
+- Status badges: Live = green filled pill · Paused = amber pill · Draft = outlined gray pill
+- Bottom summary row: 3 KPI cards — Average Resolution % · Active Triggers count · Weekly Volume (events); weekly volume card uses blue highlight background
+- Pagination: "SHOWING N OF N PROCEDURES" + Previous/Next
+
+**Procedure Analytics tab:**
+> Reference: `docs/references/design/stitch_stark_fintech_prd/procedure_analytics_stark/`
+- Tabs: Steps · Simulations · Analytics (active = blue underline) within the procedure editor; breadcrumb shows procedure name
+- Title: "{Procedure Name} Analytics"; "Export Report" + "Edit Procedure" buttons top-right
+- 4 KPI cards: TRIGGER RATE · COMPLETION RATE · ESCALATION RATE · ABANDON RATE — each with small icon, large % value, green/red trend badge vs last month
+- "Performance Trends" area/line chart: Completion (blue) vs Escalation (gray) dual lines over 30-day x-axis; legend top-right
+- "Tool Call Performance" table: TOOL NAME (icon + name) · SUCCESS RATE (progress bar + %) · AVG LATENCY · FAILURE RATE (red text) · VOLUME (30D); paginated
+
 ### Tasks
 - [ ] `procedure/` Python module in `rag-core`: `trigger.py`, `executor.py`, `tool_runner.py`, `simulation.py`
 - [ ] PG migrations for procedures schema
