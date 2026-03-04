@@ -302,13 +302,21 @@ Supported auth types: `none`, `bearer` (static token), `api_key` (header or quer
 - [ ] Attribute extraction from tool responses
 - [ ] Auth header building for all auth types
 
-#### Integration tests (Testcontainers)
-- [ ] Full procedure run: procedure completes all steps, returns expected response
-- [ ] Tool call: mock HTTP server returns data, attributes stored correctly
-- [ ] Non-linear navigation: customer provides step-3 info in step-1 → step-3 skipped correctly
-- [ ] Escalation: checkpoint step pauses execution, resumes after mock human approval
-- [ ] Procedure vs RAG fallback: query below trigger threshold routes to RAG correctly
-- [ ] Two tenants: Tenant A procedure does not activate for Tenant B
+#### Integration tests (Testcontainers Postgres + Python pytest + mock HTTP server)
+- [ ] **CRUD endpoints (.NET TestServer):** `POST /portal/procedures` → 201; `GET /portal/procedures` → list; `PATCH /portal/procedures/{id}` updates name/trigger; `DELETE /portal/procedures/{id}` → 204; unknown ID → 404
+- [ ] **Step CRUD:** add instruction step → 201; add condition step with `on_true_step_id` + `on_false_step_id` → 201; reorder steps → verify `order_idx` persists; delete step → cascades out of execution order
+- [ ] **Tool CRUD:** `POST /portal/tools` with Bearer auth config → 201; auth config encrypted at rest (not returned in GET); `DELETE /portal/tools/{id}` → 204
+- [ ] **Simulation CRUD:** `POST /portal/procedures/{id}/simulations` → 201; `GET /portal/procedures/{id}/simulations` → list; `POST /portal/procedures/{id}/simulations/{sid}/run` → 202 + `runId`
+- [ ] **Full procedure run (Python):** seed 3-step procedure (instruction → tool_call → end) with mock HTTP tool server returning `{orderId: "123"}`; send trigger message → procedure executes all 3 steps → response contains tool response data; `procedure_sessions` row has `status=complete`
+- [ ] **Tool call with auth:** HTTP connector sends `Authorization: Bearer <token>` header to mock server; mock server verifies header; missing auth → step fails gracefully with error recorded in session
+- [ ] **Attribute extraction:** tool response `{customer: {email: "alice@example.com"}}` with `attributes_out = {"customer_email": "customer.email"}` → `session.attributes["customer_email"] = "alice@example.com"`
+- [ ] **Non-linear navigation:** 4-step procedure; customer's first message provides step-3 data; executor skips to step 4 without re-asking for step-3 info
+- [ ] **Condition branch — Python eval:** condition `session.attributes["amount"] > 100` with `amount=150` → true branch taken; `amount=50` → false branch taken
+- [ ] **Checkpoint pause/resume:** checkpoint step → session state set to `paused`; `POST /portal/procedures/sessions/{id}/resume` → execution continues from next step
+- [ ] **Escalate step:** escalate step → session ends with `status=escalated`; escalation webhook event emitted
+- [ ] **Procedure vs RAG fallback (Python):** query with similarity below `trigger_threshold` → classifier returns `None` → request routed to RAG pipeline; no `procedure_session` row created
+- [ ] **Tenant isolation:** Tenant A procedure with `trigger_threshold=0.80`; Tenant B sends exact trigger phrase → classifier does not activate Tenant A's procedure for Tenant B
+- [ ] **Go-live gate:** `PATCH /portal/procedures/{id}` with `status=live` when simulations exist but one fails → 422 with `{failedSimulations: [...]}`; all simulations passing → status updated to `live`
 
 #### Simulation tests
 - [ ] Simulation engine produces a full conversation and a judgment

@@ -73,7 +73,21 @@ Condition steps have two outgoing edges labelled **Yes** (green) and **No** (red
 - [ ] Mini-map + zoom/fit controls for large procedures
 
 ### Tests (Phase 7b)
-- **Component (React Testing Library):** Canvas renders correct node count for a 5-step procedure; condition node renders two labeled edges
+
+#### Unit tests
+- Dagre layout: auto-arrange on 6-node DAG produces no overlapping bounding boxes; respects node dimensions
+- Node type mapping: each `step_type` string maps to correct React Flow node component and color
+
+#### Component tests (React Testing Library)
+- Canvas renders correct node count for a 5-step procedure without errors
+- Condition node component renders two labeled edge handles: "Yes" (green) and "No" (red)
+- Step edit drawer opens with correct form fields pre-populated from step data
+
+#### Integration tests (.NET TestServer + Testcontainers Postgres)
+- **canvas_x / canvas_y persistence:** drag node to new position → `PATCH /portal/procedures/{id}/steps/{stepId}` with `{canvas_x: 200, canvas_y: 150}` → 200; `GET /portal/procedures/{id}/steps` → step returns `canvas_x=200, canvas_y=150`
+- **Null canvas coordinates:** new step created without canvas coords → `canvas_x` and `canvas_y` are `null` in response (auto-layout mode)
+- **Canvas state survives step reorder:** reorder steps via list view → canvas positions of unchanged steps preserved; reordered step's `order_idx` updated
+- **Simulation replay data:** `GET /portal/procedures/sessions/{id}/replay` → returns `{executedStepIds: [...], failedStepId: "..."}` derived from `simulation_runs.conversation_json`
 
 #### E2E tests (Playwright .NET — portal)
 - [ ] **Canvas renders:** Open an existing procedure with 5+ steps → click "Canvas" toggle → verify React Flow canvas appears with dot-grid background → verify correct node count matches step count → verify node shapes: instruction=rectangle (blue), condition=diamond (amber), tool_call=hexagon (purple), end=filled circle (gray)

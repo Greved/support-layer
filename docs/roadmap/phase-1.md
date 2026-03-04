@@ -63,12 +63,22 @@ Chat (test)
 - [ ] Email notification job: on `status` transition to `ready` or `error`, send email to tenant admin
 
 ### Tests (Phase 1)
-- **Unit:** Document status state machine, API key hash comparison
-- **Integration (httpx / .NET TestServer):**
-  - Upload → job queued → status transitions `pending → processing → ready`
-  - Config update reflected in subsequent query responses
-  - API key created → used in widget auth → revoked → rejected
-  - Tenant A cannot access Tenant B documents (403)
+
+#### Unit tests
+- Document status state machine: valid transitions `pending→processing→ready`, `pending→processing→error`; invalid direct `pending→ready` rejected
+- API key hash comparison: SHA-256 of plaintext matches stored hash; timing-safe comparison used
+- File size validation: boundary conditions at plan limit (exactly at limit passes, one byte over rejects)
+- Ingestion job: mock RAG client returns success → document status set to `ready`; mock returns error → status set to `error` with error message stored
+
+#### Integration tests (.NET TestServer + Testcontainers Postgres)
+- **Auth flow:** `POST /portal/auth/login` with valid credentials → 200 + `accessToken` + `refreshToken`; use access token on protected endpoint → 200; expired/invalid token → 401; `POST /portal/auth/refresh` with valid refresh token → new token pair; revoked refresh token → 401
+- **Document upload lifecycle:** `POST /portal/documents` with PDF → 202 + document ID; `GET /portal/documents/{id}` → status `processing`; after Hangfire job runs → status `ready` with non-zero `chunkCount`
+- **Document upload guards:** unsupported MIME type → 415; file exceeding `MaxFileSizeMb` for tenant plan → 413; monthly document quota reached → 429 with `X-Quota-Exceeded: documents`
+- **Config CRUD:** `GET /portal/config` returns current settings; `PUT /portal/config` with new system prompt → 200; subsequent `GET` returns updated value
+- **API key lifecycle:** `POST /portal/api-keys` → 201 + plaintext key (one-time); `GET /portal/api-keys` → lists key with masked value; `DELETE /portal/api-keys/{id}` → 204; use deleted key → 401
+- **User invite:** `POST /portal/users/invite` → 201; invited user appears in `GET /portal/users`; `DELETE /portal/users/{id}` → 204; deleted user no longer in list
+- **Tenant isolation:** Tenant A JWT on `GET /portal/documents` returns only Tenant A's documents; Tenant B's document ID not accessible via Tenant A's token → 404
+- **RAG query:** `POST /portal/chat` with question → 200 with non-empty `answer` and `sources` (mocked RAG client returns canned response)
 - **E2E (Playwright .NET against running stack):**
   - Login with valid credentials → JWT stored → access protected endpoint → logout → re-request protected endpoint → 401
   - Upload PDF → poll `GET /portal/documents/{id}/status` until `ready` → `POST /portal/chat` with a question answered by the doc → verify answer is non-empty and contains relevant content

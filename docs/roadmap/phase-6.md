@@ -211,6 +211,17 @@ These run continuously in production (sampled, not every query):
 **Widget feedback UI (Eval v5 milestone):**
 - Subtle 👍/👎 row beneath each bot response in the chat widget; optional free-text comment on thumbs-down; no interruption to the conversation flow
 
+#### Integration tests (.NET TestServer + Testcontainers Postgres / Python pytest)
+- **Eval run API:** `POST /admin/tenants/{id}/evals/run` → 202 + `runId`; `GET /admin/tenants/{id}/evals/runs/{runId}` → returns status `completed` after job finishes (mock RAGAS client); results rows written to `eval_results` table
+- **Synthetic dataset generation:** `POST /admin/tenants/{id}/evals/generate` → 202; after job finishes, `eval_datasets` contains rows for that tenant; each row has `question`, `ground_truth`, `source_chunk_ids`
+- **Baseline pinning:** `POST /admin/evals/baseline` with `runId` → 200; subsequent regression check compares against pinned run
+- **Regression detection:** seed a passing baseline run; run second eval with `faithfulness=0.50` (below baseline); regression check returns `failed=true` with affected metrics listed
+- **Portal quality endpoints:** `GET /portal/evals/summary` → 200 with `currentScores` + `previousScores`; `GET /portal/evals/runs` → paged list of runs for tenant; `GET /portal/evals/runs/{id}` → per-question detail rows
+- **Feedback storage:** `POST /v1/feedback` with `{messageId, rating: "down", comment: "..."}` → 201; row in `chat_message_feedback` with correct fields; `GET /admin/feedback` → feedback entry visible
+- **Feedback promotion:** admin `POST /admin/feedback/{id}/promote` → creates `eval_dataset` row with question from the session message; feedback row marked `promoted=true`
+- **Drift detection:** seed 7-day thumbs-up rate at 50% (below 60% baseline); nightly job runs → alert record created in `drift_alerts` table with `reason` field
+- **CI eval gate (pytest):** `eval_gate.py --baseline-run-id X --current-run-id Y` returns exit code 1 when any metric drops > threshold; returns 0 when all within threshold; outputs markdown table of metric deltas
+
 #### E2E tests (Playwright .NET)
 - **Quality page renders:** Log in as tenant → navigate to Quality in sidebar → verify Groundedness and Answer Relevancy donut charts render with percentage labels in center → verify Low-Confidence Queries table has columns QUERY and GENERATED ANSWER
 - **Trace view:** Click on a row in the low-confidence table → verify right panel Trace View expands → verify all 4 steps visible: USER QUERY / RETRIEVED DOCS / LLM REASONING / FINAL ANSWER → verify each step is expandable

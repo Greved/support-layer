@@ -9,6 +9,7 @@ public class AuditLog
     public string? ResourceType { get; set; }
     public string? ResourceId { get; set; }
     public string? Metadata { get; set; }
+    public string? IpAddress { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public Tenant Tenant { get; set; } = null!;

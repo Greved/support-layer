@@ -75,10 +75,25 @@ All events include: `HMAC-SHA256` signature in `X-SupportLayer-Signature` header
 - [ ] Public API keys: separate `developer_api_keys` scope allowing external apps to call portal API on behalf of a tenant (OAuth2 client credentials flow)
 
 ### Tests (Phase 10)
-- **Unit:** HMAC signature generation/verification, webhook retry backoff schedule
-- **Integration:** Webhook delivery to test endpoint; retry on 5xx; delivery log entry written correctly
-- **Integration:** Zendesk ticket created on escalation (mock Zendesk API)
-- **Integration:** Slack bot responds in channel with formatted sources (mock Slack API)
+
+#### Unit tests
+- HMAC-SHA256 signature: known payload + secret → known signature; tampered payload → different signature
+- Webhook retry backoff: attempts at 0s, 30s, 5min; 4th attempt not scheduled (max 3)
+- Event deduplication: same `event_id` processed twice → second delivery skipped
+
+#### Integration tests (.NET TestServer + Testcontainers Postgres + mock HTTP receivers)
+- **Webhook CRUD:** `POST /portal/webhooks` → 201 + ID; `GET /portal/webhooks` → lists it; `DELETE /portal/webhooks/{id}` → 204; unknown → 404
+- **Webhook delivery:** ingest a document → `ingestion.complete` event fires → delivery job runs → mock receiver captures request → `webhook_delivery_logs` row has `status=200`; `X-SupportLayer-Signature` header present and valid
+- **Webhook delivery — 5xx retry:** mock receiver returns 500 → retry job scheduled; after 3 attempts → log entry has `retry_count=3, status=exhausted`
+- **Webhook delivery — idempotency:** fire same event twice with same `event_id` → only one delivery attempt (second skipped)
+- **HMAC verification:** delivery request signature matches `HMAC-SHA256(secret, body)`; modify body before verifying → signature mismatch
+- **Pause webhook:** `PATCH /portal/webhooks/{id}` with `status=paused` → events no longer delivered; `PATCH` with `status=live` → deliveries resume
+- **Send test delivery:** `POST /portal/webhooks/{id}/test` → mock receiver receives test payload with `event=test`; `webhook_delivery_logs` row created
+- **Zendesk integration (mock):** configure Zendesk integration; trigger escalation → mock Zendesk API receives `POST /tickets` with session transcript in body; ticket ID stored in `escalation_tickets`
+- **HubSpot integration (mock):** chat session ends with collected email → mock HubSpot API receives `POST /timeline-events` with session summary; contact linked by email
+- **Slack slash command (mock):** `POST /slack/commands` with `/ask What is the return policy?` → bot calls `rag-core` (mocked) → formatted response posted to Slack channel (mock Slack API verifies `POST /chat.postMessage`)
+- **Developer API keys:** `POST /portal/developer-keys` (OAuth2 client credentials flow) → 201 + `client_id` + `client_secret`; use credentials for `POST /v1/chat` → 200; revoke → 401
+- **Tenant isolation (webhooks):** Tenant A webhook cannot receive Tenant B events; `GET /portal/webhooks/{tenantB_id}` with Tenant A JWT → 403
 
 #### E2E tests (Playwright .NET — portal)
 - [ ] **Webhooks page renders:** Navigate to Integrations → Webhooks → verify title "Webhooks" + description + "+ Create Webhook" button → verify subscriptions table with columns WEBHOOK URL / EVENTS / STATUS / CREATED DATE / ACTIONS → verify Delivery Log section with "LIVE UPDATES ●" badge

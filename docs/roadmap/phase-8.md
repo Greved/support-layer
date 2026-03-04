@@ -1,5 +1,23 @@
 [← Index](index.md) · [← Phase 7b](phase-7b.md) · [Phase 9 →](phase-9.md)
 
+### Tests (Phase 8)
+
+#### Unit tests
+- Hybrid search: dense + sparse score combination formula; configurable alpha weight
+- Cross-encoder reranker: top-K candidates reranked; reranked order differs from original relevance order on known test set
+- Knowledge gap detector: query with max-score < threshold → gap event emitted; above threshold → no event
+- Multilingual detection: Spanish query correctly detected and language code returned
+
+#### Integration tests (Testcontainers Qdrant + Python pytest)
+- **Hybrid search end-to-end:** ingest 3 documents; send BM25-favoring query → hybrid search returns correct document ranked first; pure-dense search returns different ranking
+- **Cross-encoder reranker:** ingest 5 documents; top-3 retrieved by dense; cross-encoder reranks → final answer uses cross-encoder top-1 (verified by checking source in response)
+- **Min relevance score filter:** configure `min_relevance_score=0.8`; query on unrelated topic → 0 sources returned; response states no information found
+- **Configurable top-K:** set `top_k=1` in tenant config → exactly 1 source in response; `top_k=5` → up to 5 sources
+- **Multi-turn history:** send 2-message conversation; second message references entity from first → LLM receives rolling context window; answer demonstrates awareness of earlier turn
+- **Human escalation webhook:** escalation event reached → `POST` to mock webhook URL with session transcript; `chat_sessions` row updated with `handoff_at`
+- **Scheduled re-ingestion:** create re-ingest job for URL; job runs → document re-ingested; old chunks replaced; `updated_at` timestamp advanced
+- **A/B test routing:** configure 50/50 split between config A and config B; send 100 requests → ~50 routed to each (chi-squared test on counts); metrics tracked per variant in `ab_test_results` table
+
 ---
 
 ## Phase 8 — Retrieval Quality & Advanced Features

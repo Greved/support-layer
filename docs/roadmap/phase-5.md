@@ -49,10 +49,24 @@ Main merge:
 - [ ] Staging environment on a real server/VM with prod-like config
 
 ### Tests (Phase 5)
-- **Load (k6):** All scenarios at acceptance thresholds
-- **Security (OWASP ZAP):** Automated scan against staging
-- **Chaos:** Qdrant restart mid-query, LLM server crash → graceful degradation
-- **Smoke (post-deploy):** 5-minute automated smoke test suite on every deploy
+
+#### Integration tests (.NET TestServer / Python httpx)
+- **Input validation:** `POST /portal/documents` with oversized query string (>10 000 chars) → 400; `POST /portal/chat` with empty query → 422; null body → 422
+- **Prompt injection detection:** `POST /v1/chat` with payload `"Ignore all previous instructions and..."` → flagged; response does not reveal system prompt or deviate from bot persona
+- **Rate limiting layers:** nginx-level rate limiting tested via rapid requests in integration; application-level rate limit (`RedisSlidingWindowRateLimiter`) independently verified with unit test
+- **API key rotation:** old key revoked → 401 within one request after revoke; new key active immediately
+- **Security headers:** GET on portal SPA root → response includes `Strict-Transport-Security`, `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`
+- **HTTPS redirect:** HTTP request to port 80 → 301 redirect to HTTPS equivalent
+- **Chaos — Qdrant down:** stop Qdrant container mid-test → `POST /v1/chat` returns 503 with user-friendly error body, no stack trace exposed
+- **Chaos — Redis down:** stop Redis container → rate limiter fails open (requests proceed) or returns 503 gracefully; no 500 with stack trace
+- **Chaos — LLM server down:** mock LLM endpoint returns 503 → `POST /v1/chat` returns 503; retried once then fails with error; error logged and observable in Prometheus `rag_llm_errors_total`
+- **Database backup:** `pg_dump` to file → restore into fresh Testcontainers Postgres → all tables present and row counts match
+- **ClamAV scan:** upload a known EICAR test file → 422 with `virus_detected` error; clean file passes scan
+
+#### Load tests (k6)
+- **Scenario 1:** 100 concurrent widget sessions × 5 minutes → p95 chat latency < 8s, zero 5xx
+- **Scenario 2:** 10 tenants × 50-page PDF upload simultaneously → ingestion throughput ≥ 5 docs/min
+- **Scenario 3:** 20 concurrent super-admin users on admin SPA → p95 API latency < 2s
 
 #### E2E smoke tests (Playwright .NET — runs on every deploy to staging)
 - **Health endpoints:** `GET /portal/healthz`, `GET /admin/healthz`, `GET /v1/healthz`, `GET /internal/healthz` all return 200 within 3s

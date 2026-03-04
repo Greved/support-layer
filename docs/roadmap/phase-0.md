@@ -46,10 +46,19 @@ audit_logs     (id, tenant_id nullable, user_id, action, resource_type, resource
 - [ ] Python `rag-core`: implement `/internal/health` readiness endpoint (checks Qdrant reachability + embedding server ping)
 
 ### Tests (Phase 0)
-- **Integration:** Two tenants ingest different docs → query returns only own-tenant results
-- **Integration:** Missing/wrong `X-Tenant-ID` returns 400/403
-- **Unit:** Qdrant collection name generation, tenant slug validation
-- **Migration:** EF Core migration rollback test (`dotnet ef database update <previous>` succeeds)
+
+#### Unit tests
+- Qdrant collection name generation: `tenant_{slug}` formatting, special character rejection
+- Tenant slug validation: length limits, allowed characters, uniqueness check
+
+#### Integration tests (Testcontainers — real Postgres + real Qdrant)
+- **Tenant isolation:** Tenant A ingests document → Tenant B queries same topic → result set does not include Tenant A chunks; verified by asserting Qdrant payload `tenant_id` filter is applied
+- **Missing header:** `POST /api/query` without `X-Tenant-ID` → 422 (FastAPI validation error)
+- **Wrong tenant header:** `X-Tenant-ID` header set to unknown slug → Qdrant returns empty results, response answer indicates no information found (does not 500)
+- **Internal secret guard:** `POST /internal/healthz` without `X-Internal-Secret` → 403; with wrong secret → 403; with correct secret → 200
+- **Collection creation:** Ingest first document for a new tenant slug → verify Qdrant collection `tenant_{slug}` is created automatically
+- **Multi-tenant collection isolation:** Tenant A and Tenant B both ingest docs → `GET /collections` shows two separate collections with correct names
+- **Migration rollback:** `dotnet ef database update <previous>` completes without error and re-applying brings schema back to current state
 
 ### Quality Gate ✅
 - Tenant isolation test passes: Tenant A cannot retrieve Tenant B documents

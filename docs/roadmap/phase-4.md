@@ -110,9 +110,29 @@
 - [ ] Notification preferences page: email on ingestion complete/error, quota warning at 80% and 100% of plan limit
 
 ### Tests (Phase 4)
-- **Unit (Vitest):** Form validation, status badge logic, polling hook
-- **Component (React Testing Library):** Upload dropzone, config form, chat panel
-- **E2E (Playwright .NET):**
+
+#### Unit tests (Vitest)
+- Form validation: required fields, email format, password length, slug character rules
+- Status badge logic: maps `pending/processing/ready/error` strings to correct badge variant and color
+- Polling hook: starts interval on mount, clears on unmount, calls callback on each tick
+
+#### Component tests (React Testing Library)
+- Upload dropzone: accepts PDF file, rejects `.exe`, shows filename after drop, calls `onUpload` with correct FormData
+- Config form: renders system prompt textarea, temperature slider, and max tokens input; submitting calls API with correct payload
+- Chat panel: renders message list, sends message on Enter, shows loading state while streaming
+
+#### Integration tests (.NET TestServer + Testcontainers Postgres)
+These tests validate the API endpoints consumed by the Portal SPA without involving the browser.
+- **Password reset request:** `POST /portal/auth/password-reset/request` with registered email → 200 (no email sent in test, but token created in DB); unknown email → 200 (no enumeration leak)
+- **Password reset confirm:** `POST /portal/auth/password-reset/confirm` with valid token + new password → 200; expired/invalid token → 400; re-use of same token → 400
+- **MFA enrollment:** `POST /portal/auth/mfa/enroll` → 200 + TOTP secret + backup codes; `POST /portal/auth/mfa/verify` with valid TOTP code → 200 (MFA activated); wrong code → 400
+- **MFA-enforced login:** tenant with MFA enabled → `POST /portal/auth/login` returns 200 with `mfaRequired: true`; second step `POST /portal/auth/mfa/login` with valid TOTP → 200 + tokens
+- **Notification preferences:** `GET /portal/settings/notifications` → 200 with toggle states; `PUT /portal/settings/notifications` with updated toggles → 200; `GET` again → reflects changes
+- **Onboarding state:** new tenant → `GET /portal/onboarding` → step 1 incomplete; `POST /portal/onboarding/complete/{step}` → step marked done; all steps complete → wizard does not reappear
+- **Usage dashboard:** `GET /portal/dashboard/usage` → 200 with `queriesThisMonth`, `documentCount`, `planLimits`; counts reflect seeded `BillingEvent` rows
+- **Team role enforcement:** member-role JWT on `GET /portal/config` → 403; owner-role JWT → 200
+
+#### E2E (Playwright .NET):
 
   **Auth flows:**
   - Navigate to login page → verify "BOTPLATFORM" heading and SIGN IN card render → enter valid credentials → verify redirect to dashboard → verify sidebar and KPI cards visible

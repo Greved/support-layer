@@ -77,9 +77,25 @@ Usage
 - [ ] Admin billing view: per-tenant MRR, plan tier, Stripe subscription status, outstanding invoices
 
 ### Tests (Phase 9)
-- **Unit:** Quota enforcement logic, usage aggregation SQL
-- **Integration:** Stripe webhook handler processes `invoice.paid` → tenant plan updated → limits refreshed
-- **Integration:** Request at 100% query quota → 429 returned; plan upgrade → requests succeed again
+
+#### Unit tests
+- Quota enforcement: `CheckQuotaAsync(tenantId, "queries")` with usage=100/limit=100 → throws `QuotaExceededException`; usage=99/limit=100 → passes
+- Usage aggregation: SQL query summing `BillingEvent` rows for last 30 days returns correct total across timezone boundaries
+- Stripe webhook signature verification: valid `Stripe-Signature` header → event parsed; tampered payload → `SignatureVerificationException`
+
+#### Integration tests (.NET TestServer + Testcontainers Postgres + Stripe test mode / mock)
+- **Stripe webhook — invoice.paid:** POST `/portal/billing/webhook` with `invoice.paid` payload (Stripe test event) → tenant plan updated to paid tier; `plan_limits` refreshed; `billing_events` row inserted
+- **Stripe webhook — subscription.deleted:** `customer.subscription.deleted` payload → tenant plan downgraded to free; usage limits updated
+- **Stripe webhook — idempotency:** replay same `invoice.paid` event twice with same `event_id` → plan updated only once (second call is no-op)
+- **Quota enforcement — queries:** seed tenant at 100% query quota; `POST /v1/chat` → 429 + `X-Quota-Exceeded: queries` header; no `BillingEvent` created for blocked request
+- **Quota enforcement — documents:** seed tenant at max document count; `POST /portal/documents` → 429 + `X-Quota-Exceeded: documents`
+- **Quota enforcement — storage:** seed tenant with storage at limit; upload file that would exceed → 429 + `X-Quota-Exceeded: storage`
+- **Plan upgrade restores quota:** tenant at 100% query quota; `POST /portal/billing/checkout` with plan upgrade → after webhook `invoice.paid` processed → quota raised; `POST /v1/chat` succeeds
+- **Usage API:** `GET /portal/billing/usage` → 200 with `{queriesUsed, queriesLimit, documentsUsed, documentsLimit, storageUsedBytes, storageLimitBytes}`; counts match seeded `BillingEvent` and `Document` rows
+- **Invoice list API:** `GET /portal/billing/invoices` → returns paged list from Stripe (mocked); each row has `id`, `amount`, `status`, `pdfUrl`
+- **Trial expiry:** seed tenant with `trial_ends_at = now() - 1 day`; nightly job runs → plan downgraded; `GET /portal/billing/subscription` shows `status=trial_expired`
+- **Usage alert at 80%:** seed tenant at 80% query quota; background job runs → `usage_alerts` row created with `resource=queries, percent=80`; alert email enqueued
+- **Admin billing view:** `GET /admin/tenants/{id}/billing` → returns MRR, Stripe subscription status, and `recentEvents` matching `billing_events` rows
 
 #### E2E tests (Playwright .NET — portal)
 - [ ] **Usage page renders:** Log in as tenant → navigate to Usage & Billing in sidebar → verify current plan card shows plan name + billing period + usage percentage → verify 3 metric cards render (Total Queries / Tokens Consumed / Avg Latency) each with trend badge → verify DAILY QUERY PERFORMANCE chart renders with blue and orange bars over 30-day axis

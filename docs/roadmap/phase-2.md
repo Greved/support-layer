@@ -58,13 +58,23 @@ GET    /v1/session/{id}          (retrieve session history)
 - [ ] Proactive greeting: `data-auto-open-delay-seconds` attribute to auto-open widget after N seconds on page
 
 ### Tests (Phase 2)
-- **Unit:** Rate limit counter logic, API key validation, SSE frame formatting
-- **Integration:**
-  - Valid API key → 200 with answer + sources
-  - Invalid/expired API key → 401
-  - Exceeded rate limit → 429 with `Retry-After`
-  - Streaming: all SSE frames received, `[DONE]` received, session persisted
-  - CORS: origin not in allowlist returns 403
+
+#### Unit tests
+- Rate limit counter logic: sliding window adds request, removes expired entries, count over limit triggers 429
+- API key hash lookup: SHA-256 match returns tenant context; no match returns 401
+- SSE frame formatting: `data:` prefix, `\n\n` terminator, JSON structure of token/sources/done events
+
+#### Integration tests (.NET TestServer + Testcontainers Postgres + Testcontainers Redis)
+- **Valid API key:** `POST /v1/chat` with `X-Api-Key: sl_live_*` → 200 + `{answer, sessionId, sources[]}`
+- **Invalid API key:** unknown key hash → 401 with error body; no key header → 401
+- **Expired API key:** key with past `ExpiresAt` → 401
+- **Rate limiting:** exceed `MaxRequestsPerMinute` for tenant plan → 429 + `Retry-After` header; wait 60s window → requests succeed again
+- **Session persistence:** `POST /v1/session` → 201 + session ID; `POST /v1/chat` with `sessionId` → message stored; `GET /v1/session/{id}` → returns full message history
+- **Session tenant isolation:** `GET /v1/session/{id}` with API key from different tenant → 403
+- **Streaming endpoint:** `POST /v1/chat/stream` → `Content-Type: text/event-stream`; response body contains `data: {"type":"token",...}` lines; last line is `data: [DONE]`; after stream completes `ChatMessage` row exists in DB
+- **Billing event written:** after successful chat query → `BillingEvent` row with `EventType="query"` exists for tenant
+- **CORS:** request from allowed origin → `Access-Control-Allow-Origin` header present; `OPTIONS` preflight → 204
+- **Python stream endpoint:** `POST /internal/stream` without secret → 403; with correct secret and mock query → `Content-Type: text/event-stream` and token events in body
 - **E2E (Playwright .NET):**
   - Load test HTML page with embedded widget script → click launcher button → verify chat window opens with header showing bot name and ONLINE status
   - Type question in input → press Enter → verify streaming tokens appear progressively in bot bubble → verify cursor animation → verify `[DONE]` ends stream and cursor disappears

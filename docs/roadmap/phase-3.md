@@ -113,11 +113,47 @@ Tenants (additions)
 - [ ] Data export: stream ZIP of all tenant-scoped PG rows + document metadata; exclude raw Qdrant vectors
 
 ### Tests (Phase 3)
-- **Unit:** Stats aggregation SQL queries, cost estimate calculation
-- **Integration:**
-  - Super-admin token cannot access `/portal/*` and vice versa (role isolation)
-  - Tenant deletion cascades correctly (PG rows + Qdrant collection gone)
-  - Infrastructure health returns degraded when a service is down
+
+#### Unit tests
+- Stats aggregation: SQL window function queries return correct counts for known fixture data
+- Cost estimate calculation: billing events × cost-per-query rate rounds to correct decimal places
+
+#### Integration tests (.NET TestServer + Testcontainers Postgres — implemented in `tests/Api.Admin.Tests/`)
+**Auth**
+- `POST /admin/auth/login` valid credentials → 200 + `accessToken`; wrong password → 401; unknown email → 401; inactive admin → 401
+
+**Tenants**
+- `GET /admin/tenants` authenticated → 200 + paged items; unauthenticated → 401
+- `GET /admin/tenants?search=...` → returns only matching tenants; `?isActive=false` → only inactive
+- `GET /admin/tenants/{id}` existing → 200 with detail; unknown ID → 404
+- `POST /admin/tenants` valid → 201 with tenant; duplicate slug → 409; unknown plan → 400
+- `PATCH /admin/tenants/{id}` change plan → 200 updated plan; `isActive=false` → suspended
+- `DELETE /admin/tenants/{id}` → 204, `IsActive=false` in DB; unknown → 404
+- `POST /admin/tenants/{id}/impersonate` tenant with user → 200 + portal-compatible JWT; no users → 400; writes AuditLog entry with `action="impersonate"`
+- `GET /admin/tenants/{id}/export` → 200, `Content-Type: application/zip`, non-empty body
+
+**Stats**
+- `GET /admin/tenants/{id}/stats` existing tenant with seeded events → 200 with correct counts; unknown → 404
+- `GET /admin/stats/global` → 200 with platform-wide totals; `totalTenants ≥ 1`
+
+**Documents**
+- `GET /admin/tenants/{id}/documents` → list of tenant's documents; unknown tenant → 404
+- `DELETE /admin/tenants/{id}/documents/{docId}` → 204, `IsActive=false`; wrong tenant → 404
+
+**Billing**
+- `GET /admin/tenants/{id}/billing` with seeded events → 200 with `eventCount30d ≥ 2`; no events → `eventCount30d = 0`; unknown tenant → 404
+
+**Infra**
+- `GET /admin/infra/health` → 200/207; response has `overall` + `services[]` each with `name` + `status`
+- `GET /admin/infra/collections` → 200 + array (stub returns one collection)
+
+**Audit logs**
+- `GET /admin/audit-logs` → 200 paged result; `?tenantId=...` → only that tenant's logs; `?action=...` → filtered; `?from=&to=` date range → only in-range items
+- Pagination: `?page=1&pageSize=2` on 5 rows → 2 items returned, `total=5`
+- `AdminAuditMiddleware`: `PATCH /admin/tenants/{id}` → AuditLog row written with `Action` containing `PATCH` and non-null `IpAddress`
+
+**Role isolation**
+- Portal JWT (`issuer=supportlayer`) on `GET /admin/tenants` → 401; admin JWT (`issuer=supportlayer-admin`) on `GET /portal/documents` → 401
 - **E2E (Playwright .NET):**
   - **Auth & navigation:** Log in as super-admin → verify dashboard KPI cards render → navigate to each sidebar section (Tenants, Users, Audit Log) → verify pages load without JS errors → log out → verify redirect to login
   - **Tenant lifecycle:** Create new tenant via "+ Create Tenant" form → verify appears in tenant table with correct plan badge → edit plan → verify badge updates → soft-delete tenant → verify removed from active list → verify Qdrant collection purged (via infra API check)
