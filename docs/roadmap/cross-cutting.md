@@ -14,7 +14,7 @@
 
 | Level | Tool | When |
 |-------|------|------|
-| Unit | pytest (Python), xUnit (.NET), Vitest (React) | Every PR |
+| Unit | pytest (Python), NUnit (.NET), Vitest (React) | Every PR |
 | Integration (.NET) | .NET TestServer + Testcontainers | Every PR |
 | Integration (Python) | pytest + httpx + Testcontainers-python | Every PR |
 | E2E | **Playwright .NET** | Every PR (fast subset), nightly (full) |
@@ -29,13 +29,30 @@
 
 **.NET (primary — all business API tests):**
 ```csharp
-// xUnit + .NET TestServer + Testcontainers
-await using var pg    = new PostgreSqlContainer("postgres:16").Build();
-await using var redis = new RedisContainer("redis:7").Build();
-await using var app   = new WebApplicationFactory<Program>()
-    .WithWebHostBuilder(b => b.ConfigureServices(s => {
-        s.Configure<DatabaseOptions>(o => o.ConnectionString = pg.GetConnectionString());
-    })).CreateClient();
+// NUnit + .NET TestServer + Testcontainers
+// NUnit packages: NUnit 4.x, NUnit3TestAdapter 4.x, Microsoft.NET.Test.Sdk
+// Factory pattern: WebApplicationFactory<Program> + Testcontainers.PostgreSql
+// Test class pattern: [TestFixture] + [OneTimeSetUp]/[OneTimeTearDown] (no IClassFixture)
+[TestFixture]
+public class MyTests
+{
+    private MyApiFactory _factory = null!;
+    private HttpClient _client = null!;
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
+    {
+        _factory = new MyApiFactory();
+        await _factory.InitAsync();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown() => await _factory.DisposeAsync();
+
+    [Test]
+    public async Task SomeTest() { ... }
+}
 ```
 
 **Python (rag-core internal API tests):**

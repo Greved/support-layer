@@ -21,10 +21,27 @@ public class AuthController(AppDbContext db, ITokenService tokenService) : Contr
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return Unauthorized(new { error = "Invalid credentials." });
 
+        if (user.MfaEnabled)
+        {
+            var tempToken = tokenService.IssueTempToken(user);
+            return Ok(new { mfaRequired = true, tempToken });
+        }
+
         var accessToken = tokenService.IssueAccessToken(user);
         var refreshToken = await tokenService.IssueRefreshTokenAsync(user.Id);
 
-        return Ok(new TokenResponse(accessToken, refreshToken));
+        return Ok(new
+        {
+            accessToken,
+            refreshToken,
+            user = new
+            {
+                id = user.Id,
+                email = user.Email,
+                role = user.Role!.Slug,
+                tenantId = user.TenantId,
+            },
+        });
     }
 
     [HttpPost("refresh")]

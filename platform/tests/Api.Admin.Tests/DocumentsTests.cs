@@ -7,20 +7,33 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.Admin.Tests;
 
-public class DocumentsTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory>
+[TestFixture]
+public class DocumentsTests
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private AdminApiFactory _factory = null!;
+    private HttpClient _client = null!;
     private readonly Guid _adminId = Guid.NewGuid();
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
+    {
+        _factory = new AdminApiFactory();
+        await _factory.InitAsync();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown() => await _factory.DisposeAsync();
 
     private AppDbContext Db()
     {
-        var scope = factory.Services.CreateScope();
+        var scope = _factory.Services.CreateScope();
         return scope.ServiceProvider.GetRequiredService<AppDbContext>();
     }
 
     private void Auth() => _client.SetAdminToken(_adminId);
 
-    [Fact]
+    [Test]
     public async Task ListDocuments_ReturnsTenantDocuments()
     {
         Auth();
@@ -36,7 +49,7 @@ public class DocumentsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
         body[0].GetProperty("fileName").GetString().Should().Be("test.pdf");
     }
 
-    [Fact]
+    [Test]
     public async Task ListDocuments_UnknownTenant_Returns404()
     {
         Auth();
@@ -44,7 +57,7 @@ public class DocumentsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    [Test]
     public async Task DeleteDocument_SoftDeletes_Returns204()
     {
         Auth();
@@ -55,13 +68,13 @@ public class DocumentsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
         var resp = await _client.DeleteAsync($"/admin/tenants/{tenant.Id}/documents/{doc.Id}");
 
         resp.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        var verifyDb = factory.Services.CreateScope()
+        var verifyDb = _factory.Services.CreateScope()
             .ServiceProvider.GetRequiredService<AppDbContext>();
         var deleted = await verifyDb.Documents.FindAsync(doc.Id);
         deleted!.IsActive.Should().BeFalse();
     }
 
-    [Fact]
+    [Test]
     public async Task DeleteDocument_WrongTenant_Returns404()
     {
         Auth();
@@ -76,7 +89,7 @@ public class DocumentsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    [Test]
     public async Task ListDocuments_Unauthenticated_Returns401()
     {
         _client.DefaultRequestHeaders.Authorization = null;

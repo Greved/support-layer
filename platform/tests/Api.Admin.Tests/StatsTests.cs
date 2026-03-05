@@ -7,20 +7,33 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.Admin.Tests;
 
-public class StatsTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory>
+[TestFixture]
+public class StatsTests
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private AdminApiFactory _factory = null!;
+    private HttpClient _client = null!;
     private readonly Guid _adminId = Guid.NewGuid();
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
+    {
+        _factory = new AdminApiFactory();
+        await _factory.InitAsync();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown() => await _factory.DisposeAsync();
 
     private AppDbContext Db()
     {
-        var scope = factory.Services.CreateScope();
+        var scope = _factory.Services.CreateScope();
         return scope.ServiceProvider.GetRequiredService<AppDbContext>();
     }
 
     private void Auth() => _client.SetAdminToken(_adminId);
 
-    [Fact]
+    [Test]
     public async Task TenantStats_ExistingTenant_Returns200WithCounts()
     {
         Auth();
@@ -38,7 +51,7 @@ public class StatsTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory
         body.GetProperty("documentCount").GetInt32().Should().BeGreaterThanOrEqualTo(1);
     }
 
-    [Fact]
+    [Test]
     public async Task TenantStats_UnknownTenant_Returns404()
     {
         Auth();
@@ -46,7 +59,7 @@ public class StatsTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    [Test]
     public async Task GlobalStats_Returns200WithPlatformAggregates()
     {
         Auth();
@@ -62,7 +75,7 @@ public class StatsTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory
         body.TryGetProperty("totalDocuments", out _).Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public async Task TenantStats_Unauthenticated_Returns401()
     {
         _client.DefaultRequestHeaders.Authorization = null;

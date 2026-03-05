@@ -7,14 +7,27 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.Admin.Tests;
 
-public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory>
+[TestFixture]
+public class TenantsTests
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private AdminApiFactory _factory = null!;
+    private HttpClient _client = null!;
     private readonly Guid _adminId = Guid.NewGuid();
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
+    {
+        _factory = new AdminApiFactory();
+        await _factory.InitAsync();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown() => await _factory.DisposeAsync();
 
     private AppDbContext Db()
     {
-        var scope = factory.Services.CreateScope();
+        var scope = _factory.Services.CreateScope();
         return scope.ServiceProvider.GetRequiredService<AppDbContext>();
     }
 
@@ -22,7 +35,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
 
     // ── List ──────────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Test]
     public async Task GetTenants_Unauthenticated_Returns401()
     {
         _client.DefaultRequestHeaders.Authorization = null;
@@ -30,7 +43,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         resp.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Test]
     public async Task GetTenants_Authenticated_Returns200WithItems()
     {
         Auth();
@@ -44,7 +57,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         body.GetProperty("total").GetInt32().Should().BeGreaterThan(0);
     }
 
-    [Fact]
+    [Test]
     public async Task GetTenants_SearchFilter_ReturnsMatchingTenant()
     {
         Auth();
@@ -59,7 +72,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
             t.GetProperty("slug").GetString() == "searchable-corp");
     }
 
-    [Fact]
+    [Test]
     public async Task GetTenants_InactiveFilter_ReturnsOnlyInactive()
     {
         Auth();
@@ -78,7 +91,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
 
     // ── Get by ID ─────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Test]
     public async Task GetTenant_ExistingId_Returns200WithDetail()
     {
         Auth();
@@ -92,7 +105,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         body.GetProperty("slug").GetString().Should().Be("detail-corp");
     }
 
-    [Fact]
+    [Test]
     public async Task GetTenant_UnknownId_Returns404()
     {
         Auth();
@@ -102,7 +115,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
 
     // ── Create ────────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Test]
     public async Task CreateTenant_ValidRequest_Returns201()
     {
         Auth();
@@ -115,7 +128,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         body.GetProperty("isActive").GetBoolean().Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public async Task CreateTenant_DuplicateSlug_Returns409()
     {
         Auth();
@@ -127,7 +140,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         resp.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
-    [Fact]
+    [Test]
     public async Task CreateTenant_UnknownPlan_Returns400()
     {
         Auth();
@@ -139,7 +152,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
 
     // ── Update ────────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Test]
     public async Task UpdateTenant_ChangePlan_Returns200WithNewPlan()
     {
         Auth();
@@ -153,7 +166,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         body.GetProperty("plan").GetString().Should().Be("pro");
     }
 
-    [Fact]
+    [Test]
     public async Task UpdateTenant_Suspend_SetsIsActiveFalse()
     {
         Auth();
@@ -169,7 +182,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
 
     // ── Delete ────────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Test]
     public async Task DeleteTenant_SoftDeletes_Returns204()
     {
         Auth();
@@ -183,7 +196,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         deleted!.IsActive.Should().BeFalse();
     }
 
-    [Fact]
+    [Test]
     public async Task DeleteTenant_Unknown_Returns404()
     {
         Auth();
@@ -193,7 +206,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
 
     // ── Impersonate ───────────────────────────────────────────────────────────
 
-    [Fact]
+    [Test]
     public async Task Impersonate_TenantWithUser_Returns200WithPortalToken()
     {
         Auth();
@@ -209,7 +222,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         body.GetProperty("expiresInSeconds").GetInt32().Should().Be(900);
     }
 
-    [Fact]
+    [Test]
     public async Task Impersonate_WritesAuditLog()
     {
         Auth();
@@ -219,14 +232,14 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
 
         await _client.PostAsync($"/admin/tenants/{tenant.Id}/impersonate", null);
 
-        var scope = factory.Services.CreateScope();
+        var scope = _factory.Services.CreateScope();
         var verifyDb = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var log = verifyDb.AuditLogs.FirstOrDefault(a =>
             a.TenantId == tenant.Id && a.Action == "impersonate");
         log.Should().NotBeNull();
     }
 
-    [Fact]
+    [Test]
     public async Task Impersonate_TenantWithNoUsers_Returns400()
     {
         Auth();
@@ -239,7 +252,7 @@ public class TenantsTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
 
     // ── Export ────────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Test]
     public async Task Export_ValidTenant_ReturnsZipFile()
     {
         Auth();

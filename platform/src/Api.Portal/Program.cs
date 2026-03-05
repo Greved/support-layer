@@ -69,6 +69,8 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
 builder.Services.AddHttpClient<IRagClient, RagClient>();
 builder.Services.AddScoped<IngestionJob>();
+builder.Services.AddScoped<IMfaService, MfaService>();
+builder.Services.AddScoped<IEmailService, NoOpEmailService>();
 
 var app = builder.Build();
 
@@ -84,3 +86,5 @@ app.MapGet("/healthz", () => Results.Ok(new { status = "ok", service = "Api.Port
 app.UseHangfireDashboard("/portal/hangfire");
 
 app.Run();
+
+public partial class Program { }

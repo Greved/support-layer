@@ -5,14 +5,27 @@ using FluentAssertions;
 
 namespace Api.Admin.Tests;
 
-public class InfraTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory>
+[TestFixture]
+public class InfraTests
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private AdminApiFactory _factory = null!;
+    private HttpClient _client = null!;
     private readonly Guid _adminId = Guid.NewGuid();
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
+    {
+        _factory = new AdminApiFactory();
+        await _factory.InitAsync();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown() => await _factory.DisposeAsync();
 
     private void Auth() => _client.SetAdminToken(_adminId);
 
-    [Fact]
+    [Test]
     public async Task GetHealth_ReturnsOverallStatusAndServices()
     {
         Auth();
@@ -25,7 +38,7 @@ public class InfraTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory
         body.GetProperty("services").GetArrayLength().Should().BeGreaterThan(0);
     }
 
-    [Fact]
+    [Test]
     public async Task GetHealth_ServicesHaveNameAndStatus()
     {
         Auth();
@@ -39,7 +52,7 @@ public class InfraTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory
         }
     }
 
-    [Fact]
+    [Test]
     public async Task GetCollections_ReturnsList()
     {
         Auth();
@@ -50,7 +63,7 @@ public class InfraTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory
         body.GetArrayLength().Should().BeGreaterThanOrEqualTo(0);
     }
 
-    [Fact]
+    [Test]
     public async Task GetHealth_Unauthenticated_Returns401()
     {
         _client.DefaultRequestHeaders.Authorization = null;
@@ -58,7 +71,7 @@ public class InfraTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory
         resp.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Test]
     public async Task Healthz_NoAuth_Returns200()
     {
         var resp = await _client.GetAsync("/healthz");

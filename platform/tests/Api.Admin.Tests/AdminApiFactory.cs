@@ -13,7 +13,7 @@ namespace Api.Admin.Tests;
 /// WebApplicationFactory that boots a real PostgreSQL container via Testcontainers
 /// and replaces external HTTP-dependent services with stubs.
 /// </summary>
-public class AdminApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class AdminApiFactory : WebApplicationFactory<Program>
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithDatabase("test_supportlayer")
@@ -21,7 +21,7 @@ public class AdminApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         .WithPassword("test")
         .Build();
 
-    public async Task InitializeAsync()
+    public async Task InitAsync()
     {
         await _postgres.StartAsync();
     }

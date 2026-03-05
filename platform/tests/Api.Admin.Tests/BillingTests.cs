@@ -7,20 +7,33 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.Admin.Tests;
 
-public class BillingTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory>
+[TestFixture]
+public class BillingTests
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private AdminApiFactory _factory = null!;
+    private HttpClient _client = null!;
     private readonly Guid _adminId = Guid.NewGuid();
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
+    {
+        _factory = new AdminApiFactory();
+        await _factory.InitAsync();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown() => await _factory.DisposeAsync();
 
     private AppDbContext Db()
     {
-        var scope = factory.Services.CreateScope();
+        var scope = _factory.Services.CreateScope();
         return scope.ServiceProvider.GetRequiredService<AppDbContext>();
     }
 
     private void Auth() => _client.SetAdminToken(_adminId);
 
-    [Fact]
+    [Test]
     public async Task GetBilling_TenantWithEvents_Returns200WithData()
     {
         Auth();
@@ -38,7 +51,7 @@ public class BillingTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         body.GetProperty("recentEvents").GetArrayLength().Should().BeGreaterThanOrEqualTo(2);
     }
 
-    [Fact]
+    [Test]
     public async Task GetBilling_TenantNoEvents_Returns200WithZeroCounts()
     {
         Auth();
@@ -51,7 +64,7 @@ public class BillingTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         body.GetProperty("eventCount30d").GetInt32().Should().Be(0);
     }
 
-    [Fact]
+    [Test]
     public async Task GetBilling_UnknownTenant_Returns404()
     {
         Auth();
@@ -59,7 +72,7 @@ public class BillingTests(AdminApiFactory factory) : IClassFixture<AdminApiFacto
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    [Test]
     public async Task GetBilling_Unauthenticated_Returns401()
     {
         _client.DefaultRequestHeaders.Authorization = null;

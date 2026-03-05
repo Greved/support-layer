@@ -8,6 +8,8 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public Guid RoleId { get; set; }
     public bool IsActive { get; set; } = true;
+    public string? TotpSecret { get; set; }
+    public bool MfaEnabled { get; set; } = false;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

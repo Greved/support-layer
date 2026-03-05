@@ -8,14 +8,27 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.Admin.Tests;
 
-public class AuditLogsTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory>
+[TestFixture]
+public class AuditLogsTests
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private AdminApiFactory _factory = null!;
+    private HttpClient _client = null!;
     private readonly Guid _adminId = Guid.NewGuid();
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
+    {
+        _factory = new AdminApiFactory();
+        await _factory.InitAsync();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown() => await _factory.DisposeAsync();
 
     private AppDbContext Db()
     {
-        var scope = factory.Services.CreateScope();
+        var scope = _factory.Services.CreateScope();
         return scope.ServiceProvider.GetRequiredService<AppDbContext>();
     }
 
@@ -35,7 +48,7 @@ public class AuditLogsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
         await db.SaveChangesAsync();
     }
 
-    [Fact]
+    [Test]
     public async Task GetAuditLogs_Returns200WithPagedResult()
     {
         Auth();
@@ -52,7 +65,7 @@ public class AuditLogsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
         body.GetProperty("page").GetInt32().Should().Be(1);
     }
 
-    [Fact]
+    [Test]
     public async Task GetAuditLogs_FilterByTenantId_ReturnsOnlyThatTenant()
     {
         Auth();
@@ -70,7 +83,7 @@ public class AuditLogsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
             item.GetProperty("tenantId").GetString().Should().Be(tenantA.Id.ToString());
     }
 
-    [Fact]
+    [Test]
     public async Task GetAuditLogs_FilterByAction_ReturnsMatching()
     {
         Auth();
@@ -87,7 +100,7 @@ public class AuditLogsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
             item.GetProperty("action").GetString().Should().Contain("SPECIAL_ACTION");
     }
 
-    [Fact]
+    [Test]
     public async Task GetAuditLogs_FilterByDateRange_ReturnsOnlyInRange()
     {
         Auth();
@@ -105,7 +118,7 @@ public class AuditLogsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
         body.GetProperty("items").GetArrayLength().Should().BeGreaterThan(0);
     }
 
-    [Fact]
+    [Test]
     public async Task GetAuditLogs_Pagination_ReturnsCorrectPage()
     {
         Auth();
@@ -123,7 +136,7 @@ public class AuditLogsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
         body.GetProperty("total").GetInt32().Should().BeGreaterThanOrEqualTo(5);
     }
 
-    [Fact]
+    [Test]
     public async Task GetAuditLogs_LogsHaveIpAddress()
     {
         Auth();
@@ -138,7 +151,7 @@ public class AuditLogsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
         item.GetProperty("ipAddress").GetString().Should().Be("127.0.0.1");
     }
 
-    [Fact]
+    [Test]
     public async Task GetAuditLogs_Unauthenticated_Returns401()
     {
         _client.DefaultRequestHeaders.Authorization = null;
@@ -146,7 +159,7 @@ public class AuditLogsTests(AdminApiFactory factory) : IClassFixture<AdminApiFac
         resp.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Test]
     public async Task AdminAuditMiddleware_TenantMutation_WritesLog()
     {
         Auth();

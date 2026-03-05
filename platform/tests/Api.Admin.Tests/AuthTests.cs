@@ -7,17 +7,30 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.Admin.Tests;
 
-public class AuthTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory>
+[TestFixture]
+public class AuthTests
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private AdminApiFactory _factory = null!;
+    private HttpClient _client = null!;
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
+    {
+        _factory = new AdminApiFactory();
+        await _factory.InitAsync();
+        _client = _factory.CreateClient();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown() => await _factory.DisposeAsync();
 
     private AppDbContext Db()
     {
-        var scope = factory.Services.CreateScope();
+        var scope = _factory.Services.CreateScope();
         return scope.ServiceProvider.GetRequiredService<AppDbContext>();
     }
 
-    [Fact]
+    [Test]
     public async Task Login_ValidCredentials_Returns200WithToken()
     {
         await SeedHelper.SeedAdminUserAsync(Db(), "auth_valid@test.com");
@@ -31,7 +44,7 @@ public class AuthTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory>
         body.GetProperty("email").GetString().Should().Be("auth_valid@test.com");
     }
 
-    [Fact]
+    [Test]
     public async Task Login_WrongPassword_Returns401()
     {
         await SeedHelper.SeedAdminUserAsync(Db(), "auth_wrongpw@test.com");
@@ -42,7 +55,7 @@ public class AuthTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory>
         resp.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Test]
     public async Task Login_UnknownEmail_Returns401()
     {
         var resp = await _client.PostAsync("/admin/auth/login",
@@ -51,7 +64,7 @@ public class AuthTests(AdminApiFactory factory) : IClassFixture<AdminApiFactory>
         resp.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
+    [Test]
     public async Task Login_InactiveAdmin_Returns401()
     {
         var db = Db();
