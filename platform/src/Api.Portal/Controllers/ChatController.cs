@@ -17,6 +17,12 @@ public class ChatController(AppDbContext db, TenantContext tenantContext, IRagCl
     [HttpPost]
     public async Task<ActionResult<ChatResponse>> Chat([FromBody] ChatRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Query))
+            return UnprocessableEntity(new { error = "query_required" });
+
+        if (request.Query.Length > 10_000)
+            return BadRequest(new { error = "query_too_long" });
+
         var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantContext.TenantId);
         if (tenant is null) return Unauthorized();
 

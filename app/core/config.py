@@ -1,10 +1,14 @@
+import os
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import AnyHttpUrl, Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
     app_name: str = Field("Tech Support RAG API", description="Human readable service name")
     api_prefix: str = Field("/api", description="REST router prefix")
     debug: bool = Field(False, description="Enable FastAPI debug mode")
@@ -74,13 +78,33 @@ class Settings(BaseSettings):
         description="Optional Prometheus pushgateway URI",
     )
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+
+_FILE_BACKED_FIELDS: tuple[tuple[str, str], ...] = (
+    ("qdrant_api_key", "QDRANT_API_KEY_FILE"),
+    ("gemini_api_key", "GEMINI_API_KEY_FILE"),
+    ("internal_secret", "INTERNAL_SECRET_FILE"),
+    ("database_url", "DATABASE_URL_FILE"),
+    ("redis_url", "REDIS_URL_FILE"),
+)
+
+
+def _apply_file_backed_overrides(settings: Settings) -> None:
+    for field_name, file_env in _FILE_BACKED_FIELDS:
+        path = os.getenv(file_env)
+        if not path:
+            continue
+
+        secret_file = Path(path)
+        if not secret_file.exists():
+            raise RuntimeError(f"Secret file from {file_env} was not found: {secret_file}")
+
+        setattr(settings, field_name, secret_file.read_text(encoding="utf-8").strip())
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """Return cached application settings."""
 
-    return Settings()
+    settings = Settings()
+    _apply_file_backed_overrides(settings)
+    return settings

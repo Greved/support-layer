@@ -19,6 +19,7 @@ public class DocumentsController(
     AppDbContext db,
     TenantContext tenantContext,
     IStorageService storage,
+    IAntivirusScanner antivirusScanner,
     IBackgroundJobClient backgroundJobs) : ControllerBase
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
@@ -27,9 +28,7 @@ public class DocumentsController(
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "text/plain",
         "text/markdown",
-        "text/html",
         "text/csv",
-        "application/octet-stream", // fallback for some clients
     };
 
     private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
@@ -62,6 +61,10 @@ public class DocumentsController(
         if (!AllowedExtensions.Contains(ext))
             return StatusCode(415, new { error = $"File type '{ext}' is not supported." });
 
+        // 1b. MIME-type allowlist
+        if (!AllowedContentTypes.Contains(file.ContentType ?? ""))
+            return StatusCode(415, new { error = "unsupported_file_type" });
+
         // 2. Load plan limits
         var tenant = await db.Tenants
             .Include(t => t.Plan).ThenInclude(p => p.Limit)
@@ -86,7 +89,24 @@ public class DocumentsController(
                 return StatusCode(429, new { error = "Document limit reached for your plan." });
         }
 
-        // 5. Supersede existing document with same name
+        // 5. Antivirus scan (ClamAV)
+        await using (var scanStream = file.OpenReadStream())
+        {
+            var scanResult = await antivirusScanner.ScanAsync(scanStream, HttpContext.RequestAborted);
+            if (scanResult.Status == AntivirusScanStatus.Infected)
+            {
+                return UnprocessableEntity(new
+                {
+                    error = "virus_detected",
+                    signature = scanResult.Signature,
+                });
+            }
+
+            if (scanResult.Status == AntivirusScanStatus.Unavailable)
+                return StatusCode(503, new { error = "antivirus_unavailable" });
+        }
+
+        // 6. Supersede existing document with same name
         var existing = await db.Documents.FirstOrDefaultAsync(
             d => d.TenantId == tenantId && d.FileName == file.FileName
               && d.IsActive && d.Status != DocumentStatus.Superseded);
@@ -97,7 +117,7 @@ public class DocumentsController(
             existing.UpdatedAt = DateTime.UtcNow;
         }
 
-        // 6. Save file
+        // 7. Save file
         var docId = Guid.NewGuid();
         string storagePath;
         await using (var stream = file.OpenReadStream())
@@ -105,7 +125,7 @@ public class DocumentsController(
             storagePath = await storage.SaveAsync(tenantId, docId, file.FileName, stream);
         }
 
-        // 7. Insert Document row
+        // 8. Insert Document row
         var contentType = file.ContentType ?? "application/octet-stream";
         var document = new Document
         {
@@ -125,7 +145,7 @@ public class DocumentsController(
         db.Documents.Add(document);
         await db.SaveChangesAsync();
 
-        // 8. Enqueue ingestion
+        // 9. Enqueue ingestion
         backgroundJobs.Enqueue<IngestionJob>(j => j.RunAsync(docId));
 
         return Ok(new DocumentResponse(

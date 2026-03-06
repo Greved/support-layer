@@ -24,3 +24,21 @@ public class StubEmailService : IEmailService
     public Task SendInviteAsync(string toEmail, string inviteLink, string tenantName)
         => Task.CompletedTask;
 }
+
+public class StubCleanAntivirusScanner : IAntivirusScanner
+{
+    public Task<AntivirusScanResult> ScanAsync(Stream stream, CancellationToken ct = default)
+        => Task.FromResult(new AntivirusScanResult(AntivirusScanStatus.Clean));
+}
+
+public class StubInfectedAntivirusScanner(string signature = "Win.Test.EICAR_HDB-1") : IAntivirusScanner
+{
+    public Task<AntivirusScanResult> ScanAsync(Stream stream, CancellationToken ct = default)
+        => Task.FromResult(new AntivirusScanResult(AntivirusScanStatus.Infected, Signature: signature));
+}
+
+public class StubUnavailableAntivirusScanner : IAntivirusScanner
+{
+    public Task<AntivirusScanResult> ScanAsync(Stream stream, CancellationToken ct = default)
+        => Task.FromResult(new AntivirusScanResult(AntivirusScanStatus.Unavailable, Details: "scanner_unreachable"));
+}

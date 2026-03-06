@@ -33,7 +33,8 @@ public class ApiKeysController(AppDbContext db, TenantContext tenantContext) : C
     {
         var rawBytes = RandomNumberGenerator.GetBytes(32);
         var plaintext = $"sl_live_{Base64UrlEncode(rawBytes)}";
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(plaintext)));
+        // Keep hash format aligned with Api.Public key validation.
+        var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(plaintext)));
 
         var key = new ApiKey
         {

@@ -1,0 +1,96 @@
+name: CI + Build Images
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  python-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Format check (black)
+        run: black --check .
+
+      - name: Run tests
+        run: pytest
+
+  dotnet-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.x"
+
+      - name: Restore
+        run: dotnet restore platform/
+
+      - name: Build
+        run: dotnet build platform/ --no-restore
+
+      - name: Test (exclude E2E)
+        run: dotnet test platform/ --no-build --filter "Category!=E2E" --logger trx
+
+  build-images:
+    needs: [python-ci, dotnet-ci]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push RAG Python image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/rag-python/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/supportlayer-rag:${{ github.sha }}
+
+      - name: Build and push Api.Portal image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api-portal/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/supportlayer-portal:${{ github.sha }}
+
+      - name: Build and push Api.Public image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api-public/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/supportlayer-public:${{ github.sha }}
+
+      - name: Build and push Api.Admin image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api-admin/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/supportlayer-admin:${{ github.sha }}

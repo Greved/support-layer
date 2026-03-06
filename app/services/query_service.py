@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import re
 import time
 from typing import Any
@@ -11,6 +12,7 @@ from haystack.dataclasses import ChatMessage
 from qdrant_client.http.models import Payload
 
 from app.core.config import Settings
+from app.core.log_context import tenant_id_ctx
 from app.services.embedding_service import EmbeddingService
 from app.services.qdrant_service import QdrantService
 
@@ -235,6 +237,13 @@ _STOPWORDS = {
 }
 
 
+def _estimate_tokens(text: str) -> int:
+    if not text:
+        return 0
+    # Approximate GPT-style tokenization: roughly 4 characters per token in English text.
+    return max(1, int(math.ceil(len(text) / 4)))
+
+
 def _normalize_query_terms(query: str) -> list[str]:
     query_lc = query.lower()
     terms = [t for t in re.findall(r"[A-Za-z0-9]+", query_lc) if len(t) >= 3]
@@ -434,159 +443,166 @@ def stream_query(
     """
     import json as _json  # local to avoid circular issues at top level
 
-    embedder = EmbeddingService(settings)
-    searcher = QdrantService(settings)
-
+    tenant_token = tenant_id_ctx.set((tenant_id or "").strip())
     try:
-        vector = embedder.embed_query(query)
-        results = searcher.search(
-            vector,
-            tenant_id=tenant_id,
-            top_k=settings.query_context_sources_max_count,
-            filters=filters,
+        embedder = EmbeddingService(settings)
+        searcher = QdrantService(settings)
+
+        try:
+            vector = embedder.embed_query(query)
+            results = searcher.search(
+                vector,
+                tenant_id=tenant_id,
+                top_k=settings.query_context_sources_max_count,
+                filters=filters,
+            )
+        except Exception as exc:  # pragma: no cover
+            logger.error("Stream query pipeline failed", exc_info=exc)
+            raise QueryError("Query pipeline failed") from exc
+
+        def _extract_payload(point: Any) -> dict[str, Any]:
+            if hasattr(point, "payload"):
+                return point.payload or {}
+            if isinstance(point, dict):
+                return point
+            return {}
+
+        points = results.points if hasattr(results, "points") else results
+        sources_raw: list[dict[str, Any]] = []
+        for point in points:
+            payload = _extract_payload(point)
+            meta = payload.get("meta") or payload
+            source_val = meta.get("source") or meta.get("file_path") or "unknown"
+            content = payload.get("content") or meta.get("content") or ""
+            score = getattr(point, "score", None)
+            sources_raw.append(
+                {
+                    "file": str(source_val).split("\\")[-1].split("/")[-1],
+                    "page": meta.get("page_number"),
+                    "offset": meta.get("split_idx_start"),
+                    "relevance_score": score,
+                    "content": content,
+                }
+            )
+
+        # Select and sort sources same as run_query
+        relevant = [s for s in sources_raw if _is_relevant_match(s["content"], query)]
+        selected = relevant or sources_raw
+        selected.sort(
+            key=lambda s: (
+                s["relevance_score"] if isinstance(s.get("relevance_score"), int | float) else -1.0,
+            ),
+            reverse=True,
         )
-    except Exception as exc:  # pragma: no cover
-        logger.error("Stream query pipeline failed", exc_info=exc)
-        raise QueryError("Query pipeline failed") from exc
+        limit = max(0, int(settings.query_result_sources_max_count))
+        selected = selected[:limit] if limit else selected
 
-    def _extract_payload(point: Any) -> dict[str, Any]:
-        if hasattr(point, "payload"):
-            return point.payload or {}
-        if isinstance(point, dict):
-            return point
-        return {}
-
-    points = results.points if hasattr(results, "points") else results
-    sources_raw: list[dict[str, Any]] = []
-    for point in points:
-        payload = _extract_payload(point)
-        meta = payload.get("meta") or payload
-        source_val = meta.get("source") or meta.get("file_path") or "unknown"
-        content = payload.get("content") or meta.get("content") or ""
-        score = getattr(point, "score", None)
-        sources_raw.append(
+        sources_payload = [
             {
-                "file": str(source_val).split("\\")[-1].split("/")[-1],
-                "page": meta.get("page_number"),
-                "offset": meta.get("split_idx_start"),
-                "relevance_score": score,
-                "content": content,
+                "file": s["file"],
+                "page": s["page"],
+                "offset": s["offset"],
+                "relevance_score": s["relevance_score"],
             }
-        )
+            for s in selected
+        ]
+        yield f"data: {_json.dumps({'type': 'sources', 'sources': sources_payload})}\n\n"
 
-    # Select and sort sources same as run_query
-    relevant = [s for s in sources_raw if _is_relevant_match(s["content"], query)]
-    selected = relevant or sources_raw
-    selected.sort(
-        key=lambda s: (
-            s["relevance_score"] if isinstance(s.get("relevance_score"), int | float) else -1.0,
-        ),
-        reverse=True,
-    )
-    limit = max(0, int(settings.query_result_sources_max_count))
-    selected = selected[:limit] if limit else selected
+        context_chunks = [s["content"] for s in selected]
 
-    sources_payload = [
-        {
-            "file": s["file"],
-            "page": s["page"],
-            "offset": s["offset"],
-            "relevance_score": s["relevance_score"],
-        }
-        for s in selected
-    ]
-    yield f"data: {_json.dumps({'type': 'sources', 'sources': sources_payload})}\n\n"
+        if not context_chunks:
+            done_payload = {"type": "done", "answer": "No matching content found."}
+            yield f"data: {_json.dumps(done_payload)}\n\n"
+            return
 
-    context_chunks = [s["content"] for s in selected]
+        openai_messages = _to_openai_messages_for_stream(query, context_chunks)
+        answer_chunks: list[str] = []
 
-    if not context_chunks:
-        yield f"data: {_json.dumps({'type': 'done', 'answer': 'No matching content found.'})}\n\n"
-        return
-
-    openai_messages = _to_openai_messages_for_stream(query, context_chunks)
-    answer_chunks: list[str] = []
-
-    if settings.llm_provider.lower() == "gemini":
-        if not settings.gemini_api_key:
-            raise QueryError("Gemini API key is not configured")
-        try:
-            from haystack.dataclasses import StreamingChunk
-            from haystack.utils import Secret
-            from haystack_integrations.components.generators.google_genai import (
-                GoogleGenAIChatGenerator,
-            )
-
-            stream_buffer: list[str] = []
-
-            def _stream_cb(chunk: StreamingChunk) -> None:
-                if chunk and chunk.content:
-                    stream_buffer.append(chunk.content)
-
-            messages_haystack = build_prompt(query, context_chunks)
-            generator = GoogleGenAIChatGenerator(
-                model=settings.gemini_model,
-                api_key=Secret.from_token(settings.gemini_api_key),
-                streaming_callback=_stream_cb,
-                generation_kwargs={"temperature": 0.5, "max_output_tokens": 512},
-            )
-            generator.run(messages=messages_haystack)
-            for chunk_text in stream_buffer:
-                answer_chunks.append(chunk_text)
-                yield f"data: {_json.dumps({'type': 'token', 'chunk': chunk_text})}\n\n"
-        except Exception as exc:
-            logger.error("Gemini stream failed", exc_info=exc)
-            raise QueryError("Gemini request failed") from exc
-    else:
-        use_lm_studio = settings.llm_provider.lower() == "lmstudio"
-        base_url = settings.lm_studio_url if use_lm_studio else settings.llama_llm_url
-        model_name = settings.lm_studio_model if use_lm_studio else settings.llama_llm_model
-        payload = {
-            "model": model_name,
-            "messages": openai_messages,
-            "temperature": 0,
-            "max_tokens": 64000,
-            "stream": True,
-        }
-        try:
-            resp = requests.post(
-                f"{base_url}/chat/completions", json=payload, timeout=180, stream=True
-            )
-            resp.raise_for_status()
-        except requests.RequestException as exc:
-            logger.error("LLM stream request failed", exc_info=exc)
-            raise QueryError("LLM request failed") from exc
-
-        in_reasoning = False
-        for line in resp.iter_lines(decode_unicode=True):
-            if not line:
-                continue
-            if line.startswith("data:"):
-                line = line.removeprefix("data:").strip()
-            if line in ("[DONE]", ""):
-                continue
+        if settings.llm_provider.lower() == "gemini":
+            if not settings.gemini_api_key:
+                raise QueryError("Gemini API key is not configured")
             try:
-                data = _json.loads(line)
-            except _json.JSONDecodeError:
-                continue
-            for choice in data.get("choices", []):
-                delta = choice.get("delta") or {}
-                text = delta.get("content") or ""
-                if not text:
-                    continue
-                if "<think>" in text:
-                    in_reasoning = True
-                if in_reasoning:
-                    if "</think>" in text:
-                        in_reasoning = False
-                        text = text.split("</think>", 1)[1]
-                    else:
-                        continue
-                if text:
-                    answer_chunks.append(text)
-                    yield f"data: {_json.dumps({'type': 'token', 'chunk': text})}\n\n"
+                from haystack.dataclasses import StreamingChunk
+                from haystack.utils import Secret
+                from haystack_integrations.components.generators.google_genai import (
+                    GoogleGenAIChatGenerator,
+                )
 
-    full_answer = "".join(answer_chunks).strip() or "I don't know based on the provided context."
-    yield f"data: {_json.dumps({'type': 'done', 'answer': full_answer})}\n\n"
+                stream_buffer: list[str] = []
+
+                def _stream_cb(chunk: StreamingChunk) -> None:
+                    if chunk and chunk.content:
+                        stream_buffer.append(chunk.content)
+
+                messages_haystack = build_prompt(query, context_chunks)
+                generator = GoogleGenAIChatGenerator(
+                    model=settings.gemini_model,
+                    api_key=Secret.from_token(settings.gemini_api_key),
+                    streaming_callback=_stream_cb,
+                    generation_kwargs={"temperature": 0.5, "max_output_tokens": 512},
+                )
+                generator.run(messages=messages_haystack)
+                for chunk_text in stream_buffer:
+                    answer_chunks.append(chunk_text)
+                    yield f"data: {_json.dumps({'type': 'token', 'chunk': chunk_text})}\n\n"
+            except Exception as exc:
+                logger.error("Gemini stream failed", exc_info=exc)
+                raise QueryError("Gemini request failed") from exc
+        else:
+            use_lm_studio = settings.llm_provider.lower() == "lmstudio"
+            base_url = settings.lm_studio_url if use_lm_studio else settings.llama_llm_url
+            model_name = settings.lm_studio_model if use_lm_studio else settings.llama_llm_model
+            payload = {
+                "model": model_name,
+                "messages": openai_messages,
+                "temperature": 0,
+                "max_tokens": 64000,
+                "stream": True,
+            }
+            try:
+                resp = requests.post(
+                    f"{base_url}/chat/completions", json=payload, timeout=180, stream=True
+                )
+                resp.raise_for_status()
+            except requests.RequestException as exc:
+                logger.error("LLM stream request failed", exc_info=exc)
+                raise QueryError("LLM request failed") from exc
+
+            in_reasoning = False
+            for line in resp.iter_lines(decode_unicode=True):
+                if not line:
+                    continue
+                if line.startswith("data:"):
+                    line = line.removeprefix("data:").strip()
+                if line in ("[DONE]", ""):
+                    continue
+                try:
+                    data = _json.loads(line)
+                except _json.JSONDecodeError:
+                    continue
+                for choice in data.get("choices", []):
+                    delta = choice.get("delta") or {}
+                    text = delta.get("content") or ""
+                    if not text:
+                        continue
+                    if "<think>" in text:
+                        in_reasoning = True
+                    if in_reasoning:
+                        if "</think>" in text:
+                            in_reasoning = False
+                            text = text.split("</think>", 1)[1]
+                        else:
+                            continue
+                    if text:
+                        answer_chunks.append(text)
+                        yield f"data: {_json.dumps({'type': 'token', 'chunk': text})}\n\n"
+
+        full_answer = (
+            "".join(answer_chunks).strip() or "I don't know based on the provided context."
+        )
+        yield f"data: {_json.dumps({'type': 'done', 'answer': full_answer})}\n\n"
+    finally:
+        tenant_id_ctx.reset(tenant_token)
 
 
 def run_query(
@@ -668,6 +684,7 @@ def run_query(
         return {
             "answer": "No matching content found in the vector store. Try ingesting documents.",
             "sources": [],
+            "token_count": _estimate_tokens(query),
         }
 
     relevant_sources = [src for src in sources_raw if _is_relevant_match(src["content"], query)]
@@ -709,4 +726,9 @@ def run_query(
             max_len=int(settings.query_result_brief_content_max_len),
         )
     logger.info("Total query finished duration_ms=%s", int((time.time() - total_start) * 1000))
-    return {"answer": answer.strip(), "sources": sources}
+    token_count = (
+        _estimate_tokens(query)
+        + sum(_estimate_tokens(chunk) for chunk in context_chunks)
+        + _estimate_tokens(answer)
+    )
+    return {"answer": answer.strip(), "sources": sources, "token_count": token_count}

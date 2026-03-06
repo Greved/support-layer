@@ -1,0 +1,11 @@
+services:
+  gateway:
+    image: nginx:1.27-alpine
+    container_name: supportlayer-gateway
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./infrastructure/nginx/gateway.conf:/etc/nginx/nginx.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

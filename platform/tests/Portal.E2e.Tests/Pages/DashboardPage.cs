@@ -8,13 +8,29 @@ public class DashboardPage(IPage page)
     public async Task GoToAsync() =>
         await page.GotoAsync(GlobalSetup.BaseUrl + "/dashboard");
 
-    public async Task<bool> IsLoadedAsync() =>
-        await page.IsVisibleAsync("[data-testid='dashboard'], main, .dashboard", new() { Timeout = 10_000 });
+    public Task<bool> IsLoadedAsync() =>
+        IsVisibleWithinAsync("[data-testid='dashboard'], main, .dashboard", 10_000);
 
-    public async Task<bool> HasUsageDataAsync() =>
-        await page.IsVisibleAsync("[data-testid='queries-count'], [data-testid='usage-card']",
-            new() { Timeout = 5_000 });
+    public Task<bool> HasUsageDataAsync() =>
+        IsVisibleWithinAsync("[data-testid='queries-count'], [data-testid='usage-card']", 5_000);
 
     public async Task WaitForLoadAsync() =>
         await page.WaitForSelectorAsync("main, [data-testid='dashboard']", new() { Timeout = 15_000 });
+
+    private async Task<bool> IsVisibleWithinAsync(string selector, float timeoutMs)
+    {
+        try
+        {
+            await page.WaitForSelectorAsync(selector, new()
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = timeoutMs,
+            });
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            return false;
+        }
+    }
 }

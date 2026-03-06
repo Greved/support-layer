@@ -50,6 +50,12 @@ All settings in `app/core/config.py`. Copy `.env.example` → `.env`.
 | `LM_STUDIO_URL` | `http://127.0.0.1:1234/v1` | LM Studio endpoint |
 | `LM_STUDIO_MODEL` | `qwen2.5-4b-instruct` | LM Studio model |
 | `LOG_LEVEL` | `INFO` | Logging level |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | — | OTLP HTTP traces endpoint (e.g. `http://tempo:4318/v1/traces`) |
+
+For production-like deployments, prefer file-backed secrets over plaintext values:
+- Python app: `DATABASE_URL_FILE`, `INTERNAL_SECRET_FILE`, `GEMINI_API_KEY_FILE`, `QDRANT_API_KEY_FILE`, `REDIS_URL_FILE`.
+- .NET APIs: `ConnectionStrings__Default_FILE`, `Jwt__Key_FILE`, `AdminJwt__Key_FILE`, `RagCore__InternalSecret_FILE`, `Redis__ConnectionString_FILE`.
+- Compose secret wiring is defined in `docker-compose.secrets.yml`; local examples are in `secrets/templates/`.
 
 ## Docker Compose
 

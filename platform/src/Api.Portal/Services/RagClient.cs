@@ -7,7 +7,7 @@ namespace Api.Portal.Services;
 public class RagClient(HttpClient http, IConfiguration configuration) : IRagClient
 {
     private string BaseUrl => configuration["RagCore:BaseUrl"] ?? "http://localhost:8000";
-    private string InternalSecret => configuration["RagCore:InternalSecret"] ?? "change-me-secret";
+    private string InternalSecret => GetRequiredInternalSecret(configuration);
 
     public async Task<RagQueryResult> QueryAsync(string tenantSlug, string query)
     {
@@ -71,5 +71,15 @@ public class RagClient(HttpClient http, IConfiguration configuration) : IRagClie
         var returnedDocId = root.TryGetProperty("document_id", out var did) ? did.GetString() ?? documentId : documentId;
 
         return new RagIngestResult(chunksWritten, returnedDocId);
+    }
+
+    private static string GetRequiredInternalSecret(IConfiguration cfg)
+    {
+        var secret = cfg["RagCore:InternalSecret"];
+        if (!string.IsNullOrWhiteSpace(secret))
+            return secret;
+
+        throw new InvalidOperationException(
+            "RagCore:InternalSecret is not configured. Use RagCore__InternalSecret or RagCore__InternalSecret_FILE.");
     }
 }

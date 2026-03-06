@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import tempfile
+import time
 from pathlib import Path
 from typing import Annotated
 
@@ -11,8 +12,10 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from qdrant_client import QdrantClient
 
+from app.api.metrics import INGEST_DURATION, INGEST_REQUESTS
 from app.core.config import get_settings
-from app.services.query_service import run_query, stream_query
+from app.core.log_context import bind_tenant_id
+from app.services.query_service import QueryError, run_query, stream_query
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -43,31 +46,44 @@ async def internal_ingest(
     suffix = Path(file.filename or "upload").suffix or ".tmp"
     content = await file.read()
 
-    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-        tmp.write(content)
-        tmp_path = Path(tmp.name)
+    with bind_tenant_id(tenant_id):
+        start = time.time()
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            tmp.write(content)
+            tmp_path = Path(tmp.name)
 
-    try:
-        from ingestion.cli import (  # noqa: PLC0415
-            build_filesystem_ingestion_pipeline,
-            load_documents_from_paths,
-            purge_existing_documents,
-        )
-
-        collection = f"tenant_{tenant_id}"
-        docs, matched_files = load_documents_from_paths([str(tmp_path)], base_dir=tmp_path.parent)
-        if docs:
-            purge_existing_documents(settings, collection, matched_files)
-            pipeline = build_filesystem_ingestion_pipeline(settings, collection=collection)
-            result = pipeline.run({"splitter": {"documents": docs}})
-            writer_stats = result.get("writer", {})
-            chunks_written = int(
-                writer_stats.get("documents_written") or writer_stats.get("count") or 0
+        try:
+            from ingestion.cli import (  # noqa: PLC0415
+                build_filesystem_ingestion_pipeline,
+                load_documents_from_paths,
+                purge_existing_documents,
             )
-        else:
-            chunks_written = 0
-    finally:
-        tmp_path.unlink(missing_ok=True)
+
+            collection = f"tenant_{tenant_id}"
+            docs, matched_files = load_documents_from_paths(
+                [str(tmp_path)], base_dir=tmp_path.parent
+            )
+            if docs:
+                purge_existing_documents(settings, collection, matched_files)
+                pipeline = build_filesystem_ingestion_pipeline(settings, collection=collection)
+                result = pipeline.run({"splitter": {"documents": docs}})
+                writer_stats = result.get("writer", {})
+                chunks_written = int(
+                    writer_stats.get("documents_written") or writer_stats.get("count") or 0
+                )
+            else:
+                chunks_written = 0
+
+            duration = time.time() - start
+            INGEST_REQUESTS.labels(tenant_id=tenant_id, status="success").inc()
+            INGEST_DURATION.labels(tenant_id=tenant_id).observe(duration)
+        except Exception:
+            duration = time.time() - start
+            INGEST_REQUESTS.labels(tenant_id=tenant_id, status="error").inc()
+            INGEST_DURATION.labels(tenant_id=tenant_id).observe(duration)
+            raise
+        finally:
+            tmp_path.unlink(missing_ok=True)
 
     return {"chunks_written": chunks_written, "document_id": document_id}
 
@@ -98,8 +114,13 @@ def internal_query(
 ) -> dict:
     _check_secret(x_internal_secret)
     settings = get_settings()
-    result = run_query(settings, payload.tenant_id, payload.query, payload.filters)
-    return result
+    with bind_tenant_id(payload.tenant_id):
+        try:
+            result = run_query(settings, payload.tenant_id, payload.query, payload.filters)
+            return result
+        except QueryError as exc:
+            logger.error("Internal query failed", exc_info=exc)
+            raise HTTPException(status_code=503, detail="Query pipeline unavailable") from exc
 
 
 @router.get("/healthz", tags=["internal"])

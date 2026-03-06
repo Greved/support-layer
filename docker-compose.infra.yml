@@ -77,6 +77,13 @@ services:
       timeout: 5s
       retries: 5
 
+  clamav:
+    image: clamav/clamav:1.4
+    container_name: clamav
+    restart: unless-stopped
+    ports:
+      - "3310:3310"
+
 networks:
   default:
     name: ragnet

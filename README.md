@@ -33,6 +33,33 @@ LLM selection:
 - Local llama.cpp (default): set `LLM_PROVIDER=local`, `LLAMA_LLM_URL`, `LLAMA_LLM_MODEL`.
 - Google Gemini: set `LLM_PROVIDER=gemini`, `GEMINI_API_KEY`, and optional `GEMINI_MODEL` (default `gemini-2.0-pro`).
 
+## Secrets-based startup (Phase 5)
+- Prefer file-backed secrets in production-like runs (`*_FILE` vars) instead of plaintext env vars.
+- Create local secret files from templates in `secrets/templates/` and store actual values in `secrets/*.txt`.
+- Start with compose override:
+  - `docker compose -f docker-compose.infra.yml -f docker-compose.secrets.yml up -d`
+  - `docker compose -f docker-compose.full.yml -f docker-compose.secrets.yml up -d`
+- `.NET` APIs also support file-backed keys:
+  - `ConnectionStrings__Default_FILE`, `Jwt__Key_FILE`, `AdminJwt__Key_FILE`,
+    `RagCore__InternalSecret_FILE`, `Redis__ConnectionString_FILE`
+- Python app supports:
+  - `DATABASE_URL_FILE`, `INTERNAL_SECRET_FILE`, `GEMINI_API_KEY_FILE`,
+    `QDRANT_API_KEY_FILE`, `REDIS_URL_FILE`
+
+## OWASP ZAP gate (Phase 5)
+- CI workflow: `.github/workflows/zap-baseline.yml`
+- Trigger options:
+  - `workflow_dispatch` with `target_url`
+  - weekly schedule (uses repository secret `ZAP_TARGET_URL`)
+- Gate rule: workflow fails when ZAP reports any High or Medium findings.
+- Local run command:
+  - `powershell -ExecutionPolicy Bypass -File deploy/security/run-zap-baseline.ps1 -TargetUrl http://host.docker.internal:8088`
+  - Optional hard cap: `-TotalMaxMinutes` (maps to ZAP `-T`, total runtime cap)
+- Output artifacts:
+  - `artifacts/zap/zap-baseline.json`
+  - `artifacts/zap/zap-baseline.html`
+  - `artifacts/zap/zap-baseline.md`
+
 ## Dockerfiles
 - `Dockerfile.app`: builds the FastAPI/Haystack app image (defaults to uvicorn on port 8000).
 - `Dockerfile.llama`: thin wrapper over `ghcr.io/ggml-org/llama.cpp:server`; pass model/args at runtime.

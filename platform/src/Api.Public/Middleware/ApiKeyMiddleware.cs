@@ -4,10 +4,11 @@ using Api.Public.Services;
 using Core.Auth;
 using Core.Data;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace Api.Public.Middleware;
 
-public class ApiKeyMiddleware(RequestDelegate next)
+public class ApiKeyMiddleware(RequestDelegate next, ILogger<ApiKeyMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext context, AppDbContext db, TenantContext tenantContext, IRateLimiter rateLimiter)
     {
@@ -66,6 +67,15 @@ public class ApiKeyMiddleware(RequestDelegate next)
             context.Response.Headers["Retry-After"] = ex.RetryAfterSeconds.ToString();
             await context.Response.WriteAsJsonAsync(new { error = "Rate limit exceeded" });
             return;
+        }
+        catch (RedisConnectionException ex)
+        {
+            // Phase 5 chaos requirement: Redis outage must not surface as a 500 with stack trace.
+            logger.LogWarning(ex, "Redis unavailable in rate limiter; allowing request to proceed");
+        }
+        catch (RedisTimeoutException ex)
+        {
+            logger.LogWarning(ex, "Redis timeout in rate limiter; allowing request to proceed");
         }
 
         tenantContext.TenantId = apiKey.TenantId;

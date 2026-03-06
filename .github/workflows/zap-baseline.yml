@@ -1,0 +1,176 @@
+name: Phase 5 - ZAP Baseline
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "Target base URL to scan (for example: https://staging.supportlayer.io)"
+        required: false
+        default: ""
+      max_minutes:
+        description: "Spider duration in minutes"
+        required: false
+        default: "5"
+      total_max_minutes:
+        description: "Total ZAP runtime cap in minutes"
+        required: false
+        default: "5"
+  schedule:
+    - cron: "0 2 * * 1"
+
+jobs:
+  zap-baseline:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve scan target
+        shell: bash
+        run: |
+          TARGET_INPUT="${{ github.event.inputs.target_url }}"
+          SECRET_TARGET="${{ secrets.ZAP_TARGET_URL }}"
+          if [ -n "${TARGET_INPUT}" ]; then
+            TARGET_URL="${TARGET_INPUT}"
+          else
+            TARGET_URL="${SECRET_TARGET}"
+          fi
+
+          if [ -z "${TARGET_URL}" ]; then
+            echo "Missing scan target. Set workflow input 'target_url' or repository secret 'ZAP_TARGET_URL'."
+            exit 1
+          fi
+
+          MAX_MINUTES="${{ github.event.inputs.max_minutes }}"
+          if [ -z "${MAX_MINUTES}" ]; then
+            MAX_MINUTES="5"
+          fi
+
+          TOTAL_MAX_MINUTES="${{ github.event.inputs.total_max_minutes }}"
+          if [ -z "${TOTAL_MAX_MINUTES}" ]; then
+            TOTAL_MAX_MINUTES="${MAX_MINUTES}"
+          fi
+
+          echo "ZAP_TARGET_URL=${TARGET_URL}" >> "${GITHUB_ENV}"
+          echo "ZAP_MAX_MINUTES=${MAX_MINUTES}" >> "${GITHUB_ENV}"
+          echo "ZAP_TOTAL_MAX_MINUTES=${TOTAL_MAX_MINUTES}" >> "${GITHUB_ENV}"
+
+      - name: Run ZAP baseline
+        shell: bash
+        run: |
+          mkdir -p artifacts/zap
+          docker run --rm \
+            -v "${{ github.workspace }}:/zap/wrk/:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+              -t "${ZAP_TARGET_URL}" \
+              -m "${ZAP_MAX_MINUTES}" \
+              -T "${ZAP_TOTAL_MAX_MINUTES}" \
+              -J artifacts/zap/zap-baseline.json \
+              -r artifacts/zap/zap-baseline.html \
+              -w artifacts/zap/zap-baseline.md \
+              -x artifacts/zap/zap-baseline.xml || true
+
+      - name: Evaluate ZAP results
+        id: evaluate
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report_path = Path("artifacts/zap/zap-baseline.json")
+          if not report_path.exists():
+              raise SystemExit("ZAP report was not generated: artifacts/zap/zap-baseline.json")
+
+          data = json.loads(report_path.read_text(encoding="utf-8"))
+          counts = {"high": 0, "medium": 0, "low": 0, "info": 0}
+          findings = []
+
+          for site in data.get("site", []):
+              for alert in site.get("alerts", []):
+                  riskcode = int(str(alert.get("riskcode", "0")))
+                  instances = int(str(alert.get("count", "0")))
+                  if riskcode == 3:
+                      counts["high"] += instances
+                  elif riskcode == 2:
+                      counts["medium"] += instances
+                  elif riskcode == 1:
+                      counts["low"] += instances
+                  else:
+                      counts["info"] += instances
+                  findings.append(
+                      {
+                          "riskcode": riskcode,
+                          "risk": alert.get("riskdesc", "Unknown"),
+                          "name": alert.get("name", "Unknown"),
+                          "count": instances,
+                          "pluginid": alert.get("pluginid", "n/a"),
+                      }
+                  )
+
+          findings.sort(key=lambda f: (-f["riskcode"], -f["count"], f["name"]))
+          top_findings = findings[:10]
+
+          summary_lines = [
+              "# ZAP Baseline Gate Summary",
+              "",
+              f"- Target: `{os.environ.get('ZAP_TARGET_URL', '')}`",
+              f"- High findings: **{counts['high']}**",
+              f"- Medium findings: **{counts['medium']}**",
+              f"- Low findings: **{counts['low']}**",
+              f"- Info findings: **{counts['info']}**",
+              "",
+              "## Top Findings",
+              "| Risk | Plugin ID | Finding | Count |",
+              "|---|---:|---|---:|",
+          ]
+          if top_findings:
+              for finding in top_findings:
+                  summary_lines.append(
+                      f"| {finding['risk']} | {finding['pluginid']} | {finding['name']} | {finding['count']} |"
+                  )
+          else:
+              summary_lines.append("| None | - | No findings | 0 |")
+
+          summary_path = Path("artifacts/zap/zap-gate-summary.md")
+          summary_path.write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
+
+          out_path = Path(os.environ["GITHUB_OUTPUT"])
+          with out_path.open("a", encoding="utf-8") as out:
+              out.write(f"high={counts['high']}\n")
+              out.write(f"medium={counts['medium']}\n")
+              out.write(f"low={counts['low']}\n")
+              out.write(f"info={counts['info']}\n")
+          PY
+
+      - name: Publish summary
+        if: always()
+        shell: bash
+        run: cat artifacts/zap/zap-gate-summary.md >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload ZAP artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-baseline-report
+          path: artifacts/zap
+          if-no-files-found: error
+
+      - name: Enforce Phase 5 gate
+        shell: bash
+        run: |
+          HIGH="${{ steps.evaluate.outputs.high }}"
+          MEDIUM="${{ steps.evaluate.outputs.medium }}"
+          if [ -z "${HIGH}" ]; then HIGH=0; fi
+          if [ -z "${MEDIUM}" ]; then MEDIUM=0; fi
+
+          if [ "${HIGH}" -gt 0 ] || [ "${MEDIUM}" -gt 0 ]; then
+            echo "Phase 5 security gate failed: high=${HIGH}, medium=${MEDIUM}"
+            exit 1
+          fi
+
+          echo "Phase 5 security gate passed: high=${HIGH}, medium=${MEDIUM}"

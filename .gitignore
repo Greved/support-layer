@@ -38,6 +38,7 @@ __pycache__/
 .venv/
 .envrc
 .mypy_cache/
+.ruff_cache/
 ruff_cache/
 .pytest_cache/
 .cache/
@@ -45,7 +46,24 @@ ruff_cache/
 .vscode/
 .vscode_settings_placeholder
 .DS_Store
+*.tmp
+*.temp
+*.pid
+*.seed
+*.orig
 !.keep
 logs/
 models/
 data/
+artifacts/
+platform/src/Api.Portal/uploads/
+k6/results/
+k6/*-summary.json
+zap.yaml
+
+# Local runtime secrets
+secrets/*
+!secrets/.gitkeep
+!secrets/README.md
+!secrets/templates/
+!secrets/templates/*

@@ -3,15 +3,31 @@ using Api.Portal.Jobs;
 using Api.Portal.Middleware;
 using Api.Portal.Services;
 using Core.Auth;
+using Core.Configuration;
 using Core.Data;
+using Core.Middleware;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Prometheus;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.ApplyFileBackedSecrets(
+    "ConnectionStrings:Default",
+    "Jwt:Key",
+    "RagCore:InternalSecret");
+
+builder.Host.UseSerilog((ctx, lc) => lc
+    .ReadFrom.Configuration(ctx.Configuration)
+    .WriteTo.Console(new CompactJsonFormatter()));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
@@ -61,28 +77,60 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddHangfire(c => c.UsePostgreSqlStorage(
-    builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddHangfire(c => c.UsePostgreSqlStorage(options =>
+    options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("Default")!)));
 builder.Services.AddHangfireServer();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
+builder.Services.AddSingleton<IAntivirusScanner, ClamAvScanner>();
 builder.Services.AddHttpClient<IRagClient, RagClient>();
 builder.Services.AddScoped<IngestionJob>();
 builder.Services.AddScoped<IMfaService, MfaService>();
 builder.Services.AddScoped<IEmailService, NoOpEmailService>();
 
+var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]
+    ?? builder.Configuration["OpenTelemetry:OtlpEndpoint"];
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("api-portal"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation();
+
+        if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+        {
+            tracing.AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri(otlpEndpoint);
+            });
+        }
+    });
+
 var app = builder.Build();
+
+var enforceHttps = builder.Configuration.GetValue("Security:EnforceHttps", false);
+if (enforceHttps)
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseHttpMetrics();
 app.UseAuthentication();
 app.UseMiddleware<TenantContextMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok", service = "Api.Portal" }));
+app.MapMetrics("/metrics");
 app.UseHangfireDashboard("/portal/hangfire");
 
 app.Run();

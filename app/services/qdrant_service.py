@@ -5,6 +5,7 @@ import time
 from typing import Any
 
 from qdrant_client import QdrantClient
+from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import Filter, ScoredPoint
 
 from app.core.config import Settings
@@ -69,6 +70,17 @@ class QdrantService:
                     with_payload=True,
                 )
             raise RuntimeError("Qdrant client does not support search/query on this version")
+        except UnexpectedResponse as exc:
+            # If tenant has no indexed documents yet, Qdrant returns 404 for collection lookup.
+            # Treat it as "no hits" so query endpoints can respond gracefully instead of 500.
+            if exc.status_code == 404:
+                logger.warning(
+                    "Qdrant collection missing; returning empty results collection=%s",
+                    collection,
+                )
+                return []
+            logger.error("Qdrant search failed", exc_info=exc)
+            raise
         except Exception as exc:  # pragma: no cover
             logger.error("Qdrant search failed", exc_info=exc)
             raise

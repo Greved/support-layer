@@ -6,6 +6,7 @@ using Api.Public.Services;
 using Core.Auth;
 using Core.Data;
 using Core.Entities;
+using Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,12 @@ public class ChatController(AppDbContext db, TenantContext tenantContext, IPubli
     [HttpPost("chat")]
     public async Task<ActionResult<ChatResponse>> Chat([FromBody] ChatRequest request)
     {
+        if (request.Query.Length > 10_000)
+            return BadRequest(new { error = "query_too_long" });
+
+        if (PromptInjectionDetector.IsInjection(request.Query))
+            return UnprocessableEntity(new { error = "prompt_injection_detected" });
+
         var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantContext.TenantId);
         if (tenant is null) return Unauthorized();
 
@@ -35,7 +42,15 @@ public class ChatController(AppDbContext db, TenantContext tenantContext, IPubli
         });
         await db.SaveChangesAsync();
 
-        var result = await ragClient.QueryAsync(tenant.Slug, request.Query, HttpContext.RequestAborted);
+        PublicRagResult result;
+        try
+        {
+            result = await ragClient.QueryAsync(tenant.Slug, request.Query, HttpContext.RequestAborted);
+        }
+        catch (HttpRequestException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "rag_unavailable" });
+        }
 
         db.ChatMessages.Add(new ChatMessage
         {
@@ -67,6 +82,18 @@ public class ChatController(AppDbContext db, TenantContext tenantContext, IPubli
     [HttpPost("chat/stream")]
     public async Task ChatStream([FromBody] ChatRequest request)
     {
+        if (request.Query.Length > 10_000)
+        {
+            Response.StatusCode = 400;
+            return;
+        }
+
+        if (PromptInjectionDetector.IsInjection(request.Query))
+        {
+            Response.StatusCode = 422;
+            return;
+        }
+
         var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantContext.TenantId);
         if (tenant is null)
         {

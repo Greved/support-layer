@@ -7,7 +7,7 @@ namespace Api.Public.Services;
 public class PublicRagClient(HttpClient http, IConfiguration configuration) : IPublicRagClient
 {
     private string BaseUrl => configuration["RagCore:BaseUrl"] ?? "http://localhost:8000";
-    private string InternalSecret => configuration["RagCore:InternalSecret"] ?? "change-me-secret";
+    private string InternalSecret => GetRequiredInternalSecret(configuration);
 
     public async Task<PublicRagResult> QueryAsync(string tenantSlug, string query, CancellationToken ct = default)
     {
@@ -69,5 +69,15 @@ public class PublicRagClient(HttpClient http, IConfiguration configuration) : IP
             if (line.StartsWith("data:"))
                 yield return line;
         }
+    }
+
+    private static string GetRequiredInternalSecret(IConfiguration cfg)
+    {
+        var secret = cfg["RagCore:InternalSecret"];
+        if (!string.IsNullOrWhiteSpace(secret))
+            return secret;
+
+        throw new InvalidOperationException(
+            "RagCore:InternalSecret is not configured. Use RagCore__InternalSecret or RagCore__InternalSecret_FILE.");
     }
 }

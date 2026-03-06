@@ -1,0 +1,75 @@
+name: Backup Restore Check
+
+on:
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+jobs:
+  backup-restore-check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: supportlayer
+          POSTGRES_USER: supportlayer
+          POSTGRES_PASSWORD: supportlayer
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U supportlayer"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.x"
+
+      - name: Install EF CLI
+        run: dotnet tool install --global dotnet-ef --version 9.*
+
+      - name: Add dotnet tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Restore .NET dependencies
+        run: dotnet restore platform/
+
+      - name: Apply migrations
+        env:
+          ConnectionStrings__Default: Host=localhost;Port=5432;Database=supportlayer;Username=supportlayer;Password=supportlayer
+        run: dotnet ef database update --project platform/src/Core/Core.csproj --startup-project platform/src/Api.Portal/Api.Portal.csproj
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Create backup
+        shell: pwsh
+        run: |
+          ./deploy/backup/pg_backup.ps1 `
+            -DbHost localhost `
+            -DbPort 5432 `
+            -DbName supportlayer `
+            -DbUser supportlayer `
+            -DbPassword supportlayer `
+            -OutputDir artifacts/backups `
+            -RetentionDays 30
+
+      - name: Verify restore
+        shell: pwsh
+        run: |
+          $backup = Get-ChildItem artifacts/backups/*.dump | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $backup) { throw "No backup file was generated." }
+          ./deploy/backup/pg_restore_verify.ps1 `
+            -BackupPath $backup.FullName `
+            -DbHost localhost `
+            -DbPort 5432 `
+            -DbName supportlayer `
+            -DbUser supportlayer `
+            -DbPassword supportlayer
