@@ -213,6 +213,84 @@ public class ChatController(AppDbContext db, TenantContext tenantContext, IPubli
         return Ok(new { id = session.Id, createdAt = session.CreatedAt, messages });
     }
 
+    // POST /v1/feedback
+    [HttpPost("feedback")]
+    public async Task<ActionResult<FeedbackResponse>> SubmitFeedback([FromBody] FeedbackRequest request)
+    {
+        if (tenantContext.TenantId is null) return Unauthorized();
+
+        var rating = (request.Rating ?? string.Empty).Trim().ToLowerInvariant();
+        if (rating is not ("up" or "down"))
+            return UnprocessableEntity(new { error = "invalid_rating" });
+
+        var comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment.Trim();
+        if (comment is not null && comment.Length > 2000)
+            return BadRequest(new { error = "comment_too_long" });
+
+        var tenantId = tenantContext.TenantId.Value;
+        var message = await db.ChatMessages
+            .Include(m => m.Session)
+            .FirstOrDefaultAsync(m => m.Id == request.MessageId && m.Session.TenantId == tenantId);
+
+        if (message is null)
+            return NotFound(new { error = "message_not_found" });
+
+        if (!string.Equals(message.Role, "assistant", StringComparison.OrdinalIgnoreCase))
+            return UnprocessableEntity(new { error = "feedback_target_must_be_assistant_message" });
+
+        var flagged = rating == "down" && !string.IsNullOrWhiteSpace(comment);
+        var existing = await db.ChatMessageFeedback
+            .FirstOrDefaultAsync(f => f.ChatMessageId == request.MessageId);
+
+        if (existing is null)
+        {
+            var created = new ChatMessageFeedback
+            {
+                Id = Guid.NewGuid(),
+                ChatMessageId = request.MessageId,
+                TenantId = tenantId,
+                Rating = rating,
+                Comment = comment,
+                Flagged = flagged,
+                Promoted = false,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            };
+
+            db.ChatMessageFeedback.Add(created);
+            await db.SaveChangesAsync();
+
+            return StatusCode(StatusCodes.Status201Created, new FeedbackResponse(
+                created.Id,
+                created.ChatMessageId,
+                created.Rating,
+                created.Comment,
+                created.Flagged,
+                created.Promoted,
+                created.CreatedAt));
+        }
+
+        existing.Rating = rating;
+        existing.Comment = comment;
+        existing.Flagged = flagged;
+        existing.UpdatedAt = DateTime.UtcNow;
+        if (existing.Promoted && flagged)
+        {
+            existing.Promoted = false;
+            existing.PromotedAt = null;
+        }
+
+        await db.SaveChangesAsync();
+        return Ok(new FeedbackResponse(
+            existing.Id,
+            existing.ChatMessageId,
+            existing.Rating,
+            existing.Comment,
+            existing.Flagged,
+            existing.Promoted,
+            existing.CreatedAt));
+    }
+
     private async Task<ChatSession> ResolveOrCreateSessionAsync(Guid? sessionId, Guid tenantId, Guid? apiKeyId)
     {
         if (sessionId.HasValue)

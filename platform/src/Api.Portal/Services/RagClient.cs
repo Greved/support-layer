@@ -73,6 +73,35 @@ public class RagClient(HttpClient http, IConfiguration configuration) : IRagClie
         return new RagIngestResult(chunksWritten, returnedDocId);
     }
 
+    public async Task<RagEvalTriggerResult> TriggerEvalRunAsync(string tenantSlug, string triggerReason)
+    {
+        var body = JsonSerializer.Serialize(new
+        {
+            tenant_id = tenantSlug,
+            trigger_reason = triggerReason,
+        });
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/internal/eval/run")
+        {
+            Content = new StringContent(body, Encoding.UTF8, "application/json"),
+        };
+        request.Headers.Add("X-Internal-Secret", InternalSecret);
+
+        var response = await http.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        var status = root.TryGetProperty("status", out var statusEl)
+            ? statusEl.GetString() ?? "accepted"
+            : "accepted";
+        var returnedReason = root.TryGetProperty("trigger_reason", out var reasonEl)
+            ? reasonEl.GetString() ?? triggerReason
+            : triggerReason;
+
+        return new RagEvalTriggerResult(status, returnedReason);
+    }
+
     private static string GetRequiredInternalSecret(IConfiguration cfg)
     {
         var secret = cfg["RagCore:InternalSecret"];

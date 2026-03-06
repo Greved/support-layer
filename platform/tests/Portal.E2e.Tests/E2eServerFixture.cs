@@ -178,6 +178,9 @@ public class E2eStubRagClient : IRagClient
     public Task<RagIngestResult> IngestAsync(string tenantSlug, string documentId,
         string fileName, byte[] fileBytes, string contentType)
         => Task.FromResult(new RagIngestResult(1, documentId));
+
+    public Task<RagEvalTriggerResult> TriggerEvalRunAsync(string tenantSlug, string triggerReason)
+        => Task.FromResult(new RagEvalTriggerResult("accepted", triggerReason));
 }
 
 public class E2eStubEmailService : IEmailService

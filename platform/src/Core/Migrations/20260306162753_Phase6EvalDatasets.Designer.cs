@@ -3,6 +3,7 @@ using System;
 using Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Core.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260306162753_Phase6EvalDatasets")]
+    partial class Phase6EvalDatasets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -401,38 +404,6 @@ namespace Core.Migrations
                     b.ToTable("DriftAlerts");
                 });
 
-            modelBuilder.Entity("Core.Entities.EvalBaseline", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RunId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("SetAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<string>("SetBy")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RunId");
-
-                    b.HasIndex("TenantId")
-                        .IsUnique();
-
-                    b.ToTable("EvalBaselines");
-                });
-
             modelBuilder.Entity("Core.Entities.EvalDataset", b =>
                 {
                     b.Property<Guid>("Id")
@@ -483,110 +454,6 @@ namespace Core.Migrations
                     b.HasIndex("TenantId", "CreatedAt");
 
                     b.ToTable("EvalDatasets");
-                });
-
-            modelBuilder.Entity("Core.Entities.EvalResult", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Answer")
-                        .IsRequired()
-                        .HasMaxLength(8000)
-                        .HasColumnType("character varying(8000)");
-
-                    b.Property<double?>("AnswerCompleteness")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("AnswerRelevancy")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("ContextPrecision")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("ContextRecall")
-                        .HasColumnType("double precision");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid?>("DatasetItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<double?>("Faithfulness")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("HallucinationScore")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("LatencyMs")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("RetrievedChunksJson")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<Guid>("RunId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DatasetItemId");
-
-                    b.HasIndex("RunId");
-
-                    b.ToTable("EvalResults");
-                });
-
-            modelBuilder.Entity("Core.Entities.EvalRun", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ConfigSnapshotJson")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<DateTime?>("FinishedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("RunType")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TriggeredBy")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId", "StartedAt");
-
-                    b.ToTable("EvalRuns");
                 });
 
             modelBuilder.Entity("Core.Entities.NotificationPreference", b =>
@@ -1042,25 +909,6 @@ namespace Core.Migrations
                     b.Navigation("Tenant");
                 });
 
-            modelBuilder.Entity("Core.Entities.EvalBaseline", b =>
-                {
-                    b.HasOne("Core.Entities.EvalRun", "Run")
-                        .WithMany("Baselines")
-                        .HasForeignKey("RunId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Entities.Tenant", "Tenant")
-                        .WithMany("EvalBaselines")
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Run");
-
-                    b.Navigation("Tenant");
-                });
-
             modelBuilder.Entity("Core.Entities.EvalDataset", b =>
                 {
                     b.HasOne("Core.Entities.ChatMessageFeedback", "SourceFeedback")
@@ -1075,35 +923,6 @@ namespace Core.Migrations
                         .IsRequired();
 
                     b.Navigation("SourceFeedback");
-
-                    b.Navigation("Tenant");
-                });
-
-            modelBuilder.Entity("Core.Entities.EvalResult", b =>
-                {
-                    b.HasOne("Core.Entities.EvalDataset", "DatasetItem")
-                        .WithMany("EvalResults")
-                        .HasForeignKey("DatasetItemId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Core.Entities.EvalRun", "Run")
-                        .WithMany("Results")
-                        .HasForeignKey("RunId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DatasetItem");
-
-                    b.Navigation("Run");
-                });
-
-            modelBuilder.Entity("Core.Entities.EvalRun", b =>
-                {
-                    b.HasOne("Core.Entities.Tenant", "Tenant")
-                        .WithMany("EvalRuns")
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("Tenant");
                 });
@@ -1214,18 +1033,6 @@ namespace Core.Migrations
                     b.Navigation("Messages");
                 });
 
-            modelBuilder.Entity("Core.Entities.EvalDataset", b =>
-                {
-                    b.Navigation("EvalResults");
-                });
-
-            modelBuilder.Entity("Core.Entities.EvalRun", b =>
-                {
-                    b.Navigation("Baselines");
-
-                    b.Navigation("Results");
-                });
-
             modelBuilder.Entity("Core.Entities.Plan", b =>
                 {
                     b.Navigation("Limit");
@@ -1256,11 +1063,7 @@ namespace Core.Migrations
 
                     b.Navigation("DriftAlerts");
 
-                    b.Navigation("EvalBaselines");
-
                     b.Navigation("EvalDatasets");
-
-                    b.Navigation("EvalRuns");
 
                     b.Navigation("Users");
                 });

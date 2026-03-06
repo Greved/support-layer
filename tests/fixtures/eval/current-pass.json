@@ -1,0 +1,9 @@
+{
+  "metrics": {
+    "faithfulness": 0.87,
+    "answer_relevancy": 0.86,
+    "context_precision": 0.81,
+    "context_recall": 0.83,
+    "hallucination_rate": 0.05
+  }
+}

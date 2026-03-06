@@ -86,6 +86,8 @@ builder.Services.AddScoped<IStorageService, LocalStorageService>();
 builder.Services.AddSingleton<IAntivirusScanner, ClamAvScanner>();
 builder.Services.AddHttpClient<IRagClient, RagClient>();
 builder.Services.AddScoped<IngestionJob>();
+builder.Services.AddScoped<IngestEvalTriggerJob>();
+builder.Services.AddScoped<FeedbackDriftDetectionJob>();
 builder.Services.AddScoped<IMfaService, MfaService>();
 builder.Services.AddScoped<IEmailService, NoOpEmailService>();
 
@@ -132,6 +134,16 @@ app.MapControllers();
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok", service = "Api.Portal" }));
 app.MapMetrics("/metrics");
 app.UseHangfireDashboard("/portal/hangfire");
+
+var driftDetectionCron = app.Configuration["Phase6:DriftDetectionCron"] ?? "0 2 * * *";
+RecurringJob.AddOrUpdate<FeedbackDriftDetectionJob>(
+    "phase6-feedback-drift-detection",
+    job => job.RunAsync(),
+    driftDetectionCron,
+    new RecurringJobOptions
+    {
+        TimeZone = TimeZoneInfo.Utc,
+    });
 
 app.Run();
 

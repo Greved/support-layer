@@ -17,5 +17,10 @@ public class Tenant
     public ICollection<Document> Documents { get; set; } = [];
     public ICollection<BillingEvent> BillingEvents { get; set; } = [];
     public ICollection<ChatSession> ChatSessions { get; set; } = [];
+    public ICollection<ChatMessageFeedback> ChatMessageFeedbackEntries { get; set; } = [];
+    public ICollection<EvalDataset> EvalDatasets { get; set; } = [];
+    public ICollection<EvalRun> EvalRuns { get; set; } = [];
+    public ICollection<EvalBaseline> EvalBaselines { get; set; } = [];
+    public ICollection<DriftAlert> DriftAlerts { get; set; } = [];
     public ICollection<AuditLog> AuditLogs { get; set; } = [];
 }

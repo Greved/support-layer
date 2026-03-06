@@ -4,11 +4,19 @@ namespace Api.Portal.Tests;
 
 public class StubRagClient : IRagClient
 {
+    public List<(string TenantSlug, string TriggerReason)> TriggeredEvalRuns { get; } = [];
+
     public Task<RagQueryResult> QueryAsync(string tenantSlug, string query)
         => Task.FromResult(new RagQueryResult("Stub answer.", []));
 
     public Task<RagIngestResult> IngestAsync(string tenantSlug, string documentId, string fileName, byte[] fileBytes, string contentType)
         => Task.FromResult(new RagIngestResult(3, documentId));
+
+    public Task<RagEvalTriggerResult> TriggerEvalRunAsync(string tenantSlug, string triggerReason)
+    {
+        TriggeredEvalRuns.Add((tenantSlug, triggerReason));
+        return Task.FromResult(new RagEvalTriggerResult("accepted", triggerReason));
+    }
 }
 
 public class StubEmailService : IEmailService

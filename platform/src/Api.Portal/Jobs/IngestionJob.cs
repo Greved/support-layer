@@ -1,11 +1,17 @@
 using Api.Portal.Constants;
 using Api.Portal.Services;
 using Core.Data;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Portal.Jobs;
 
-public class IngestionJob(AppDbContext db, IStorageService storage, IRagClient ragClient, ILogger<IngestionJob> logger)
+public class IngestionJob(
+    AppDbContext db,
+    IStorageService storage,
+    IRagClient ragClient,
+    IBackgroundJobClient backgroundJobs,
+    ILogger<IngestionJob> logger)
 {
     public async Task RunAsync(Guid documentId)
     {
@@ -35,6 +41,7 @@ public class IngestionJob(AppDbContext db, IStorageService storage, IRagClient r
 
             document.Status = DocumentStatus.Ready;
             document.ChunkCount = result.ChunksWritten;
+            backgroundJobs.Enqueue<IngestEvalTriggerJob>(j => j.RunAsync(document.Id));
         }
         catch (Exception ex)
         {

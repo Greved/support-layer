@@ -60,6 +60,14 @@ LLM selection:
   - `artifacts/zap/zap-baseline.html`
   - `artifacts/zap/zap-baseline.md`
 
+## Eval gate (Phase 6)
+- Local command:
+  - `python -m eval.eval_gate --baseline-run-id baseline --current-run-id current --baseline-file tests/fixtures/eval/baseline.json --current-file tests/fixtures/eval/current-pass.json --output-md artifacts/eval/eval-gate-summary.md --log-file artifacts/eval/eval-gate.log`
+- Baseline pinning command:
+  - `python -m eval.set_baseline --tenant demo-tenant --run-id run-2026-03-06 --registry-file artifacts/eval/baselines.json`
+- CI workflow:
+  - `.github/workflows/eval-gate.yml`
+
 ## Dockerfiles
 - `Dockerfile.app`: builds the FastAPI/Haystack app image (defaults to uvicorn on port 8000).
 - `Dockerfile.llama`: thin wrapper over `ghcr.io/ggml-org/llama.cpp:server`; pass model/args at runtime.

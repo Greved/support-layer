@@ -33,6 +33,11 @@ class InternalQueryRequest(BaseModel):
     filters: dict | None = None
 
 
+class InternalEvalRunRequest(BaseModel):
+    tenant_id: str
+    trigger_reason: str = "manual"
+
+
 @router.post("/ingest", tags=["internal"])
 async def internal_ingest(
     file: UploadFile,
@@ -121,6 +126,25 @@ def internal_query(
         except QueryError as exc:
             logger.error("Internal query failed", exc_info=exc)
             raise HTTPException(status_code=503, detail="Query pipeline unavailable") from exc
+
+
+@router.post("/eval/run", tags=["internal"])
+def internal_eval_run(
+    payload: InternalEvalRunRequest,
+    x_internal_secret: str = Header(...),
+) -> dict:
+    _check_secret(x_internal_secret)
+    with bind_tenant_id(payload.tenant_id):
+        logger.info(
+            "Internal eval run trigger accepted tenant_id=%s trigger_reason=%s",
+            payload.tenant_id,
+            payload.trigger_reason,
+        )
+    return {
+        "status": "accepted",
+        "tenant_id": payload.tenant_id,
+        "trigger_reason": payload.trigger_reason,
+    }
 
 
 @router.get("/healthz", tags=["internal"])

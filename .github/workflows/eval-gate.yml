@@ -1,0 +1,45 @@
+name: Eval Gate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  eval-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install ".[dev]"
+
+      - name: Run eval gate unit tests
+        run: pytest -q tests/test_eval_gate.py
+
+      - name: Run eval gate check
+        run: |
+          python -m eval.eval_gate \
+            --baseline-run-id baseline-fixture \
+            --current-run-id current-fixture \
+            --baseline-file tests/fixtures/eval/baseline.json \
+            --current-file tests/fixtures/eval/current-pass.json \
+            --output-md artifacts/eval/eval-gate-summary.md
+
+      - name: Publish eval gate summary
+        if: always()
+        run: cat artifacts/eval/eval-gate-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload eval gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-gate-summary
+          path: artifacts/eval/eval-gate-summary.md
+          if-no-files-found: error

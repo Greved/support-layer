@@ -10,4 +10,5 @@ public class ChatMessage
     public DateTime CreatedAt { get; set; }
 
     public ChatSession Session { get; set; } = null!;
+    public ICollection<ChatMessageFeedback> FeedbackEntries { get; set; } = [];
 }
