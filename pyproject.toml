@@ -41,6 +41,11 @@ dev = [
   "pytest>=8.3.3",
   "pre-commit>=3.8.0"
 ]
+eval = [
+  "ragas>=0.2.0",
+  "deepeval>=1.0.0",
+  "datasets>=2.19.0"
+]
 
 [tool.black]
 target-version = ["py311"]
@@ -63,6 +68,9 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "eval: long-running quality tests backed by DeepEval/RAGAS integrations",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["app", "ingestion"]

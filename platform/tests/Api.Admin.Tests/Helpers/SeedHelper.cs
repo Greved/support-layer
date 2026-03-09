@@ -261,6 +261,7 @@ public static class SeedHelper
             DatasetItemId = dataset?.Id,
             Answer = dataset?.GroundTruth ?? "answer",
             RetrievedChunksJson = "[]",
+            ContextSnapshotJson = "{}",
             Faithfulness = faithfulness,
             AnswerRelevancy = relevancy,
             ContextPrecision = precision,

@@ -12,6 +12,7 @@ import TeamPage from '@/pages/TeamPage';
 import SettingsPage from '@/pages/SettingsPage';
 import OnboardingPage from '@/pages/OnboardingPage';
 import MfaEnrollPage from '@/pages/MfaEnrollPage';
+import QualityPage from '@/pages/QualityPage';
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/config" element={<ConfigPage />} />
+          <Route path="/quality" element={<QualityPage />} />
           <Route path="/team" element={<TeamPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/mfa" element={<MfaEnrollPage />} />

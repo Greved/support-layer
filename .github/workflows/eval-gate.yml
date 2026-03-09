@@ -5,9 +5,22 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   eval-gate:
     runs-on: ubuntu-latest
+    env:
+      DEEPEVAL_BASE_URL: ${{ secrets.DEEPEVAL_BASE_URL }}
+      DEEPEVAL_MODEL: ${{ secrets.DEEPEVAL_MODEL }}
+      DEEPEVAL_API_KEY: ${{ secrets.DEEPEVAL_API_KEY }}
+      RAGAS_BASE_URL: ${{ secrets.RAGAS_BASE_URL }}
+      RAGAS_MODEL: ${{ secrets.RAGAS_MODEL }}
+      RAGAS_API_KEY: ${{ secrets.RAGAS_API_KEY }}
+      RAGAS_EMBEDDING_BASE_URL: ${{ secrets.RAGAS_EMBEDDING_BASE_URL }}
+      RAGAS_EMBEDDING_MODEL: ${{ secrets.RAGAS_EMBEDDING_MODEL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -18,28 +31,166 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install ".[dev]"
+        run: pip install ".[dev,eval]"
+
+      - name: Validate real eval runtime configuration
+        run: |
+          test -n "$DEEPEVAL_BASE_URL" || (echo "Missing secret: DEEPEVAL_BASE_URL" && exit 1)
+          test -n "$DEEPEVAL_MODEL" || (echo "Missing secret: DEEPEVAL_MODEL" && exit 1)
+          test -n "$DEEPEVAL_API_KEY" || (echo "Missing secret: DEEPEVAL_API_KEY" && exit 1)
+          test -n "$RAGAS_BASE_URL" || (echo "Missing secret: RAGAS_BASE_URL" && exit 1)
+          test -n "$RAGAS_MODEL" || (echo "Missing secret: RAGAS_MODEL" && exit 1)
+          test -n "$RAGAS_API_KEY" || (echo "Missing secret: RAGAS_API_KEY" && exit 1)
+          test -n "$RAGAS_EMBEDDING_BASE_URL" || (echo "Missing secret: RAGAS_EMBEDDING_BASE_URL" && exit 1)
+          test -n "$RAGAS_EMBEDDING_MODEL" || (echo "Missing secret: RAGAS_EMBEDDING_MODEL" && exit 1)
 
       - name: Run eval gate unit tests
         run: pytest -q tests/test_eval_gate.py
+
+      - name: Prepare deterministic CI eval documents
+        run: |
+          mkdir -p artifacts/eval
+          cat > artifacts/eval/ci-docs.json <<'JSON'
+          [
+            {
+              "id": "ci-doc-1",
+              "title": "Support Playbook",
+              "excerpt": "What does Support Playbook say about this issue"
+            }
+          ]
+          JSON
+
+      - name: Generate synthetic eval dataset
+        run: |
+          python -m eval.generate \
+            --tenant ci-eval \
+            --count 1 \
+            --documents-file artifacts/eval/ci-docs.json \
+            --output-file artifacts/eval/generated-dataset.json
+
+      - name: Materialize candidate answers for strict eval
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("artifacts/eval/generated-dataset.json")
+          payload = json.loads(path.read_text(encoding="utf-8"))
+          rows = payload.get("rows", [])
+          for row in rows:
+            gt = str(row.get("ground_truth") or "").strip()
+            row["answer"] = f"Candidate response: {gt}" if gt else "Candidate response unavailable."
+            row["source_chunks"] = [gt] if gt else ["No retrieved context available."]
+          path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+          PY
+
+      - name: Run eval scoring for current artifact
+        run: |
+          python -m eval.run_eval \
+            --tenant ci-eval \
+            --run-id current-generated \
+            --dataset-file artifacts/eval/generated-dataset.json \
+            --require-ragas \
+            --require-deepeval \
+            --output-file artifacts/eval/current-run-result.json \
+            --metrics-file artifacts/eval/current-metrics.generated.json
 
       - name: Run eval gate check
         run: |
           python -m eval.eval_gate \
             --baseline-run-id baseline-fixture \
-            --current-run-id current-fixture \
+            --current-run-id current-generated \
             --baseline-file tests/fixtures/eval/baseline.json \
-            --current-file tests/fixtures/eval/current-pass.json \
+            --current-file artifacts/eval/current-metrics.generated.json \
+            --current-run-result-file artifacts/eval/current-run-result.json \
+            --require-real-integrations \
             --output-md artifacts/eval/eval-gate-summary.md
+
+      - name: Verify degraded fixture is blocked
+        run: |
+          set +e
+          python -m eval.eval_gate \
+            --baseline-run-id baseline-fixture \
+            --current-run-id degraded-fixture \
+            --baseline-file tests/fixtures/eval/baseline.json \
+            --current-file tests/fixtures/eval/current-fail.json \
+            --output-md artifacts/eval/eval-gate-degraded-summary.md
+          rc=$?
+          if [ "$rc" -eq 0 ]; then
+            echo "Expected eval gate to fail for degraded fixture, but it passed."
+            exit 1
+          fi
+          echo "Degraded fixture correctly failed with exit code $rc."
 
       - name: Publish eval gate summary
         if: always()
-        run: cat artifacts/eval/eval-gate-summary.md >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          cat artifacts/eval/eval-gate-summary.md >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          cat artifacts/eval/eval-gate-degraded-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment eval gate report on PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summaryPath = 'artifacts/eval/eval-gate-summary.md';
+            const marker = '<!-- phase6-eval-gate-report -->';
+
+            if (!fs.existsSync(summaryPath)) {
+              core.warning(`Eval gate summary not found at ${summaryPath}; skipping PR comment.`);
+              return;
+            }
+
+            const summary = fs.readFileSync(summaryPath, 'utf8');
+            const body = [
+              marker,
+              '## Phase 6 Eval Gate Report',
+              '',
+              summary
+            ].join('\n');
+
+            const issue_number = context.payload.pull_request.number;
+            const { owner, repo } = context.repo;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100
+            });
+
+            const existing = comments.find((comment) =>
+              comment.user?.type === 'Bot' && comment.body?.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body
+              });
+            }
 
       - name: Upload eval gate artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: eval-gate-summary
-          path: artifacts/eval/eval-gate-summary.md
+          path: |
+            artifacts/eval/eval-gate-summary.md
+            artifacts/eval/eval-gate-degraded-summary.md
+            artifacts/eval/ci-docs.json
+            artifacts/eval/generated-dataset.json
+            artifacts/eval/current-run-result.json
+            artifacts/eval/current-metrics.generated.json
           if-no-files-found: error

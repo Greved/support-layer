@@ -4,9 +4,14 @@ import { Message } from './Message'
 
 interface Props {
   messages: MessageType[]
+  onFeedback: (
+    messageId: string,
+    rating: 'up' | 'down',
+    comment?: string
+  ) => Promise<boolean>
 }
 
-export function MessageList({ messages }: Props) {
+export function MessageList({ messages, onFeedback }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -43,7 +48,7 @@ export function MessageList({ messages }: Props) {
       )}
 
       {messages.map((m) => (
-        <Message key={m.id} message={m} />
+        <Message key={m.id} message={m} onFeedback={onFeedback} />
       ))}
       <div ref={bottomRef} />
     </div>

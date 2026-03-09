@@ -122,6 +122,7 @@ public class ChatController(AppDbContext db, TenantContext tenantContext, IPubli
 
         await foreach (var line in ragClient.StreamQueryAsync(tenant.Slug, request.Query, HttpContext.RequestAborted))
         {
+            var outboundLine = line;
             var data = line.StartsWith("data:") ? line["data:".Length..].Trim() : line;
 
             if (data == "[DONE]") break;
@@ -139,7 +140,7 @@ public class ChatController(AppDbContext db, TenantContext tenantContext, IPubli
                 {
                     var finalAnswer = root.TryGetProperty("answer", out var ans) ? ans.GetString() ?? answerBuilder.ToString() : answerBuilder.ToString();
 
-                    db.ChatMessages.Add(new ChatMessage
+                    var assistantMessage = new ChatMessage
                     {
                         Id = Guid.NewGuid(),
                         SessionId = session.Id,
@@ -147,7 +148,8 @@ public class ChatController(AppDbContext db, TenantContext tenantContext, IPubli
                         Content = finalAnswer,
                         TokensUsed = 0,
                         CreatedAt = DateTime.UtcNow,
-                    });
+                    };
+                    db.ChatMessages.Add(assistantMessage);
                     db.BillingEvents.Add(new BillingEvent
                     {
                         Id = Guid.NewGuid(),
@@ -158,11 +160,19 @@ public class ChatController(AppDbContext db, TenantContext tenantContext, IPubli
                         CreatedAt = DateTime.UtcNow,
                     });
                     await db.SaveChangesAsync();
+
+                    outboundLine = $"data: {JsonSerializer.Serialize(new
+                    {
+                        type = "done",
+                        answer = finalAnswer,
+                        session_id = session.Id,
+                        message_id = assistantMessage.Id,
+                    })}";
                 }
             }
             catch (JsonException) { /* pass non-JSON lines through */ }
 
-            var sseBytes = Encoding.UTF8.GetBytes($"{line}\n\n");
+            var sseBytes = Encoding.UTF8.GetBytes($"{outboundLine}\n\n");
             await Response.Body.WriteAsync(sseBytes, HttpContext.RequestAborted);
             await Response.Body.FlushAsync(HttpContext.RequestAborted);
         }

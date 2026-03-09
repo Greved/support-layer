@@ -1,5 +1,6 @@
 using Api.Admin.Services;
 using Core.Data;
+using Core.Evals;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -39,8 +40,10 @@ public class AdminApiFactory : WebApplicationFactory<Program>
             // Replace external HTTP services with stubs
             services.RemoveAll<IInfraHealthService>();
             services.RemoveAll<IQdrantAdminService>();
+            services.RemoveAll<IEvalScoringService>();
             services.AddScoped<IInfraHealthService, StubInfraHealthService>();
             services.AddScoped<IQdrantAdminService, StubQdrantAdminService>();
+            services.AddScoped<IEvalScoringService, StubEvalScoringService>();
 
             // Run migrations
             var sp = services.BuildServiceProvider();

@@ -26,7 +26,7 @@ function CloseIcon() {
 
 export function Widget({ config }: Props) {
   const [open, setOpen] = useState(false)
-  const { messages, loading, sendMessage } = useChat(config.apiBase, config.apiKey)
+  const { messages, loading, sendMessage, submitFeedback } = useChat(config.apiBase, config.apiKey)
 
   useEffect(() => {
     if (config.autoOpenDelaySeconds == null) return
@@ -72,6 +72,7 @@ export function Widget({ config }: Props) {
             messages={messages}
             loading={loading}
             onSend={sendMessage}
+            onFeedback={submitFeedback}
             onClose={() => setOpen(false)}
           />
         </div>

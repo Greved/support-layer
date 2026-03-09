@@ -4,6 +4,7 @@ using Api.Admin.Services;
 using Core.Auth;
 using Core.Configuration;
 using Core.Data;
+using Core.Evals;
 using Core.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +55,7 @@ builder.Services.AddScoped<TenantContext>();
 builder.Services.AddScoped<IAdminTokenService, AdminTokenService>();
 builder.Services.AddScoped<IInfraHealthService, InfraHealthService>();
 builder.Services.AddScoped<IQdrantAdminService, QdrantAdminService>();
+builder.Services.AddScoped<IEvalScoringService, PythonEvalScoringService>();
 builder.Services.AddHttpClient();
 
 builder.Services.AddControllers();

@@ -61,12 +61,27 @@ LLM selection:
   - `artifacts/zap/zap-baseline.md`
 
 ## Eval gate (Phase 6)
+- Install eval tooling (RAGAS + DeepEval):
+  - `py -3.12 -m pip install .[eval]`
+- Local/self-hosted DeepEval (no external LLM API required):
+  - `set DEEPEVAL_BASE_URL=http://localhost:8082/v1`
+  - `set DEEPEVAL_MODEL=Qwen3-4B-Q4_K_M.gguf`
+  - `set DEEPEVAL_API_KEY=local-selfhosted` (dummy key for OpenAI-compatible client)
 - Local command:
-  - `python -m eval.eval_gate --baseline-run-id baseline --current-run-id current --baseline-file tests/fixtures/eval/baseline.json --current-file tests/fixtures/eval/current-pass.json --output-md artifacts/eval/eval-gate-summary.md --log-file artifacts/eval/eval-gate.log`
+  - `python -m eval.eval_gate --baseline-run-id baseline --current-run-id current --baseline-file tests/fixtures/eval/baseline.json --current-file artifacts/eval/current-metrics.json --current-run-result-file artifacts/eval/run-result.json --require-real-integrations --output-md artifacts/eval/eval-gate-summary.md --log-file artifacts/eval/eval-gate.log`
+- Eval dataset + scoring commands (strict real integrations):
+  - `python -m eval.generate --tenant demo-tenant --count 50 --output-file artifacts/eval/generated-dataset.json`
+  - Ensure each eval row contains explicit `answer` and `retrieved_context`/`source_chunks` (strict mode rejects self-grading rows where answer is copied from ground truth).
+  - `python -m eval.run_eval --tenant demo-tenant --dataset-file artifacts/eval/generated-dataset.json --require-ragas --require-deepeval --output-file artifacts/eval/run-result.json --metrics-file artifacts/eval/current-metrics.json`
+  - Optional fallback-only run: add `--disable-ragas --disable-deepeval`
 - Baseline pinning command:
   - `python -m eval.set_baseline --tenant demo-tenant --run-id run-2026-03-06 --registry-file artifacts/eval/baselines.json`
 - CI workflow:
   - `.github/workflows/eval-gate.yml`
+- API-side eval scoring now hydrates each eval question with live rag-core query output before Python scoring.
+  - Config toggles:
+    - `Phase6:EvalRunner:UseLiveRagQuery` (default `true`)
+    - `Phase6:EvalRunner:RequireLiveRagQuery` (default `true` when `RequireRagas` or `RequireDeepEval` is enabled)
 
 ## Dockerfiles
 - `Dockerfile.app`: builds the FastAPI/Haystack app image (defaults to uvicorn on port 8000).

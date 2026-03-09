@@ -525,10 +525,13 @@ namespace Core.Migrations
                     b.Property<int>("LatencyMs")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ContextSnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("RetrievedChunksJson")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("RunId")
                         .HasColumnType("uuid");
@@ -550,8 +553,7 @@ namespace Core.Migrations
 
                     b.Property<string>("ConfigSnapshotJson")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()

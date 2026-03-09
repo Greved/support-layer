@@ -1,4 +1,6 @@
 using Api.Portal.Services;
+using Core.Entities;
+using Core.Evals;
 
 namespace Api.Portal.Tests;
 
@@ -49,4 +51,42 @@ public class StubUnavailableAntivirusScanner : IAntivirusScanner
 {
     public Task<AntivirusScanResult> ScanAsync(Stream stream, CancellationToken ct = default)
         => Task.FromResult(new AntivirusScanResult(AntivirusScanStatus.Unavailable, Details: "scanner_unreachable"));
+}
+
+public class StubEvalScoringService : IEvalScoringService
+{
+    public Task<EvalScoringBatchResult> ScoreAsync(
+        string tenantSlug,
+        string runId,
+        IReadOnlyList<EvalDataset> datasetRows,
+        CancellationToken cancellationToken = default)
+    {
+        var rows = datasetRows.Select(dataset =>
+        {
+            var difficult = dataset.QuestionType.Contains("negative", StringComparison.OrdinalIgnoreCase)
+                || dataset.QuestionType.Contains("adversarial", StringComparison.OrdinalIgnoreCase);
+            var retrieved = EvalContextSnapshotBuilder.ParseSourceChunkIds(dataset.SourceChunkIdsJson);
+            var fallbackRetrieved = retrieved.Count > 0 ? retrieved : [dataset.GroundTruth];
+
+            return new EvalScoredRow(
+                dataset.Question,
+                dataset.GroundTruth,
+                dataset.GroundTruth,
+                fallbackRetrieved,
+                difficult ? 0.74 : 0.92,
+                difficult ? 0.78 : 0.91,
+                difficult ? 0.75 : 0.89,
+                difficult ? 0.76 : 0.88,
+                difficult ? 0.18 : 0.05,
+                difficult ? 0.72 : 0.90,
+                difficult ? 320 : 180);
+        }).ToList();
+
+        return Task.FromResult(new EvalScoringBatchResult(
+            rows,
+            new Dictionary<string, double>(StringComparer.Ordinal),
+            "test-stub",
+            false,
+            null));
+    }
 }

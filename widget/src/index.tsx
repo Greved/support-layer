@@ -18,9 +18,13 @@ function getConfig(script: HTMLOrSVGScriptElement | null): WidgetConfig {
 }
 
 // Locate the current script tag to read data-* attributes
-const currentScript =
-  document.currentScript ??
-  document.querySelector('script[data-api-key]')
+const currentScript = (() => {
+  const candidate = document.currentScript as HTMLScriptElement | null
+  if (candidate?.dataset?.apiKey) {
+    return candidate
+  }
+  return document.querySelector('script[data-api-key]') as HTMLOrSVGScriptElement | null
+})()
 
 const config = getConfig(currentScript)
 

@@ -140,10 +140,11 @@ interface Props {
   messages: Message[]
   loading: boolean
   onSend: (text: string) => void
+  onFeedback: (messageId: string, rating: 'up' | 'down', comment?: string) => Promise<boolean>
   onClose: () => void
 }
 
-export function ChatWindow({ title, color, messages, loading, onSend, onClose }: Props) {
+export function ChatWindow({ title, color, messages, loading, onSend, onFeedback, onClose }: Props) {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
 
   // Find the most recent non-streaming assistant message with sources that hasn't been dismissed
@@ -242,7 +243,7 @@ export function ChatWindow({ title, color, messages, loading, onSend, onClose }:
 
       {/* Message area with source overlay */}
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <MessageList messages={messages} />
+        <MessageList messages={messages} onFeedback={onFeedback} />
 
         {activeSourceMessage && (
           <SourceOverlay

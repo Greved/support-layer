@@ -13,6 +13,16 @@ export interface Message {
   sources?: Source[]
   streaming?: boolean
   createdAt?: number
+  serverId?: string
+  feedbackDisabled?: boolean
+  feedback?: MessageFeedback
+}
+
+export interface MessageFeedback {
+  rating: 'up' | 'down' | null
+  submitting: boolean
+  submitted: boolean
+  error: string | null
 }
 
 export interface WidgetConfig {

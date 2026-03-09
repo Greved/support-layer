@@ -3,6 +3,7 @@ using System.Text.Json;
 using Api.Admin.Tests.Helpers;
 using Core.Data;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.Admin.Tests;
@@ -83,10 +84,53 @@ public class EvalsTests
         detailResp.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailBody = await detailResp.ReadJson<JsonElement>();
         detailBody.GetProperty("run").GetProperty("runId").GetGuid().Should().Be(runId);
+        var configSnapshotJson = detailBody.GetProperty("run").GetProperty("configSnapshotJson").GetString();
+        configSnapshotJson.Should().NotBeNullOrWhiteSpace();
+        using (var runSnapshotFromApiDoc = JsonDocument.Parse(configSnapshotJson!))
+        {
+            runSnapshotFromApiDoc.RootElement.GetProperty("schema").GetString()
+                .Should().Be("phase6.eval-run-context.v1");
+        }
+
         var results = detailBody.GetProperty("results");
         results.GetArrayLength().Should().Be(2);
         results.EnumerateArray().Should().Contain(x =>
             x.GetProperty("question").GetString() == "Where is billing page?");
+
+        var firstResultFromApi = results.EnumerateArray().First();
+        var retrievedChunksJson = firstResultFromApi.GetProperty("retrievedChunksJson").GetString();
+        retrievedChunksJson.Should().NotBeNullOrWhiteSpace();
+        using (var retrievedChunksFromApiDoc = JsonDocument.Parse(retrievedChunksJson!))
+        {
+            Assert.That(retrievedChunksFromApiDoc.RootElement.ValueKind, Is.EqualTo(JsonValueKind.Array));
+        }
+
+        var resultSnapshotJson = firstResultFromApi.GetProperty("contextSnapshotJson").GetString();
+        resultSnapshotJson.Should().NotBeNullOrWhiteSpace();
+        using (var resultSnapshotFromApiDoc = JsonDocument.Parse(resultSnapshotJson!))
+        {
+            resultSnapshotFromApiDoc.RootElement.GetProperty("schema").GetString()
+                .Should().Be("phase6.eval-result-context.v1");
+        }
+
+        using var verifyScope = _factory.Services.CreateScope();
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var persistedRun = await verifyDb.EvalRuns.SingleAsync(r => r.Id == runId);
+        using var runSnapshotDoc = JsonDocument.Parse(persistedRun.ConfigSnapshotJson);
+        Assert.That(
+            runSnapshotDoc.RootElement.GetProperty("schema").GetString(),
+            Is.EqualTo("phase6.eval-run-context.v1"));
+
+        var persistedResult = await verifyDb.EvalResults
+            .Where(r => r.RunId == runId)
+            .OrderBy(r => r.CreatedAt)
+            .FirstAsync();
+        using var resultSnapshotDoc = JsonDocument.Parse(persistedResult.ContextSnapshotJson);
+        Assert.That(
+            resultSnapshotDoc.RootElement.GetProperty("schema").GetString(),
+            Is.EqualTo("phase6.eval-result-context.v1"));
+        using var retrievedChunksDoc = JsonDocument.Parse(persistedResult.RetrievedChunksJson);
+        Assert.That(retrievedChunksDoc.RootElement.ValueKind, Is.EqualTo(JsonValueKind.Array));
     }
 
     [Test]

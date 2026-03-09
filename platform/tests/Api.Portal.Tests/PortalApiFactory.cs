@@ -1,5 +1,6 @@
 using Api.Portal.Services;
 using Core.Data;
+using Core.Evals;
 using Hangfire;
 using Hangfire.InMemory;
 using Microsoft.AspNetCore.Hosting;
@@ -37,6 +38,8 @@ public class PortalApiFactory : WebApplicationFactory<Program>
             // Replace external HTTP services with stubs
             services.RemoveAll<IRagClient>();
             services.AddScoped<IRagClient, StubRagClient>();
+            services.RemoveAll<IEvalScoringService>();
+            services.AddScoped<IEvalScoringService, StubEvalScoringService>();
 
             // Replace email with stub (already NoOp, but explicit)
             services.RemoveAll<IEmailService>();

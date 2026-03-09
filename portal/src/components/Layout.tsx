@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   FileText,
+  ShieldCheck,
   Settings2,
   Users,
   Key,
@@ -16,14 +17,36 @@ interface NavItem {
   to: string;
   label: string;
   icon: React.ReactNode;
+  testId: string;
 }
 
-const navItems: NavItem[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-  { to: '/documents', label: 'Documents', icon: <FileText size={18} /> },
-  { to: '/config', label: 'Configuration', icon: <Settings2 size={18} /> },
-  { to: '/team', label: 'Team', icon: <Users size={18} /> },
-  { to: '/team#api-keys', label: 'API Keys', icon: <Key size={18} /> },
+interface NavSection {
+  label: string | null;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
+  {
+    label: null,
+    items: [
+      { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} />, testId: 'nav-dashboard' },
+      { to: '/documents', label: 'Documents', icon: <FileText size={18} />, testId: 'nav-documents' },
+    ],
+  },
+  {
+    label: 'Analysis',
+    items: [
+      { to: '/quality', label: 'Quality', icon: <ShieldCheck size={18} />, testId: 'nav-quality' },
+    ],
+  },
+  {
+    label: 'Administration',
+    items: [
+      { to: '/config', label: 'Configuration', icon: <Settings2 size={18} />, testId: 'nav-configuration' },
+      { to: '/team', label: 'Team', icon: <Users size={18} />, testId: 'nav-team' },
+      { to: '/team#api-keys', label: 'API Keys', icon: <Key size={18} />, testId: 'nav-api-keys' },
+    ],
+  },
 ];
 
 export default function Layout() {
@@ -61,22 +84,32 @@ export default function Layout() {
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to.split('#')[0]}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`
-              }
-            >
-              {item.icon}
-              {item.label}
-            </NavLink>
+        <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
+          {navSections.map((section, index) => (
+            <div key={section.label ?? `section-${index}`} className="space-y-0.5">
+              {section.label && (
+                <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400">
+                  {section.label}
+                </p>
+              )}
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to.split('#')[0]}
+                  data-testid={item.testId}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }`
+                  }
+                >
+                  {item.icon}
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
 

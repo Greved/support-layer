@@ -11,6 +11,11 @@ import type {
   DashboardUsage,
   NotificationPref,
   OnboardingState,
+  PortalEvalSummary,
+  PortalEvalRunItem,
+  PortalEvalRunDetail,
+  PortalEvalRunAcceptedResponse,
+  PagedResponse,
 } from '@/types';
 
 const client: AxiosInstance = axios.create({
@@ -177,6 +182,21 @@ export const onboarding = {
 // Dashboard endpoints
 export const dashboard = {
   getUsage: () => client.get<DashboardUsage>('/portal/dashboard/usage'),
+};
+
+// Eval endpoints
+export const evals = {
+  summary: () => client.get<PortalEvalSummary>('/portal/evals/summary'),
+  runs: (page = 1, pageSize = 20) =>
+    client.get<PagedResponse<PortalEvalRunItem>>('/portal/evals/runs', {
+      params: { page, pageSize },
+    }),
+  runDetail: (runId: string) => client.get<PortalEvalRunDetail>(`/portal/evals/runs/${runId}`),
+  triggerRun: (runType = 'manual', triggeredBy = 'portal-ui') =>
+    client.post<PortalEvalRunAcceptedResponse>('/portal/evals/run', {
+      runType,
+      triggeredBy,
+    }),
 };
 
 export default client;

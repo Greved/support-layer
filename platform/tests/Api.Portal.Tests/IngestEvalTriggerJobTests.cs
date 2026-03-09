@@ -5,6 +5,7 @@ using Api.Portal.Tests.Helpers;
 using Core.Data;
 using Core.Entities;
 using FluentAssertions;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -75,9 +76,24 @@ public class IngestEvalTriggerJobTests
         run.Should().NotBeNull();
         run!.RunType.Should().Be("ingest");
         run.Status.Should().Be("completed");
+        using var runSnapshotDoc = JsonDocument.Parse(run.ConfigSnapshotJson);
+        Assert.That(
+            runSnapshotDoc.RootElement.GetProperty("schema").GetString(),
+            Is.EqualTo("phase6.eval-run-context.v1"));
+        Assert.That(
+            runSnapshotDoc.RootElement.GetProperty("source").GetString(),
+            Is.EqualTo("ingestion_job"));
 
         var resultCount = await db.EvalResults.CountAsync(r => r.RunId == run.Id);
         resultCount.Should().Be(2);
+        var firstResult = await db.EvalResults
+            .Where(r => r.RunId == run.Id)
+            .OrderBy(r => r.CreatedAt)
+            .FirstAsync();
+        using var resultSnapshotDoc = JsonDocument.Parse(firstResult.ContextSnapshotJson);
+        Assert.That(
+            resultSnapshotDoc.RootElement.GetProperty("schema").GetString(),
+            Is.EqualTo("phase6.eval-result-context.v1"));
 
         ragClient.TriggeredEvalRuns.Should().HaveCount(1);
         ragClient.TriggeredEvalRuns[0].TenantSlug.Should().Be(tenant.Slug);

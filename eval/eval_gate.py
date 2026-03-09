@@ -45,6 +45,14 @@ class MetricCheck:
         return max(0.0, (self.baseline - self.current) / self.baseline)
 
 
+@dataclass(frozen=True)
+class IntegrationCheck:
+    name: str
+    expected: str
+    actual: str
+    failed: bool
+
+
 def _parse_metrics_file(path: Path) -> dict[str, float]:
     raw = json.loads(path.read_text(encoding="utf-8"))
     data = raw.get("metrics", raw) if isinstance(raw, dict) else raw
@@ -67,6 +75,108 @@ def _parse_metrics_file(path: Path) -> dict[str, float]:
         missing_str = ", ".join(missing)
         raise ValueError(f"Missing metrics in {path}: {missing_str}")
     return parsed
+
+
+def _parse_run_result_file(path: Path) -> dict:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise ValueError(f"Unsupported run-result format in {path}")
+    return raw
+
+
+def evaluate_integration_integrity(run_result: dict) -> list[IntegrationCheck]:
+    timings = run_result.get("timings")
+    integrations = run_result.get("integrations")
+    integration_errors = run_result.get("integration_errors")
+
+    if not isinstance(timings, dict):
+        raise ValueError("run-result missing timings object")
+    if not isinstance(integrations, dict):
+        raise ValueError("run-result missing integrations object")
+    if not isinstance(integration_errors, dict):
+        raise ValueError("run-result missing integration_errors object")
+
+    rows_count = int(timings.get("rows_count") or 0)
+    rows_with_ragas = int(timings.get("rows_with_ragas") or 0)
+    rows_with_deepeval = int(timings.get("rows_with_deepeval") or 0)
+    rows_with_fallback = int(timings.get("rows_with_fallback") or 0)
+    rows_with_explicit_answer = int(timings.get("rows_with_explicit_answer") or 0)
+    rows_with_explicit_context = int(timings.get("rows_with_explicit_context") or 0)
+    rows_answer_equals_ground_truth = int(timings.get("rows_answer_equals_ground_truth") or 0)
+    ragas_error_count = int(timings.get("ragas_error_count") or 0)
+    deepeval_error_count = int(timings.get("deepeval_error_count") or 0)
+    ragas_errors = integration_errors.get("ragas") or []
+    deepeval_errors = integration_errors.get("deepeval") or []
+
+    checks = [
+        IntegrationCheck(
+            name="rows_count",
+            expected="> 0",
+            actual=str(rows_count),
+            failed=rows_count <= 0,
+        ),
+        IntegrationCheck(
+            name="ragas_required",
+            expected="true",
+            actual=str(bool(integrations.get("ragas_required"))).lower(),
+            failed=not bool(integrations.get("ragas_required")),
+        ),
+        IntegrationCheck(
+            name="deepeval_required",
+            expected="true",
+            actual=str(bool(integrations.get("deepeval_required"))).lower(),
+            failed=not bool(integrations.get("deepeval_required")),
+        ),
+        IntegrationCheck(
+            name="rows_with_ragas",
+            expected=f"== {rows_count}",
+            actual=str(rows_with_ragas),
+            failed=rows_with_ragas != rows_count,
+        ),
+        IntegrationCheck(
+            name="rows_with_deepeval",
+            expected=f"== {rows_count}",
+            actual=str(rows_with_deepeval),
+            failed=rows_with_deepeval != rows_count,
+        ),
+        IntegrationCheck(
+            name="rows_with_fallback",
+            expected="== 0",
+            actual=str(rows_with_fallback),
+            failed=rows_with_fallback != 0,
+        ),
+        IntegrationCheck(
+            name="rows_with_explicit_answer",
+            expected=f"== {rows_count}",
+            actual=str(rows_with_explicit_answer),
+            failed=rows_with_explicit_answer != rows_count,
+        ),
+        IntegrationCheck(
+            name="rows_with_explicit_context",
+            expected=f"== {rows_count}",
+            actual=str(rows_with_explicit_context),
+            failed=rows_with_explicit_context != rows_count,
+        ),
+        IntegrationCheck(
+            name="rows_answer_equals_ground_truth",
+            expected=f"< {rows_count}",
+            actual=str(rows_answer_equals_ground_truth),
+            failed=rows_answer_equals_ground_truth >= rows_count,
+        ),
+        IntegrationCheck(
+            name="ragas_error_count",
+            expected="== 0",
+            actual=str(ragas_error_count),
+            failed=ragas_error_count != 0 or bool(ragas_errors),
+        ),
+        IntegrationCheck(
+            name="deepeval_error_count",
+            expected="== 0",
+            actual=str(deepeval_error_count),
+            failed=deepeval_error_count != 0 or bool(deepeval_errors),
+        ),
+    ]
+    return checks
 
 
 def evaluate_regression(
@@ -122,6 +232,8 @@ def build_markdown_report(
     current_run_id: str,
     baseline_metrics: dict[str, float],
     current_metrics: dict[str, float],
+    integration_checks: list[IntegrationCheck] | None = None,
+    current_run_result: dict | None = None,
 ) -> str:
     generated_at = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     lines = [
@@ -141,9 +253,50 @@ def build_markdown_report(
             f"{_format_delta(check)} | {check.threshold:.4f} | {check.mode} | {result} |"
         )
     failed = [c.metric for c in checks if c.failed]
-    lines.extend(["", f"- Gate result: **{'FAILED' if failed else 'PASSED'}**"])
+    failed_integrations = [c.name for c in (integration_checks or []) if c.failed]
+    lines.extend(
+        [
+            "",
+            f"- Gate result: **{'FAILED' if (failed or failed_integrations) else 'PASSED'}**",
+        ]
+    )
     if failed:
         lines.append(f"- Regressed metrics: {', '.join(failed)}")
+    if integration_checks:
+        lines.append(
+            f"- Integration integrity: **{'FAILED' if failed_integrations else 'PASSED'}**"
+        )
+        if failed_integrations:
+            lines.append(f"- Integration failures: {', '.join(failed_integrations)}")
+        lines.extend(
+            [
+                "",
+                "## Integration Integrity Checks",
+                "",
+                "| Check | Expected | Actual | Result |",
+                "|---|---|---|---|",
+            ]
+        )
+        for check in integration_checks:
+            lines.append(
+                f"| {check.name} | {check.expected} | {check.actual} | "
+                f"{'FAIL' if check.failed else 'PASS'} |"
+            )
+
+    if current_run_result is not None:
+        timings = current_run_result.get("timings")
+        if isinstance(timings, dict):
+            lines.extend(
+                [
+                    "",
+                    "## Timing Snapshot (Current Run)",
+                    "",
+                    "```json",
+                    json.dumps(timings, indent=2, sort_keys=True),
+                    "```",
+                ]
+            )
+
     lines.extend(
         [
             "",
@@ -169,6 +322,19 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--current-run-id", required=True, help="Current run id to evaluate")
     parser.add_argument("--baseline-file", required=True, type=Path, help="Baseline metrics JSON")
     parser.add_argument("--current-file", required=True, type=Path, help="Current metrics JSON")
+    parser.add_argument(
+        "--current-run-result-file",
+        type=Path,
+        help="Optional current run-result JSON from eval.run_eval",
+    )
+    parser.add_argument(
+        "--require-real-integrations",
+        action="store_true",
+        help=(
+            "Fail gate when current run did not use real RAGAS/DeepEval integrations "
+            "for every row (no fallback allowed)."
+        ),
+    )
     parser.add_argument("--output-md", type=Path, help="Optional markdown report output path")
     parser.add_argument("--log-file", type=Path, help="Optional eval gate log file path")
     return parser.parse_args(argv)
@@ -197,6 +363,23 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("Current metrics raw=%s", json.dumps(current, sort_keys=True))
 
     checks = evaluate_regression(baseline, current)
+    integration_checks: list[IntegrationCheck] | None = None
+    current_run_result: dict | None = None
+    if args.current_run_result_file:
+        current_run_result = _parse_run_result_file(args.current_run_result_file)
+    if args.require_real_integrations:
+        if current_run_result is None:
+            raise ValueError("--require-real-integrations requires --current-run-result-file")
+        integration_checks = evaluate_integration_integrity(current_run_result)
+        for check in integration_checks:
+            logger.info(
+                "Integration check name=%s expected=%s actual=%s failed=%s",
+                check.name,
+                check.expected,
+                check.actual,
+                check.failed,
+            )
+
     for check in checks:
         logger.info(
             ("Metric=%s baseline=%.10f current=%.10f threshold=%.10f " "mode=%s failed=%s"),
@@ -214,6 +397,8 @@ def main(argv: list[str] | None = None) -> int:
         args.current_run_id,
         baseline_metrics=baseline,
         current_metrics=current,
+        integration_checks=integration_checks,
+        current_run_result=current_run_result,
     )
 
     if args.output_md:
@@ -221,7 +406,9 @@ def main(argv: list[str] | None = None) -> int:
         args.output_md.write_text(report, encoding="utf-8")
 
     print(report, end="")
-    failed = any(check.failed for check in checks)
+    failed = any(check.failed for check in checks) or any(
+        check.failed for check in (integration_checks or [])
+    )
     logger.info("Eval gate decision=%s", "FAILED" if failed else "PASSED")
     return 1 if failed else 0
 

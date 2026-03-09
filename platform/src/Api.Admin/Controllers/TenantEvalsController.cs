@@ -2,6 +2,7 @@ using Api.Admin.Models.Requests;
 using Api.Admin.Models.Responses;
 using Core.Data;
 using Core.Entities;
+using Core.Evals;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ namespace Api.Admin.Controllers;
 [ApiController]
 [Route("admin/tenants/{tenantId:guid}/evals")]
 [Authorize]
-public class TenantEvalsController(AppDbContext db) : ControllerBase
+public class TenantEvalsController(AppDbContext db, IEvalScoringService evalScoringService) : ControllerBase
 {
     [HttpPost("generate")]
     public async Task<ActionResult<EvalDatasetGenerateResponse>> Generate(Guid tenantId, [FromQuery] int maxDocuments = 50)
@@ -97,7 +98,11 @@ public class TenantEvalsController(AppDbContext db) : ControllerBase
     [HttpPost("run")]
     public async Task<ActionResult<EvalRunAcceptedResponse>> Run(Guid tenantId, [FromBody] TriggerEvalRunRequest? request = null)
     {
-        if (!await db.Tenants.AnyAsync(t => t.Id == tenantId))
+        var tenant = await db.Tenants
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == tenantId);
+
+        if (tenant is null)
             return NotFound();
 
         var existingRun = await db.EvalRuns
@@ -113,44 +118,113 @@ public class TenantEvalsController(AppDbContext db) : ControllerBase
                 "eval_run_already_in_progress"));
         }
 
-        var now = DateTime.UtcNow;
-        var run = new EvalRun
-        {
-            Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            RunType = string.IsNullOrWhiteSpace(request?.RunType) ? "manual" : request!.RunType!.Trim(),
-            TriggeredBy = string.IsNullOrWhiteSpace(request?.TriggeredBy) ? "admin" : request!.TriggeredBy!.Trim(),
-            ConfigSnapshotJson = "{}",
-            StartedAt = now,
-            Status = "running",
-            CreatedAt = now,
-        };
-
-        db.EvalRuns.Add(run);
-
         var datasetRows = await db.EvalDatasets
             .Where(d => d.TenantId == tenantId)
             .OrderByDescending(d => d.CreatedAt)
             .Take(200)
             .ToListAsync();
 
-        foreach (var dataset in datasetRows)
+        var tenantConfigs = await db.TenantConfigs
+            .Where(c => c.TenantId == tenantId)
+            .ToListAsync();
+
+        var now = DateTime.UtcNow;
+        var runType = string.IsNullOrWhiteSpace(request?.RunType) ? "manual" : request!.RunType!.Trim();
+        var triggeredBy = string.IsNullOrWhiteSpace(request?.TriggeredBy) ? "admin" : request!.TriggeredBy!.Trim();
+
+        var run = new EvalRun
         {
-            var negative = dataset.QuestionType.Contains("negative", StringComparison.OrdinalIgnoreCase);
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            RunType = runType,
+            TriggeredBy = triggeredBy,
+            ConfigSnapshotJson = EvalContextSnapshotBuilder.BuildRunSnapshot(
+                tenant.Id,
+                tenant.Slug,
+                runType,
+                triggeredBy,
+                now,
+                datasetRows,
+                tenantConfigs,
+                source: "admin_eval_run"),
+            StartedAt = now,
+            Status = "running",
+            CreatedAt = now,
+        };
+
+        db.EvalRuns.Add(run);
+        var scoring = await evalScoringService.ScoreAsync(
+            tenant.Slug,
+            run.Id.ToString("N"),
+            datasetRows,
+            HttpContext.RequestAborted);
+
+        run.ConfigSnapshotJson = EvalContextSnapshotBuilder.BuildRunSnapshot(
+            tenant.Id,
+            tenant.Slug,
+            runType,
+            triggeredBy,
+            now,
+            datasetRows,
+            tenantConfigs,
+            source: "admin_eval_run",
+            triggerContext: new
+            {
+                scoringEngine = scoring.Engine,
+                usedFallback = scoring.UsedFallback,
+                diagnostics = scoring.Diagnostics,
+                timings = scoring.Timings,
+                scoredRows = scoring.Rows.Count,
+            });
+
+        for (var i = 0; i < datasetRows.Count; i++)
+        {
+            var dataset = datasetRows[i];
+            var scored = i < scoring.Rows.Count
+                ? scoring.Rows[i]
+                : new EvalScoredRow(
+                    dataset.Question,
+                    dataset.GroundTruth,
+                    dataset.GroundTruth,
+                    EvalContextSnapshotBuilder.ParseSourceChunkIds(dataset.SourceChunkIdsJson),
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    180);
+
+            var sourceChunkIds = EvalContextSnapshotBuilder.ParseSourceChunkIds(dataset.SourceChunkIdsJson);
+            var retrievedChunks = scored.RetrievedChunks.Count > 0 ? scored.RetrievedChunks : sourceChunkIds;
+            var retrievedChunksJson = EvalContextSnapshotBuilder.BuildRetrievedChunksSnapshot(retrievedChunks);
+
             db.EvalResults.Add(new EvalResult
             {
                 Id = Guid.NewGuid(),
                 RunId = run.Id,
                 DatasetItemId = dataset.Id,
-                Answer = dataset.GroundTruth,
-                RetrievedChunksJson = dataset.SourceChunkIdsJson,
-                Faithfulness = negative ? 0.74 : 0.92,
-                AnswerRelevancy = negative ? 0.78 : 0.91,
-                ContextPrecision = negative ? 0.75 : 0.89,
-                ContextRecall = negative ? 0.76 : 0.88,
-                HallucinationScore = negative ? 0.18 : 0.05,
-                AnswerCompleteness = negative ? 0.72 : 0.90,
-                LatencyMs = negative ? 320 : 180,
+                Answer = scored.Answer,
+                RetrievedChunksJson = retrievedChunksJson,
+                ContextSnapshotJson = EvalContextSnapshotBuilder.BuildResultSnapshot(
+                    dataset,
+                    sourceChunkIds,
+                    retrievedChunks,
+                    scored.Answer,
+                    scored.LatencyMs,
+                    scored.Faithfulness,
+                    scored.AnswerRelevancy,
+                    scored.ContextPrecision,
+                    scored.ContextRecall,
+                    scored.HallucinationScore,
+                    scored.AnswerCompleteness),
+                Faithfulness = scored.Faithfulness,
+                AnswerRelevancy = scored.AnswerRelevancy,
+                ContextPrecision = scored.ContextPrecision,
+                ContextRecall = scored.ContextRecall,
+                HallucinationScore = scored.HallucinationScore,
+                AnswerCompleteness = scored.AnswerCompleteness,
+                LatencyMs = scored.LatencyMs,
                 CreatedAt = now,
             });
         }
@@ -247,7 +321,8 @@ public class TenantEvalsController(AppDbContext db) : ControllerBase
             aggregate.ContextRecall,
             aggregate.HallucinationScore,
             aggregate.AnswerCompleteness,
-            aggregate.AvgLatencyMs);
+            aggregate.AvgLatencyMs,
+            run.ConfigSnapshotJson);
 
         var results = resultRows
             .Select(r => new EvalResultDetailResponse(
@@ -262,7 +337,9 @@ public class TenantEvalsController(AppDbContext db) : ControllerBase
                 r.ContextRecall,
                 r.HallucinationScore,
                 r.AnswerCompleteness,
-                r.LatencyMs
+                r.LatencyMs,
+                r.RetrievedChunksJson,
+                r.ContextSnapshotJson
             ))
             .ToList();
 

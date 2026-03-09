@@ -7,6 +7,7 @@ public class EvalResult
     public Guid? DatasetItemId { get; set; }
     public string Answer { get; set; } = string.Empty;
     public string RetrievedChunksJson { get; set; } = "[]";
+    public string ContextSnapshotJson { get; set; } = "{}";
     public double? Faithfulness { get; set; }
     public double? AnswerRelevancy { get; set; }
     public double? ContextPrecision { get; set; }

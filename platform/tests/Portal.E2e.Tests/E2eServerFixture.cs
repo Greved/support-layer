@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
@@ -46,6 +47,22 @@ public class E2eServerFixture : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        if (RequireRealEvalByDefault())
+        {
+            builder.ConfigureAppConfiguration((_, configBuilder) =>
+            {
+                configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Phase6:EvalRunner:DisableRagas"] = "false",
+                    ["Phase6:EvalRunner:DisableDeepEval"] = "false",
+                    ["Phase6:EvalRunner:RequireRagas"] = "true",
+                    ["Phase6:EvalRunner:RequireDeepEval"] = "true",
+                    ["Phase6:EvalRunner:TimeoutSeconds"] = "1800",
+                    ["Phase6:EvalRunner:Command"] = "python",
+                });
+            });
+        }
+
         builder.ConfigureServices(services =>
         {
             // Replace real DB with Testcontainers Postgres
@@ -78,6 +95,14 @@ public class E2eServerFixture : WebApplicationFactory<Program>
             // Seed a default E2E test user
             E2eSeeder.SeedDefaultUserAsync(scope.ServiceProvider).GetAwaiter().GetResult();
         });
+    }
+
+    private static bool RequireRealEvalByDefault()
+    {
+        var raw = Environment.GetEnvironmentVariable("E2E_REQUIRE_REAL_EVAL");
+        if (string.IsNullOrWhiteSpace(raw))
+            return true;
+        return !string.Equals(raw.Trim(), "0", StringComparison.Ordinal);
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
